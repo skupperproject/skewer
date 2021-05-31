@@ -1,6 +1,12 @@
 from skewer import *
 
 @command
+def generate(app):
+    with working_dir("test-example"):
+        generate_readme("skewer.yaml", "README.md")
+        print(read("README.md"))
+
+@command
 def test(app):
     with working_dir("test-example"):
         generate_readme("skewer.yaml", "README.md")

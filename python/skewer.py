@@ -143,8 +143,19 @@ def generate_readme(skewer_file, output_file):
     out.append(f"# {skewer_data['title']}")
     out.append("")
     out.append(skewer_data["subtitle"])
+    out.append("")
+    out.append("* [Overview](#overview)")
+    out.append("* [Prerequisites](#prerequisites)")
 
-    # TOC
+    for i, step_data in enumerate(skewer_data["steps"], 1):
+        title = f"Step {i}: {step_data['title']}"
+
+        fragment = replace(title, " ", "_")
+        fragment = replace(fragment, r"[\W]", "")
+        fragment = replace(fragment, r"[_]", "-")
+        fragment = fragment.lower()
+
+        out.append(f"* [{title}](#{fragment})")
 
     out.append("")
     out.append("## Overview")
