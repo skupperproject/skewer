@@ -1,0 +1,10 @@
+from skewer import *
+
+@command
+def generate(app):
+    generate_readme("skewer.yaml", "README.md")
+
+@command
+def test(app):
+    generate_readme("skewer.yaml", make_temp_file())
+    run_example_steps("skewer.yaml")
