@@ -1,0 +1,97 @@
+title: Skupper Hello World
+subtitle: A minimal HTTP application deployed across Kubernetes clusters using [Skupper](https://skupper.io/)
+overview: |-
+  This example is a very simple multi-service HTTP application that can
+  be deployed across multiple Kubernetes clusters using Skupper.
+
+  It contains two services:
+
+  * A backend service that exposes an `/api/hello` endpoint.  It
+    returns greetings of the form `Hello from <pod-name>
+    (<request-count>)`.
+
+  * A frontend service that accepts HTTP requests, calls the backend
+    to fetch new greetings, and serves them to the user.
+
+  With Skupper, you can place the backend in one cluster and the
+  frontend in another and maintain connectivity between the two
+  services without exposing the backend to the public internet.
+
+  <img src="images/entities.svg" width="640"/>
+prerequisites: |-
+  * The `kubectl` command-line tool, version 1.15 or later
+    ([installation guide][install-kubectl])
+
+  * The `skupper` command-line tool, the latest version ([installation
+    guide][install-skupper])
+
+  * Access to two Kubernetes namespaces, from any providers you
+    choose, on any clusters you choose
+
+  [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+  [install-skupper]: https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment
+contexts:
+  west:
+    kubeconfig: ~/.kube/config-west
+    namespace: west
+  east:
+    kubeconfig: ~/.kube/config-east
+    namespace: east
+steps:
+  - title: Configure separate kubeconfigs
+    preamble: |-
+      Since we are dealing with two namespaces, we need to set up
+      isolated `kubectl` configurations, one for each namespace.  In
+      this example, we will use distinct kubeconfigs on separate
+      consoles.
+    commands:
+      west:
+        - run: export KUBECONFIG=~/.kube/config-west
+      east:
+        - run: export KUBECONFIG=~/.kube/config-east
+  - title: Log in to your clusters
+    preamble: |-
+      *Specific to your cloud provider*
+  - title: Create your namespaces
+    commands:
+      west:
+        - run: kubectl create namespace west
+        - run: kubectl config set-context --current --namespace west
+      east:
+        - run: kubectl create namespace east
+        - run: kubectl config set-context --current --namespace east
+  - title: Install Skupper in your namespaces
+    commands:
+      west:
+        - run: skupper init
+          await: [deployment/skupper-service-controller, deployment/skupper-router]
+      east:
+        - run: skupper init --ingress none
+          await: [deployment/skupper-service-controller, deployment/skupper-router]
+  - title: Link your namespaces
+    commands:
+      west:
+        - run: skupper token create ~/west.token
+      east:
+        - run: skupper link create ~/west.token
+        - run: skupper link status --wait 30
+  - title: Deploy your services
+    commands:
+      west:
+        - run: kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
+          await: [deployment/hello-world-frontend]
+      east:
+        - run: kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
+          await: [deployment/hello-world-backend]
+  - title: Expose your services
+    commands:
+      west:
+        - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
+          sleep: 10
+      east:
+        - run: skupper expose deployment/hello-world-backend --port 8080
+          sleep: 10
+  - title: Test your application
+    commands:
+      west:
+        - run: "curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
