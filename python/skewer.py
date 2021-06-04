@@ -53,21 +53,7 @@ def await_resource(group, name, namespace=None):
             run(f"{base_command} logs {group}/{name}")
             raise
 
-def await_link(name, namespace=None):
-    skupper_base_command = "skupper"
-    kubectl_base_command = "kubectl"
-
-    if namespace is not None:
-        skupper_base_command = f"{skupper_base_command} -n {namespace}"
-        kubectl_base_command = f"{kubectl_base_command} -n {namespace}"
-
-    try:
-        run(f"{skupper_base_command} link status --wait 180 {name}")
-    except:
-        run(f"{kubectl_base_command} logs deployment/skupper-router")
-        raise
-
-def get_ingress_ip(group, name, namespace=None):
+def await_external_ip(group, name, namespace=None):
     await_resource(group, name, namespace=namespace)
 
     base_command = "kubectl"
@@ -81,9 +67,7 @@ def get_ingress_ip(group, name, namespace=None):
         if call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
     else:
-        fail(f"Timed out waiting for ingress for {group}/{name}")
-
-    return call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
+        fail(f"Timed out waiting for external IP for {group}/{name}")
 
 def run_example_steps(skewer_file):
     with open(skewer_file) as file:
@@ -131,6 +115,11 @@ def execute_steps(work_dir, skewer_data, contexts):
                             group, name = resource.split("/", 1)
                             await_resource(group, name)
 
+                    if "await_external_ip" in command:
+                        for resource in command["await_external_ip"]:
+                            group, name = resource.split("/", 1)
+                            await_external_ip(group, name)
+
                     if "sleep" in command:
                         sleep(command["sleep"])
 
@@ -152,7 +141,7 @@ def generate_readme(skewer_file, output_file):
 
         fragment = replace(title, " ", "_")
         fragment = replace(fragment, r"[\W]", "")
-        fragment = replace(fragment, r"[_]", "-")
+        fragment = replace(fragment, "_", "-")
         fragment = fragment.lower()
 
         out.append(f"* [{title}](#{fragment})")
@@ -177,8 +166,10 @@ def generate_readme(skewer_file, output_file):
 
         if "commands" in step_data:
             for context_name, commands in step_data["commands"].items():
+                namespace = skewer_data["contexts"][context_name]["namespace"]
+
                 out.append("")
-                out.append(f"Console for {context_name}:")
+                out.append(f"Console for _{namespace}_:")
                 out.append("")
                 out.append("~~~ shell")
 
@@ -192,3 +183,41 @@ def generate_readme(skewer_file, output_file):
             out.append(skewer_data["postamble"])
 
     write(output_file, "\n".join(out))
+
+class _StringCatalog(dict):
+    def __init__(self, path):
+        super(_StringCatalog, self).__init__()
+
+        self.path = "{0}.strings".format(split_extension(path)[0])
+
+        check_file(self.path)
+
+        key = None
+        out = list()
+
+        for line in read_lines(self.path):
+            line = line.rstrip()
+
+            if line.startswith("[") and line.endswith("]"):
+                if key:
+                    self[key] = "".join(out).strip() + "\n"
+
+                out = list()
+                key = line[1:-1]
+
+                continue
+
+            out.append(line)
+            out.append("\r\n")
+
+        self[key] = "".join(out).strip() + "\n"
+
+    def __repr__(self):
+        return format_repr(self)
+
+_strings = _StringCatalog(__file__)
+
+def _string_loader(loader, node):
+    return _strings[node.value]
+
+_yaml.SafeLoader.add_constructor("!string", _string_loader)
