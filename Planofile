@@ -11,4 +11,4 @@ def test(app):
     with working_dir("test-example"):
         generate_readme("skewer.yaml", "README.md")
         check_file("README.md")
-        run_example_steps("skewer.yaml")
+        run_steps_on_minikube("skewer.yaml")

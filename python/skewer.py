@@ -24,7 +24,6 @@ import yaml as _yaml
 def check_environment():
     check_program("kubectl")
     check_program("skupper")
-    check_program("curl")
 
 # Eventually Kubernetes will make this nicer:
 # https://github.com/kubernetes/kubernetes/pull/87399
@@ -69,36 +68,46 @@ def await_external_ip(group, name, namespace=None):
     else:
         fail(f"Timed out waiting for external IP for {group}/{name}")
 
-def run_example_steps(skewer_file):
+def run_steps_on_minikube(skewer_file):
     with open(skewer_file) as file:
         skewer_data = _yaml.safe_load(file)
-        work_dir = make_temp_dir()
-        minikube_profile = "skewer"
+
+    work_dir = make_temp_dir()
+    minikube_profile = "skewer"
+
+    try:
+        run(f"minikube start -p {minikube_profile}")
+
+        contexts = skewer_data["contexts"]
+
+        for name, value in contexts.items():
+            kubeconfig = value["kubeconfig"].replace("~", work_dir)
+
+            with working_env(KUBECONFIG=kubeconfig):
+                run(f"minikube update-context")
+                check_file(ENV["KUBECONFIG"])
 
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
-            try:
-                run(f"minikube start -p {minikube_profile}")
-                run(f"minikube profile {minikube_profile}")
+            with start("minikube tunnel", output=tunnel_output_file):
+                execute_steps(work_dir, skewer_data)
+    finally:
+        run(f"minikube delete -p {minikube_profile}")
 
-                with start("minikube tunnel", output=tunnel_output_file):
-                    contexts = setup_contexts(work_dir, skewer_data)
-                    execute_steps(work_dir, skewer_data, contexts)
-            finally:
-                run(f"minikube delete -p {minikube_profile}")
+def run_steps_external(skewer_file, **kubeconfigs):
+    with open(skewer_file) as file:
+        skewer_data = _yaml.safe_load(file)
 
-def setup_contexts(work_dir, skewer_data):
+    work_dir = make_temp_dir()
     contexts = skewer_data["contexts"]
 
-    for name, value in contexts.items():
-        kubeconfig = value["kubeconfig"].replace("~", work_dir)
+    for name, kubeconfig in kubeconfigs.items():
+        contexts[name]["kubeconfig"] = kubeconfig
 
-        with working_env(KUBECONFIG=kubeconfig):
-            run(f"minikube update-context")
-            check_file(ENV["KUBECONFIG"])
+    execute_steps(work_dir, skewer_data)
 
-    return contexts
+def execute_steps(work_dir, skewer_data):
+    contexts = skewer_data["contexts"]
 
-def execute_steps(work_dir, skewer_data, contexts):
     for step_data in skewer_data["steps"]:
         if "commands" not in step_data:
             continue
