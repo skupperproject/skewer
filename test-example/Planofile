@@ -5,6 +5,12 @@ def generate(app):
     generate_readme("skewer.yaml", "README.md")
 
 @command
+def render(app):
+    check_program("pandoc")
+    generate(app)
+    run(f"pandoc -o README.html README.md")
+
+@command
 def test(app):
     generate_readme("skewer.yaml", make_temp_file())
     run_steps_on_minikube("skewer.yaml")

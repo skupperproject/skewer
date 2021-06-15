@@ -1,5 +1,6 @@
 title: Skupper Hello World
-subtitle: A minimal HTTP application deployed across Kubernetes clusters using [Skupper](https://skupper.io/)
+subtitle: A minimal HTTP application deployed across Kubernetes clusters using Skupper
+github_actions_url: https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml
 overview: |-
   This example is a very simple multi-service HTTP application that can
   be deployed across multiple Kubernetes clusters using Skupper.
@@ -38,21 +39,17 @@ contexts:
     kubeconfig: ~/.kube/config-east
     namespace: east
 steps:
-  - title: Configure separate kubeconfigs
-    preamble: |-
-      Since we are dealing with two namespaces, we need to set up
-      isolated `kubectl` configurations, one for each namespace.  In
-      this example, we will use distinct kubeconfigs on separate
-      consoles.
+  - title: Configure separate console sessions
+    preamble: !string configure_separate_console_sessions_preamble
     commands:
       west:
         - run: export KUBECONFIG=~/.kube/config-west
       east:
         - run: export KUBECONFIG=~/.kube/config-east
   - title: Log in to your clusters
-    preamble: |-
-      *Specific to your cloud provider*
-  - title: Create your namespaces
+    preamble: !string log_in_to_your_clusters_preamble
+  - title: Set up your namespaces
+    preamble: !string set_up_your_namespaces_preamble
     commands:
       west:
         - run: kubectl create namespace west
@@ -61,6 +58,7 @@ steps:
         - run: kubectl create namespace east
         - run: kubectl config set-context --current --namespace east
   - title: Install Skupper in your namespaces
+    preamble: !string install_skupper_in_your_namespaces_preamble
     commands:
       west:
         - run: skupper init
@@ -69,6 +67,7 @@ steps:
         - run: skupper init --ingress none
           await: [deployment/skupper-service-controller, deployment/skupper-router]
   - title: Link your namespaces
+    preamble: !string link_your_namespaces_preamble
     commands:
       west:
         - run: skupper token create ~/west.token
@@ -95,3 +94,32 @@ steps:
     commands:
       west:
         - run: "curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+summary: |-
+  This example locates the frontend and backend services in different
+  namespaces, on different clusters.  Ordinarily, this means that they
+  have no way to communicate unless they are exposed to the public
+  internet.
+
+  Introducing Skupper into each namespace allows us to create a virtual
+  application network that can connect services in different clusters.
+  Any service exposed on the application network is represented as a
+  local service in all of the linked namespaces.
+
+  The backend service is located in `east`, but the frontend service
+  in `west` can "see" it as if it were local.  When the frontend
+  sends a request to the backend, Skupper forwards the request to the
+  namespace where the backend is running and routes the response back to
+  the frontend.
+
+  <img src="images/sequence.svg" width="640"/>
+cleaning_up:
+  preamble: !string cleaning_up_preamble
+  commands:
+    west:
+      - run: skupper delete
+      - run: kubectl delete service/hello-world-frontend
+      - run: kubectl delete deployment/hello-world-frontend
+    east:
+      - run: skupper delete
+      - run: kubectl delete deployment/hello-world-backend
+next_steps: !string next_steps
