@@ -88,7 +88,7 @@ def run_steps_on_minikube(skewer_file):
 
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
             with start("minikube -p skewer tunnel", output=tunnel_output_file):
-                execute_steps(work_dir, skewer_data)
+                _run_steps(work_dir, skewer_data)
     finally:
         run("minikube -p skewer delete")
 
@@ -97,39 +97,44 @@ def run_steps_external(skewer_file, **kubeconfigs):
         skewer_data = _yaml.safe_load(file)
 
     work_dir = make_temp_dir()
-    contexts = skewer_data["contexts"]
 
     for name, kubeconfig in kubeconfigs.items():
-        contexts[name]["kubeconfig"] = kubeconfig
+        skewer_data["contexts"][name]["kubeconfig"] = kubeconfig
 
-    execute_steps(work_dir, skewer_data)
+    _run_steps(work_dir, skewer_data)
 
-def execute_steps(work_dir, skewer_data):
+def _run_steps(work_dir, skewer_data):
     contexts = skewer_data["contexts"]
 
     for step_data in skewer_data["steps"]:
-        if "commands" not in step_data:
-            continue
+        _run_step(work_dir, skewer_data, step_data)
 
-        for context_name, commands in step_data["commands"].items():
-            kubeconfig = contexts[context_name]["kubeconfig"].replace("~", work_dir)
+    if "cleaning_up" in skewer_data:
+        _run_step(work_dir, skewer_data, skewer_data["cleaning_up"])
 
-            with working_env(KUBECONFIG=kubeconfig):
-                for command in commands:
-                    run(command["run"].replace("~", work_dir), shell=True)
+def _run_step(work_dir, skewer_data, step_data):
+    if "commands" not in step_data:
+        return
 
-                    if "await" in command:
-                        for resource in command["await"]:
-                            group, name = resource.split("/", 1)
-                            await_resource(group, name)
+    for context_name, commands in step_data["commands"].items():
+        kubeconfig = skewer_data["contexts"][context_name]["kubeconfig"].replace("~", work_dir)
 
-                    if "await_external_ip" in command:
-                        for resource in command["await_external_ip"]:
-                            group, name = resource.split("/", 1)
-                            await_external_ip(group, name)
+        with working_env(KUBECONFIG=kubeconfig):
+            for command in commands:
+                run(command["run"].replace("~", work_dir), shell=True)
 
-                    if "sleep" in command:
-                        sleep(command["sleep"])
+                if "await" in command:
+                    for resource in command["await"]:
+                        group, name = resource.split("/", 1)
+                        await_resource(group, name)
+
+                if "await_external_ip" in command:
+                    for resource in command["await_external_ip"]:
+                        group, name = resource.split("/", 1)
+                        await_external_ip(group, name)
+
+                if "sleep" in command:
+                    sleep(command["sleep"])
 
 def generate_readme(skewer_file, output_file):
     with open(skewer_file) as file:
@@ -196,7 +201,7 @@ def generate_readme(skewer_file, output_file):
     for i, step_data in enumerate(skewer_data["steps"], 1):
         out.append(f"## Step {i}: {step_data['title']}")
         out.append("")
-        out.append(generate_step(skewer_data, step_data))
+        out.append(_generate_readme_step(skewer_data, step_data))
         out.append("")
 
     if "summary" in skewer_data:
@@ -208,7 +213,7 @@ def generate_readme(skewer_file, output_file):
     if "cleaning_up" in skewer_data:
         out.append("## Cleaning up")
         out.append("")
-        out.append(generate_step(skewer_data, skewer_data["cleaning_up"]))
+        out.append(_generate_readme_step(skewer_data, skewer_data["cleaning_up"]))
         out.append("")
 
     if "next_steps" in skewer_data:
@@ -218,7 +223,7 @@ def generate_readme(skewer_file, output_file):
 
     write(output_file, "\n".join(out))
 
-def generate_step(skewer_data, step_data):
+def _generate_readme_step(skewer_data, step_data):
     out = list()
 
     if "preamble" in step_data:
