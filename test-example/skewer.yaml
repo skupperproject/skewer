@@ -86,10 +86,10 @@ steps:
     commands:
       west:
         - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-          sleep: 10
+          sleep: 30
       east:
         - run: skupper expose deployment/hello-world-backend --port 8080
-          sleep: 10
+          sleep: 30
   - title: Test your application
     commands:
       west:
