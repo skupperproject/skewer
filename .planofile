@@ -2,6 +2,9 @@ from skewer import *
 
 @command
 def generate(app):
+    """
+    Generate README.md from the data in skewer.yaml
+    """
     with working_dir("test-example"):
         generate_readme("skewer.yaml", "README.md")
         print(read("README.md"))
