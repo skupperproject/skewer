@@ -269,7 +269,7 @@ def _generate_readme_step(skewer_data, step_data):
             if outputs:
                 out.append("Sample output:")
                 out.append("")
-                out.append("~~~ shell")
+                out.append("~~~")
 
                 if len(outputs) > 1:
                     for run, output in outputs:

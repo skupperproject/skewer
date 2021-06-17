@@ -62,18 +62,13 @@ steps:
       not required if your two namespaces are on different hosts or on
       public clusters.
   - title: Check the status of your namespaces
-    preamble: |-
-      Use `skupper status` in each console to check that Skupper is
-      installed:
+    preamble: !string check_the_status_of_your_namespaces_preamble
     commands:
       - run: skupper status
         output: |-
           Skupper is enabled for namespace "west" in interior mode. It is not connected to any other sites. It has no exposed services.
           The site console url is: http://10.98.13.241:8080
           The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
-    postamble: |-
-      As you move through the steps below, you can use `skupper status` at
-      any time to check your progress.
   - title: Link your namespaces
     preamble: !string link_your_namespaces_preamble
     commands:

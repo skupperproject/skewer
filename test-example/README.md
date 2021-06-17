@@ -165,7 +165,8 @@ public clusters.
 ## Step 5: Check the status of your namespaces
 
 Use `skupper status` in each console to check that Skupper is
-installed:
+installed.  As you move through the steps below, you can use `skupper
+status` at any time to check your progress.
 
 Console:
 
@@ -175,14 +176,11 @@ skupper status
 
 Sample output:
 
-~~~ shell
+~~~
 Skupper is enabled for namespace "west" in interior mode. It is not connected to any other sites. It has no exposed services.
 The site console url is: http://10.98.13.241:8080
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 ~~~
-
-As you move through the steps below, you can use `skupper status` at
-any time to check your progress.
 
 
 ## Step 6: Link your namespaces
@@ -261,7 +259,7 @@ curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loa
 
 Sample output:
 
-~~~ shell
+~~~
 I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
 ~~~
 

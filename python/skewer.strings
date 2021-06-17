@@ -63,6 +63,7 @@ use (or use existing namespaces).  Use `kubectl config set-context` to
 set the current namespace for each session.
 
 [install_skupper_in_your_namespaces_preamble]
+
 The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
@@ -71,6 +72,12 @@ in each namespace.
 
 **Note:** If you are using Minikube, [you need to start `minikube
 tunnel`][minikube-tunnel] before you install Skupper.
+
+[check_the_status_of_your_namespaces_preamble]
+
+Use `skupper status` in each console to check that Skupper is
+installed.  As you move through the steps below, you can use `skupper
+status` at any time to check your progress.
 
 [link_your_namespaces_preamble]
 
