@@ -275,11 +275,9 @@ def _generate_readme_step(skewer_data, step_data):
                 out.append("~~~")
 
                 if len(outputs) > 1:
-                    for run, output in outputs:
-                        out.append(f"$ {run}")
-                        out.append(output)
+                    out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
                 else:
-                    out.append(outputs[0][1])
+                    out.append(outputs[0][1].strip())
 
                 out.append("~~~")
                 out.append("")

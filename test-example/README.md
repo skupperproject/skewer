@@ -183,7 +183,6 @@ Sample output:
 Skupper is enabled for namespace "west" in interior mode. It is not connected to any other sites. It has no exposed services.
 The site console url is: http://10.98.13.241:8080
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
-
 ~~~
 
 
@@ -242,8 +241,8 @@ kubectl create deployment hello-world-backend --image quay.io/skupper/hello-worl
 
 ## Step 8: Expose the backend service
 
-We now have two namespaces linked, forming a Skupper network,
-but no services are exposed on it.  Skupper uses the `skupper
+We now have two namespaces linked to form a Skupper network, but
+no services are exposed on it.  Skupper uses the `skupper
 expose` command to select a service from one namespace for
 exposure on all the linked namespaces.
 
@@ -262,7 +261,6 @@ Sample output:
 ~~~
 NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
 hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
-
 ~~~
 
 
@@ -274,8 +272,8 @@ Before we can test the application, we need external access to
 the frontend.
 
 Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.  Use `kubectl get services` and
-to check for the service and its external IP address.
+access to the frontend service.  Use `kubectl get services` to
+check for the service and its external IP address.
 
 
 Console for _west_:
@@ -298,7 +296,6 @@ hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:307
 skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
 skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
 skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
-
 ~~~
 
 
@@ -317,13 +314,12 @@ Sample output:
 
 ~~~
 I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
-
 ~~~
 
 **Note:** If the embedded `kubectl get` command fails to get the
-IP, you can find it manually by running `kubectl get services`
-and looking up the external IP of the `hello-world-frontend`
-service.
+IP address, you can find it manually by running `kubectl get
+services` and looking up the external IP of the
+`hello-world-frontend` service.
 
 
 
