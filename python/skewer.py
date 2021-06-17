@@ -200,13 +200,13 @@ def generate_readme(skewer_file, output_file):
     if "overview" in skewer_data:
         out.append("## Overview")
         out.append("")
-        out.append(skewer_data["overview"])
+        out.append(skewer_data["overview"].strip())
         out.append("")
 
     if "prerequisites" in skewer_data:
         out.append("## Prerequisites")
         out.append("")
-        out.append(skewer_data["prerequisites"])
+        out.append(skewer_data["prerequisites"].strip())
         out.append("")
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
@@ -218,7 +218,7 @@ def generate_readme(skewer_file, output_file):
     if "summary" in skewer_data:
         out.append("## Summary")
         out.append("")
-        out.append(skewer_data["summary"])
+        out.append(skewer_data["summary"].strip())
         out.append("")
 
     if "cleaning_up" in skewer_data:
@@ -230,15 +230,15 @@ def generate_readme(skewer_file, output_file):
     if "next_steps" in skewer_data:
         out.append("## Next steps")
         out.append("")
-        out.append(skewer_data["next_steps"])
+        out.append(skewer_data["next_steps"].strip())
 
-    write(output_file, "\n".join(out))
+    write(output_file, "\n".join(out).strip() + "\n")
 
 def _generate_readme_step(skewer_data, step_data):
     out = list()
 
     if "preamble" in step_data:
-        out.append(step_data["preamble"])
+        out.append(step_data["preamble"].strip())
         out.append("")
 
     if "commands" in step_data:
@@ -283,10 +283,9 @@ def _generate_readme_step(skewer_data, step_data):
                 out.append("")
 
     if "postamble" in step_data:
-        out.append(step_data["postamble"])
-        out.append("")
+        out.append(step_data["postamble"].strip())
 
-    return "\n".join(out)
+    return "\n".join(out).strip()
 
 class _StringCatalog(dict):
     def __init__(self, path):

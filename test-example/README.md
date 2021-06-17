@@ -49,7 +49,6 @@ services without exposing the backend to the public internet.
 
 <img src="images/entities.svg" width="640"/>
 
-
 ## Prerequisites
 
 * The `kubectl` command-line tool, version 1.15 or later
@@ -97,7 +96,6 @@ Console for _east_:
 export KUBECONFIG=~/.kube/config-east
 ~~~
 
-
 ## Step 2: Log in to your clusters
 
 The methods for logging in vary by Kubernetes provider.  Find
@@ -111,7 +109,6 @@ the following links for more information:
 * [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#logging-in)
 * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#logging-in)
 * [OpenShift](https://skupper.io/start/openshift.html#logging-in)
-
 
 ## Step 3: Set up your namespaces
 
@@ -132,7 +129,6 @@ Console for _east_:
 kubectl create namespace east
 kubectl config set-context --current --namespace east
 ~~~
-
 
 ## Step 4: Install Skupper in your namespaces
 
@@ -163,8 +159,6 @@ minikube tunnels on one host.)  The `--ingress none` option is
 not required if your two namespaces are on different hosts or on
 public clusters.
 
-
-
 ## Step 5: Check the status of your namespaces
 
 Use `skupper status` in each console to check that Skupper is
@@ -184,7 +178,6 @@ Skupper is enabled for namespace "west" in interior mode. It is not connected to
 The site console url is: http://10.98.13.241:8080
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 ~~~
-
 
 ## Step 6: Link your namespaces
 
@@ -219,12 +212,10 @@ skupper link status --wait 30
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
 
-
 ## Step 7: Deploy the frontend and backend services
 
 Use `kubectl create deployment` to deploy the frontend service
 in `west` and the backend service in `east`.
-
 
 Console for _west_:
 
@@ -238,7 +229,6 @@ Console for _east_:
 kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
 ~~~
 
-
 ## Step 8: Expose the backend service
 
 We now have two namespaces linked to form a Skupper network, but
@@ -248,7 +238,6 @@ exposure on all the linked namespaces.
 
 Use `skupper expose` to expose the backend service to the
 frontend service.
-
 
 Console for _east_:
 
@@ -263,7 +252,6 @@ NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S) 
 hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
 ~~~
 
-
 ## Step 9: Expose the frontend service
 
 We have established connectivity between the two namespaces and
@@ -274,7 +262,6 @@ the frontend.
 Use `kubectl expose` with `--type LoadBalancer` to open network
 access to the frontend service.  Use `kubectl get services` to
 check for the service and its external IP address.
-
 
 Console for _west_:
 
@@ -298,11 +285,9 @@ skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32
 skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
 ~~~
 
-
 ## Step 10: Test the application
 
 Look up the external URL and use `curl` to send a request.
-
 
 Console for _west_:
 
@@ -320,8 +305,6 @@ I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-
 IP address, you can find it manually by running `kubectl get
 services` and looking up the external IP of the
 `hello-world-frontend` service.
-
-
 
 ## Summary
 
@@ -343,7 +326,6 @@ the frontend.
 
 <img src="images/sequence.svg" width="640"/>
 
-
 ## Cleaning up
 
 To remove Skupper and the other resources from this exercise, use the
@@ -363,7 +345,6 @@ Console for _east_:
 skupper delete
 kubectl delete deployment/hello-world-backend
 ~~~
-
 
 ## Next steps
 
