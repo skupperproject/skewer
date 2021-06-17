@@ -21,9 +21,10 @@ across cloud providers, data centers, and edge sites.
 * [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
 * [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
 * [Step 6: Link your namespaces](#step-6-link-your-namespaces)
-* [Step 7: Deploy the backend and frontend services](#step-7-deploy-the-backend-and-frontend-services)
-* [Step 8: Expose your services](#step-8-expose-your-services)
-* [Step 9: Test your application](#step-9-test-your-application)
+* [Step 7: Deploy the frontend and backend services](#step-7-deploy-the-frontend-and-backend-services)
+* [Step 8: Expose the backend service](#step-8-expose-the-backend-service)
+* [Step 9: Expose the frontend service](#step-9-expose-the-frontend-service)
+* [Step 10: Test the application](#step-10-test-the-application)
 * [Summary](#summary)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
@@ -47,6 +48,7 @@ frontend in another and maintain connectivity between the two
 services without exposing the backend to the public internet.
 
 <img src="images/entities.svg" width="640"/>
+
 
 ## Prerequisites
 
@@ -162,6 +164,7 @@ not required if your two namespaces are on different hosts or on
 public clusters.
 
 
+
 ## Step 5: Check the status of your namespaces
 
 Use `skupper status` in each console to check that Skupper is
@@ -180,6 +183,7 @@ Sample output:
 Skupper is enabled for namespace "west" in interior mode. It is not connected to any other sites. It has no exposed services.
 The site console url is: http://10.98.13.241:8080
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+
 ~~~
 
 
@@ -217,9 +221,11 @@ If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
 
 
-## Step 7: Deploy the backend and frontend services
+## Step 7: Deploy the frontend and backend services
 
-Use `kubectl create deployment` to deploy the services.
+Use `kubectl create deployment` to deploy the frontend service
+in `west` and the backend service in `east`.
+
 
 Console for _west_:
 
@@ -234,13 +240,16 @@ kubectl create deployment hello-world-backend --image quay.io/skupper/hello-worl
 ~~~
 
 
-## Step 8: Expose your services
+## Step 8: Expose the backend service
 
-Console for _west_:
+We now have two namespaces linked, forming a Skupper network,
+but no services are exposed on it.  Skupper uses the `skupper
+expose` command to select a service from one namespace for
+exposure on all the linked namespaces.
 
-~~~ shell
-kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-~~~
+Use `skupper expose` to expose the backend service to the
+frontend service.
+
 
 Console for _east_:
 
@@ -248,8 +257,55 @@ Console for _east_:
 skupper expose deployment/hello-world-backend --port 8080
 ~~~
 
+Sample output:
 
-## Step 9: Test your application
+~~~
+NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
+hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
+
+~~~
+
+
+## Step 9: Expose the frontend service
+
+We have established connectivity between the two namespaces and
+made the backend in `east` available to the frontend in `west`.
+Before we can test the application, we need external access to
+the frontend.
+
+Use `kubectl expose` with `--type LoadBalancer` to open network
+access to the frontend service.  Use `kubectl get services` and
+to check for the service and its external IP address.
+
+
+Console for _west_:
+
+~~~ shell
+kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
+kubectl get services
+~~~
+
+Sample output:
+
+~~~
+$ kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
+service/hello-world-frontend exposed
+
+$ kubectl get services
+NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
+hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
+hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
+skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
+skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
+skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
+
+~~~
+
+
+## Step 10: Test the application
+
+Look up the external URL and use `curl` to send a request.
+
 
 Console for _west_:
 
@@ -261,7 +317,14 @@ Sample output:
 
 ~~~
 I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
+
 ~~~
+
+**Note:** If the embedded `kubectl get` command fails to get the
+IP, you can find it manually by running `kubectl get services`
+and looking up the external IP of the `hello-world-frontend`
+service.
+
 
 
 ## Summary
@@ -283,6 +346,7 @@ namespace where the backend is running and routes the response back to
 the frontend.
 
 <img src="images/sequence.svg" width="640"/>
+
 
 ## Cleaning up
 
