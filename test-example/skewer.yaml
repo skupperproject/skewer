@@ -91,8 +91,8 @@ steps:
           await: [deployment/hello-world-backend]
   - title: Expose the backend service
     preamble: |
-      We now have two namespaces linked, forming a Skupper network,
-      but no services are exposed on it.  Skupper uses the `skupper
+      We now have two namespaces linked to form a Skupper network, but
+      no services are exposed on it.  Skupper uses the `skupper
       expose` command to select a service from one namespace for
       exposure on all the linked namespaces.
 
@@ -113,8 +113,8 @@ steps:
       the frontend.
 
       Use `kubectl expose` with `--type LoadBalancer` to open network
-      access to the frontend service.  Use `kubectl get services` and
-      to check for the service and its external IP address.
+      access to the frontend service.  Use `kubectl get services` to
+      check for the service and its external IP address.
     commands:
       west:
         - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
@@ -139,9 +139,9 @@ steps:
             I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
     postamble: |
       **Note:** If the embedded `kubectl get` command fails to get the
-      IP, you can find it manually by running `kubectl get services`
-      and looking up the external IP of the `hello-world-frontend`
-      service.
+      IP address, you can find it manually by running `kubectl get
+      services` and looking up the external IP of the
+      `hello-world-frontend` service.
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they
