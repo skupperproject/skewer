@@ -116,7 +116,15 @@ def _run_step(work_dir, skewer_data, step_data):
     if "commands" not in step_data:
         return
 
-    for context_name, commands in step_data["commands"].items():
+    try:
+        items = step_data["commands"].items()
+    except AttributeError:
+        items = list()
+
+        for context_name in skewer_data["contexts"]:
+            items.append((context_name, step_data["commands"]))
+
+    for context_name, commands in items:
         kubeconfig = skewer_data["contexts"][context_name]["kubeconfig"].replace("~", work_dir)
 
         with working_env(KUBECONFIG=kubeconfig):
@@ -227,26 +235,55 @@ def _generate_readme_step(skewer_data, step_data):
     out = list()
 
     if "preamble" in step_data:
-        out.append("")
         out.append(step_data["preamble"])
+        out.append("")
 
     if "commands" in step_data:
-        for context_name, commands in step_data["commands"].items():
-            namespace = skewer_data["contexts"][context_name]["namespace"]
+        try:
+            items = step_data["commands"].items()
+        except AttributeError:
+            items = ((None, step_data["commands"]),)
 
-            out.append("")
-            out.append(f"Console for _{namespace}_:")
-            out.append("")
+        for context_name, commands in items:
+            outputs = list()
+
+            if context_name:
+                namespace = skewer_data["contexts"][context_name]["namespace"]
+                out.append(f"Console for _{namespace}_:")
+                out.append("")
+            else:
+                out.append("Console:")
+                out.append("")
+
             out.append("~~~ shell")
 
             for command in commands:
                 out.append(command["run"])
 
+                if "output" in command:
+                    outputs.append((command["run"], command["output"]))
+
             out.append("~~~")
+            out.append("")
+
+            if outputs:
+                out.append("Sample output:")
+                out.append("")
+                out.append("~~~ shell")
+
+                if len(outputs) > 1:
+                    for run, output in outputs:
+                        out.append(f"$ {run}")
+                        out.append(output)
+                else:
+                    out.append(outputs[0][1])
+
+                out.append("~~~")
+                out.append("")
 
     if "postamble" in step_data:
-        out.append("")
         out.append(step_data["postamble"])
+        out.append("")
 
     return "\n".join(out)
 

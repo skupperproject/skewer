@@ -86,6 +86,14 @@ token to create a link to the namespace that generated it.
 token can link to your namespace.  Make sure that only those you trust
 have access to it.
 
+First, use `skupper token create` in one namespace to generate the
+token.  Then, use `skupper link create` in the other to create a link.
+
+[link_your_namespaces_postamble]
+
+If your console sessions are on different machines, you may need to
+use `scp` or a similar tool to transfer the token.
+
 [cleaning_up_preamble]
 
 To remove Skupper and the other resources from this exercise, use the

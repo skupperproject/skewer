@@ -1,6 +1,6 @@
 # Skupper Hello World
 
-[![main](https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml)
+[![main](https://github.com/skupperproject/skewer/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skewer/actions/workflows/main.yaml)
 
 #### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
@@ -19,10 +19,11 @@ across cloud providers, data centers, and edge sites.
 * [Step 2: Log in to your clusters](#step-2-log-in-to-your-clusters)
 * [Step 3: Set up your namespaces](#step-3-set-up-your-namespaces)
 * [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
-* [Step 5: Link your namespaces](#step-5-link-your-namespaces)
-* [Step 6: Deploy your services](#step-6-deploy-your-services)
-* [Step 7: Expose your services](#step-7-expose-your-services)
-* [Step 8: Test your application](#step-8-test-your-application)
+* [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
+* [Step 6: Link your namespaces](#step-6-link-your-namespaces)
+* [Step 7: Deploy the backend and frontend services](#step-7-deploy-the-backend-and-frontend-services)
+* [Step 8: Expose your services](#step-8-expose-your-services)
+* [Step 9: Test your application](#step-9-test-your-application)
 * [Summary](#summary)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
@@ -55,14 +56,13 @@ services without exposing the backend to the public internet.
 * The `skupper` command-line tool, the latest version ([installation
   guide][install-skupper])
 
-* Access to two Kubernetes namespaces, from any providers you
-  choose, on any clusters you choose
+* Access to two Kubernetes namespaces, from any providers you choose,
+  on any clusters you choose
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [install-skupper]: https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment
 
 ## Step 1: Configure separate console sessions
-
 
 Skupper is designed for use with multiple namespaces, typically on
 different clusters.  The `skupper` command uses your
@@ -95,8 +95,8 @@ Console for _east_:
 export KUBECONFIG=~/.kube/config-east
 ~~~
 
-## Step 2: Log in to your clusters
 
+## Step 2: Log in to your clusters
 
 The methods for logging in vary by Kubernetes provider.  Find
 the instructions for your chosen providers and use them to
@@ -110,8 +110,8 @@ the following links for more information:
 * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#logging-in)
 * [OpenShift](https://skupper.io/start/openshift.html#logging-in)
 
-## Step 3: Set up your namespaces
 
+## Step 3: Set up your namespaces
 
 Use `kubectl create namespace` to create the namespaces you wish to
 use (or use existing namespaces).  Use `kubectl config set-context` to
@@ -131,8 +131,8 @@ kubectl create namespace east
 kubectl config set-context --current --namespace east
 ~~~
 
-## Step 4: Install Skupper in your namespaces
 
+## Step 4: Install Skupper in your namespaces
 
 The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
@@ -155,8 +155,37 @@ Console for _east_:
 skupper init --ingress none
 ~~~
 
-## Step 5: Link your namespaces
+Here we are using `--ingress none` in `east` simply to make
+local development with Minikube easier.  (It's tricky to run two
+minikube tunnels on one host.)  The `--ingress none` option is
+not required if your two namespaces are on different hosts or on
+public clusters.
 
+
+## Step 5: Check the status of your namespaces
+
+Use `skupper status` in each console to check that Skupper is
+installed:
+
+Console:
+
+~~~ shell
+skupper status
+~~~
+
+Sample output:
+
+~~~ shell
+Skupper is enabled for namespace "west" in interior mode. It is not connected to any other sites. It has no exposed services.
+The site console url is: http://10.98.13.241:8080
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+~~~
+
+As you move through the steps below, you can use `skupper status` at
+any time to check your progress.
+
+
+## Step 6: Link your namespaces
 
 Creating a link requires use of two `skupper` commands in conjunction,
 `skupper token create` and `skupper link create`.
@@ -169,6 +198,9 @@ token to create a link to the namespace that generated it.
 **Note:** The link token is truly a *secret*.  Anyone who has the
 token can link to your namespace.  Make sure that only those you trust
 have access to it.
+
+First, use `skupper token create` in one namespace to generate the
+token.  Then, use `skupper link create` in the other to create a link.
 
 Console for _west_:
 
@@ -183,8 +215,13 @@ skupper link create ~/west.token
 skupper link status --wait 30
 ~~~
 
-## Step 6: Deploy your services
+If your console sessions are on different machines, you may need to
+use `scp` or a similar tool to transfer the token.
 
+
+## Step 7: Deploy the backend and frontend services
+
+Use `kubectl create deployment` to deploy the services.
 
 Console for _west_:
 
@@ -198,8 +235,8 @@ Console for _east_:
 kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
 ~~~
 
-## Step 7: Expose your services
 
+## Step 8: Expose your services
 
 Console for _west_:
 
@@ -213,14 +250,21 @@ Console for _east_:
 skupper expose deployment/hello-world-backend --port 8080
 ~~~
 
-## Step 8: Test your application
 
+## Step 9: Test your application
 
 Console for _west_:
 
 ~~~ shell
 curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
 ~~~
+
+Sample output:
+
+~~~ shell
+I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
+~~~
+
 
 ## Summary
 
@@ -244,7 +288,6 @@ the frontend.
 
 ## Cleaning up
 
-
 To remove Skupper and the other resources from this exercise, use the
 following commands.
 
@@ -262,6 +305,7 @@ Console for _east_:
 skupper delete
 kubectl delete deployment/hello-world-backend
 ~~~
+
 
 ## Next steps
 
