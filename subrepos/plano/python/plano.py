@@ -1564,6 +1564,32 @@ class Namespace(object):
     def __repr__(self):
         return format_repr(self)
 
+## YAML operations
+
+def read_yaml(file):
+    import yaml as _yaml
+
+    with _codecs.open(file, encoding="utf-8", mode="r") as f:
+        return _yaml.safe_load(f)
+
+def write_yaml(file, data):
+    import yaml as _yaml
+
+    make_parent_dir(file, quiet=True)
+
+    with _codecs.open(file, encoding="utf-8", mode="w") as f:
+        _yaml.safe_dump(data, f)
+
+    return file
+
+def parse_yaml(yaml):
+    import yaml as _yaml
+    return _yaml.safe_load(yaml)
+
+def emit_yaml(data):
+    import yaml as _yaml
+    return _yaml.safe_dump(data)
+
 ## Test operations
 
 def test(_function=None, name=None, timeout=None, disabled=False):
