@@ -12,7 +12,8 @@ jobs:
           kubernetes version: 'v1.21.2'
           github token: ${{ secrets.GITHUB_TOKEN }}
       - run: mkdir -p "$HOME/.local/bin"
-      - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - run: echo "SKUPPER_URL=$(curl -sL https://api.github.com/repos/skupperproject/skupper/releases/latest | jq -r '.assets[] | select(.browser_download_url | contains("linux-amd64")) | .browser_download_url')" >> $GITHUB_ENV
-      - run: curl -fL $SKUPPER_URL | tar -C "$HOME/.local/bin" -xzf -
+      - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - run: echo "Skupper CLI artifact URL: $SKUPPER_URL"
+      - run: curl -sL $SKUPPER_URL | tar -C "$HOME/.local/bin" -xzf -
       - run: ./plano test
