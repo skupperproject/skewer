@@ -44,10 +44,10 @@ session.
 
 [set_up_your_clusters_preamble]
 
-The methods for logging in vary by Kubernetes provider.  Find
-the instructions for your chosen providers and use them to
-authenticate and configure access for each console session.  See
-the following links for more information:
+The methods for accessing your clusters vary by Kubernetes provider.
+Find the instructions for your chosen providers and use them to
+authenticate and configure access for each console session.  See the
+following links for more information:
 
 * [Minikube](https://skupper.io/start/minikube.html#logging-in)
 * [Amazon Elastic Kubernetes Service (EKS)](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html)
@@ -77,7 +77,7 @@ tunnel`][minikube-tunnel] before you install Skupper.
 
 Here we are using `--ingress none` in one of the namespaces simply to
 make local development with Minikube easier.  (It's tricky to run two
-minikube tunnels on one host.)  The `--ingress none` option is not
+Minikube tunnels on one host.)  The `--ingress none` option is not
 required if your two namespaces are on different hosts or on public
 clusters.
 
