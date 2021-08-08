@@ -170,24 +170,27 @@ def run_steps_on_minikube(skewer_file):
     _apply_standard_steps(skewer_data)
 
     work_dir = make_temp_dir()
+    profiles = list()
 
     try:
-        run("minikube -p skewer start")
-
-        contexts = skewer_data["contexts"]
-
-        for name, value in contexts.items():
+        for name, value in skewer_data["contexts"].items():
+            profile = f"skewer-{name}"
             kubeconfig = value["kubeconfig"].replace("~", work_dir)
 
+            run(f"minikube -p {profile} start")
+
             with working_env(KUBECONFIG=kubeconfig):
-                run("minikube -p skewer update-context")
+                run(f"minikube -p {profile} update-context")
                 check_file(ENV["KUBECONFIG"])
 
+            profiles.append(profile)
+
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
-            with start("minikube -p skewer tunnel", output=tunnel_output_file):
+            with start(f"minikube -p {profiles[0]} tunnel", output=tunnel_output_file):
                 _run_steps(work_dir, skewer_data)
     finally:
-        run("minikube -p skewer delete")
+        for profile in profiles:
+            run(f"minikube -p {profile} delete")
 
 def run_steps_external(skewer_file, **kubeconfigs):
     with open(skewer_file) as file:

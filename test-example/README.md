@@ -194,8 +194,9 @@ Creating a link requires use of two `skupper` commands in conjunction,
 
 The `skupper token create` command generates a secret token that
 signifies permission to create a link.  The token also carries the
-link details.  The `skupper link create` command then uses the link
-token to create a link to the namespace that generated it.
+link details.  Then, in a remote namespace, The `skupper link create`
+command uses the token to create a link to the namespace that
+generated it.
 
 **Note:** The link token is truly a *secret*.  Anyone who has the
 token can link to your namespace.  Make sure that only those you trust
