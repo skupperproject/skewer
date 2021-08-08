@@ -21,6 +21,101 @@ from plano import *
 
 import yaml as _yaml
 
+class _StringCatalog(dict):
+    def __init__(self, path):
+        super(_StringCatalog, self).__init__()
+
+        self.path = "{0}.strings".format(split_extension(path)[0])
+
+        check_file(self.path)
+
+        key = None
+        out = list()
+
+        for line in read_lines(self.path):
+            line = line.rstrip()
+
+            if line.startswith("[") and line.endswith("]"):
+                if key:
+                    self[key] = "".join(out).strip()
+
+                out = list()
+                key = line[1:-1]
+
+                continue
+
+            out.append(line)
+            out.append("\n")
+
+        self[key] = "".join(out).strip()
+
+    def __repr__(self):
+        return format_repr(self)
+
+_strings = _StringCatalog(__file__)
+
+_standard_steps = {
+    "configure_separate_console_sessions": {
+        "title": "Configure separate console sessions",
+        "preamble": _strings["configure_separate_console_sessions_preamble"],
+        "commands": [
+            [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
+            [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
+        ],
+    },
+    "set_up_your_clusters": {
+        "title": "Set up your clusters",
+        "preamble": _strings["set_up_your_clusters_preamble"],
+    },
+    "set_up_your_namespaces": {
+        "title": "Set up your namespaces",
+        "preamble": _strings["set_up_your_namespaces_preamble"],
+        "commands": [
+            [
+                {"run": "kubectl create namespace @namespace@"},
+                {"run": "kubectl config set-context --current --namespace @namespace@"},
+            ],
+            [
+                {"run": "kubectl create namespace @namespace@"},
+                {"run": "kubectl config set-context --current --namespace @namespace@"},
+            ],
+        ],
+    },
+    "install_skupper_in_your_namespaces": {
+        "title": "Install Skupper in your namespaces",
+        "preamble": _strings["install_skupper_in_your_namespaces_preamble"],
+        "commands": [
+            [{
+                "run": "skupper init",
+                "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
+            }],
+            [{
+                "run": "skupper init --ingress none",
+                "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
+            }],
+        ],
+        "postamble": _strings["install_skupper_in_your_namespaces_postamble"],
+    },
+    "check_the_status_of_your_namespaces": {
+        "title": "Check the status of your namespaces",
+        "preamble": _strings["check_the_status_of_your_namespaces_preamble"],
+        "commands": [
+            [{
+                "run": "skupper status",
+            }],
+            [{
+                "run": "skupper status",
+            }],
+        ],
+        "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
+    },
+}
+
+def _string_loader(loader, node):
+    return _strings[node.value]
+
+_yaml.SafeLoader.add_constructor("!string", _string_loader)
+
 def check_environment():
     check_program("kubectl")
     check_program("skupper")
@@ -72,6 +167,8 @@ def run_steps_on_minikube(skewer_file):
     with open(skewer_file) as file:
         skewer_data = _yaml.safe_load(file)
 
+    _apply_standard_steps(skewer_data)
+
     work_dir = make_temp_dir()
 
     try:
@@ -95,6 +192,8 @@ def run_steps_on_minikube(skewer_file):
 def run_steps_external(skewer_file, **kubeconfigs):
     with open(skewer_file) as file:
         skewer_data = _yaml.safe_load(file)
+
+    _apply_standard_steps(skewer_data)
 
     work_dir = make_temp_dir()
 
@@ -175,6 +274,8 @@ def generate_readme(skewer_file, output_file):
 
     if "prerequisites" in skewer_data:
         out.append("* [Prerequisites](#prerequisites)")
+
+    _apply_standard_steps(skewer_data)
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
         title = f"Step {i}: {step_data['title']}"
@@ -287,40 +388,32 @@ def _generate_readme_step(skewer_data, step_data):
 
     return "\n".join(out).strip()
 
-class _StringCatalog(dict):
-    def __init__(self, path):
-        super(_StringCatalog, self).__init__()
+def _apply_standard_steps(skewer_data):
+    for step_data in skewer_data["steps"]:
+        if "standard" not in step_data:
+            continue
 
-        self.path = "{0}.strings".format(split_extension(path)[0])
+        standard_step_data = _standard_steps[step_data["standard"]]
 
-        check_file(self.path)
+        step_data["title"] = standard_step_data["title"]
 
-        key = None
-        out = list()
+        if "preamble" in standard_step_data:
+            step_data["preamble"] = standard_step_data["preamble"]
 
-        for line in read_lines(self.path):
-            line = line.rstrip()
+        if "postamble" in standard_step_data:
+            step_data["postamble"] = standard_step_data["postamble"]
 
-            if line.startswith("[") and line.endswith("]"):
-                if key:
-                    self[key] = "".join(out).strip()
+        if "commands" in standard_step_data:
+            step_data["commands"] = dict()
 
-                out = list()
-                key = line[1:-1]
+            for i, item  in enumerate(skewer_data["contexts"].items()):
+                namespace, context_data = item
+                resolved_commands = list()
 
-                continue
+                for command in standard_step_data["commands"][i]:
+                    resolved_command = dict(command)
+                    resolved_command["run"] = command["run"].replace("@namespace@", namespace)
 
-            out.append(line)
-            out.append("\n")
+                    resolved_commands.append(resolved_command)
 
-        self[key] = "".join(out).strip()
-
-    def __repr__(self):
-        return format_repr(self)
-
-_strings = _StringCatalog(__file__)
-
-def _string_loader(loader, node):
-    return _strings[node.value]
-
-_yaml.SafeLoader.add_constructor("!string", _string_loader)
+                step_data["commands"][namespace] = resolved_commands

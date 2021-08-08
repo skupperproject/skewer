@@ -16,7 +16,7 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Configure separate console sessions](#step-1-configure-separate-console-sessions)
-* [Step 2: Log in to your clusters](#step-2-log-in-to-your-clusters)
+* [Step 2: Set up your clusters](#step-2-set-up-your-clusters)
 * [Step 3: Set up your namespaces](#step-3-set-up-your-namespaces)
 * [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
 * [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
@@ -96,7 +96,7 @@ Console for _east_:
 export KUBECONFIG=~/.kube/config-east
 ~~~
 
-## Step 2: Log in to your clusters
+## Step 2: Set up your clusters
 
 The methods for logging in vary by Kubernetes provider.  Find
 the instructions for your chosen providers and use them to
@@ -153,31 +153,39 @@ Console for _east_:
 skupper init --ingress none
 ~~~
 
-Here we are using `--ingress none` in `east` simply to make
-local development with Minikube easier.  (It's tricky to run two
-minikube tunnels on one host.)  The `--ingress none` option is
-not required if your two namespaces are on different hosts or on
-public clusters.
+Here we are using `--ingress none` in one of the namespaces simply to
+make local development with Minikube easier.  (It's tricky to run two
+minikube tunnels on one host.)  The `--ingress none` option is not
+required if your two namespaces are on different hosts or on public
+clusters.
 
 ## Step 5: Check the status of your namespaces
 
 Use `skupper status` in each console to check that Skupper is
-installed.  As you move through the steps below, you can use `skupper
-status` at any time to check your progress.
+installed.
 
-Console:
+Console for _west_:
 
 ~~~ shell
 skupper status
 ~~~
 
-Sample output:
+Console for _east_:
+
+~~~ shell
+skupper status
+~~~
+
+You should see output like this for each namespace:
 
 ~~~
-Skupper is enabled for namespace "west" in interior mode. It is not connected to any other sites. It has no exposed services.
-The site console url is: http://10.98.13.241:8080
+Skupper is enabled for namespace "<namespace>" in interior mode. It is not connected to any other sites. It has no exposed services.
+The site console url is: http://<address>:8080
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 ~~~
+
+As you move through the steps below, you can use `skupper status` at
+any time to check your progress.
 
 ## Step 6: Link your namespaces
 
