@@ -63,9 +63,9 @@ _standard_steps = {
             [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
         ],
     },
-    "set_up_your_clusters": {
-        "title": "Set up your clusters",
-        "preamble": _strings["set_up_your_clusters_preamble"],
+    "access_your_clusters": {
+        "title": "Access your clusters",
+        "preamble": _strings["access_your_clusters_preamble"],
     },
     "set_up_your_namespaces": {
         "title": "Set up your namespaces",

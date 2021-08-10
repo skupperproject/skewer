@@ -16,7 +16,7 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Configure separate console sessions](#step-1-configure-separate-console-sessions)
-* [Step 2: Set up your clusters](#step-2-set-up-your-clusters)
+* [Step 2: Access your clusters](#step-2-access-your-clusters)
 * [Step 3: Set up your namespaces](#step-3-set-up-your-namespaces)
 * [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
 * [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
@@ -61,7 +61,7 @@ services without exposing the backend to the public internet.
   on any clusters you choose
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[install-skupper]: https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment
+[install-skupper]: https://skupper.io/install/index.html
 
 ## Step 1: Configure separate console sessions
 
@@ -96,19 +96,20 @@ Console for _east_:
 export KUBECONFIG=~/.kube/config-east
 ~~~
 
-## Step 2: Set up your clusters
+## Step 2: Access your clusters
 
-The methods for logging in vary by Kubernetes provider.  Find
-the instructions for your chosen providers and use them to
-authenticate and configure access for each console session.  See
-the following links for more information:
+The methods for accessing your clusters vary by Kubernetes provider.
+Find the instructions for your chosen providers and use them to
+authenticate and configure access for each console session.  See the
+following links for more information:
 
-* [Minikube](https://skupper.io/start/minikube.html#logging-in)
-* [Amazon Elastic Kubernetes Service (EKS)](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html)
-* [Azure Kubernetes Service (AKS)](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster)
-* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#logging-in)
-* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#logging-in)
-* [OpenShift](https://skupper.io/start/openshift.html#logging-in)
+* [Minikube](https://skupper.io/start/minikube.html)
+* [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
+* [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html)
+* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html)
+* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html)
+* [OpenShift](https://skupper.io/start/openshift.html)
+* [More providers](https://kubernetes.io/partners/#kcsp)
 
 ## Step 3: Set up your namespaces
 
@@ -155,7 +156,7 @@ skupper init --ingress none
 
 Here we are using `--ingress none` in one of the namespaces simply to
 make local development with Minikube easier.  (It's tricky to run two
-minikube tunnels on one host.)  The `--ingress none` option is not
+Minikube tunnels on one host.)  The `--ingress none` option is not
 required if your two namespaces are on different hosts or on public
 clusters.
 

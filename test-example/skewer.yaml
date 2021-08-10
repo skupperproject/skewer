@@ -29,7 +29,7 @@ contexts:
     namespace: east
 steps:
   - standard: configure_separate_console_sessions
-  - standard: set_up_your_clusters
+  - standard: access_your_clusters
   - standard: set_up_your_namespaces
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces

@@ -19,7 +19,7 @@ across cloud providers, data centers, and edge sites.
   on any clusters you choose
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[install-skupper]: https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment
+[install-skupper]: https://skupper.io/install/index.html
 
 [configure_separate_console_sessions_preamble]
 
@@ -42,19 +42,20 @@ Start a console session for each of your namespaces.  Set the
 `KUBECONFIG` environment variable to a different path in each
 session.
 
-[set_up_your_clusters_preamble]
+[access_your_clusters_preamble]
 
 The methods for accessing your clusters vary by Kubernetes provider.
 Find the instructions for your chosen providers and use them to
 authenticate and configure access for each console session.  See the
 following links for more information:
 
-* [Minikube](https://skupper.io/start/minikube.html#logging-in)
-* [Amazon Elastic Kubernetes Service (EKS)](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html)
-* [Azure Kubernetes Service (AKS)](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster)
-* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#logging-in)
-* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#logging-in)
-* [OpenShift](https://skupper.io/start/openshift.html#logging-in)
+* [Minikube](https://skupper.io/start/minikube.html)
+* [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
+* [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html)
+* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html)
+* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html)
+* [OpenShift](https://skupper.io/start/openshift.html)
+* [More providers](https://kubernetes.io/partners/#kcsp)
 
 [set_up_your_namespaces_preamble]
 
