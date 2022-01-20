@@ -59,8 +59,7 @@ _standard_steps = {
         "title": "Configure separate console sessions",
         "preamble": _strings["configure_separate_console_sessions_preamble"],
         "commands": [
-            [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
-            [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
+            {"run": "export KUBECONFIG=~/.kube/config-@namespace@"}
         ],
     },
     "access_your_clusters": {
@@ -71,28 +70,18 @@ _standard_steps = {
         "title": "Set up your namespaces",
         "preamble": _strings["set_up_your_namespaces_preamble"],
         "commands": [
-            [
-                {"run": "kubectl create namespace @namespace@"},
-                {"run": "kubectl config set-context --current --namespace @namespace@"},
-            ],
-            [
-                {"run": "kubectl create namespace @namespace@"},
-                {"run": "kubectl config set-context --current --namespace @namespace@"},
-            ],
+            {"run": "kubectl create namespace @namespace@"},
+            {"run": "kubectl config set-context --current --namespace @namespace@"},
         ],
     },
     "install_skupper_in_your_namespaces": {
         "title": "Install Skupper in your namespaces",
         "preamble": _strings["install_skupper_in_your_namespaces_preamble"],
         "commands": [
-            [{
+            {
                 "run": "skupper init",
                 "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
-            }],
-            [{
-                "run": "skupper init --ingress none",
-                "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
-            }],
+            }
         ],
         "postamble": _strings["install_skupper_in_your_namespaces_postamble"],
     },
@@ -100,12 +89,9 @@ _standard_steps = {
         "title": "Check the status of your namespaces",
         "preamble": _strings["check_the_status_of_your_namespaces_preamble"],
         "commands": [
-            [{
+            {
                 "run": "skupper status",
-            }],
-            [{
-                "run": "skupper status",
-            }],
+            }
         ],
         "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
     },
@@ -404,11 +390,10 @@ def _apply_standard_steps(skewer_data):
         if "commands" in standard_step_data:
             step_data["commands"] = dict()
 
-            for i, item  in enumerate(skewer_data["contexts"].items()):
-                namespace, context_data = item
+            for namespace, context_data in skewer_data["contexts"].items():
                 resolved_commands = list()
 
-                for command in standard_step_data["commands"][i]:
+                for command in standard_step_data["commands"]:
                     resolved_command = dict(command)
                     resolved_command["run"] = command["run"].replace("@namespace@", namespace)
 
