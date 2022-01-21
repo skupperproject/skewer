@@ -199,7 +199,8 @@ def _run_step(work_dir, skewer_data, step_data):
     if "commands" not in step_data:
         return
 
-    notice("Running step '{}'", step_data["title"])
+    if "title" in step_data:
+        notice("Running step '{}'", step_data["title"])
 
     try:
         items = step_data["commands"].items()
