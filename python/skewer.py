@@ -160,7 +160,7 @@ def run_steps_on_minikube(skewer_file):
     try:
         run(f"minikube -p skewer start")
 
-        for name, value in skewer_data["contexts"].items():
+        for name, value in skewer_data["sites"].items():
             kubeconfig = value["kubeconfig"].replace("~", work_dir)
 
             with working_env(KUBECONFIG=kubeconfig):
@@ -182,12 +182,12 @@ def run_steps_external(skewer_file, **kubeconfigs):
     work_dir = make_temp_dir()
 
     for name, kubeconfig in kubeconfigs.items():
-        skewer_data["contexts"][name]["kubeconfig"] = kubeconfig
+        skewer_data["sites"][name]["kubeconfig"] = kubeconfig
 
     _run_steps(work_dir, skewer_data)
 
 def _run_steps(work_dir, skewer_data):
-    contexts = skewer_data["contexts"]
+    sites = skewer_data["sites"]
 
     for step_data in skewer_data["steps"]:
         _run_step(work_dir, skewer_data, step_data)
@@ -199,19 +199,18 @@ def _run_step(work_dir, skewer_data, step_data):
     if "commands" not in step_data:
         return
 
-    if "title" in step_data:
-        notice("Running step '{}'", step_data["title"])
+    notice("Running step '{}'", step_data["title"])
 
     try:
         items = step_data["commands"].items()
     except AttributeError:
         items = list()
 
-        for context_name in skewer_data["contexts"]:
+        for context_name in skewer_data["sites"]:
             items.append((context_name, step_data["commands"]))
 
     for context_name, commands in items:
-        kubeconfig = skewer_data["contexts"][context_name]["kubeconfig"].replace("~", work_dir)
+        kubeconfig = skewer_data["sites"][context_name]["kubeconfig"].replace("~", work_dir)
 
         with working_env(KUBECONFIG=kubeconfig):
             for command in commands:
@@ -336,7 +335,7 @@ def _generate_readme_step(skewer_data, step_data):
             outputs = list()
 
             if context_name:
-                namespace = skewer_data["contexts"][context_name]["namespace"]
+                namespace = skewer_data["sites"][context_name]["namespace"]
                 out.append(f"Console for _{namespace}_:")
                 out.append("")
             else:
@@ -390,7 +389,7 @@ def _apply_standard_steps(skewer_data):
         if "commands" in standard_step_data:
             step_data["commands"] = dict()
 
-            for namespace, context_data in skewer_data["contexts"].items():
+            for namespace, context_data in skewer_data["sites"].items():
                 resolved_commands = list()
 
                 for command in standard_step_data["commands"]:
