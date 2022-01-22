@@ -41,7 +41,7 @@ Use your editor to create a `skewer.yaml` file:
      emacs skewer.yaml
 
 Run the `./plano` command to see what you can do: generate the
-README.md and test your example.
+README and test your example.
 
      ./plano
 
@@ -88,6 +88,15 @@ A site:
 <site-name>:
   kubeconfig: <kubeconfig-file>  # (required)
   namespace: <namespace-name>    # (required)
+~~~
+
+An example site:
+
+~~~ yaml
+sites:
+  east:
+    kubeconfig: ~/.kube/config-east
+    namespace: east
 ~~~
 
 A step:
@@ -159,4 +168,12 @@ steps:
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
   [...]
+~~~
+
+Skewer has boilerplate strings for a lot of cases.  You can see what's
+there in the `skewer.strings` file.  To include a string, use the
+`!string` directive.
+
+~~~ yaml
+next_steps: !string next_steps
 ~~~
