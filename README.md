@@ -4,6 +4,10 @@
 
 A library for documenting and testing Skupper examples
 
+A `skewer.yaml` file describes the steps and commands to achieve an
+objective using Skupper.  Skewer takes the `skewer.yaml` file as input
+and produces a `README.md` file and a test routine as output.
+
 ## An example example
 
 [Example `skewer.yaml` file](test-example/skewer.yaml)
@@ -29,8 +33,8 @@ Symlink the Skewer libraries into your `python` directory:
 Symlink the `plano` command into the root of your project.  Copy the
 example `Planofile` there as well:
 
-    ln -s subrepos/skewer/subrepos/plano/bin/plano
-    cp subrepos/skewer/test-example/Planofile Planofile
+    ln -s subrepos/skewer/plano
+    cp subrepos/skewer/test-example/Planofile .
 
 Use your editor to create a `skewer.yaml` file:
 
@@ -69,13 +73,13 @@ The top level:
 title:               # Your example's title (required)
 subtitle:            # Your chosen subtitle (required)
 github_actions_url:  # The URL of your workflow (optional)
-overview:            # A block of Markdown text introducing your example (optional)
-prerequisites: !string prerequisites
-sites:               # A map of named sites.  See!
-steps:               # A list of steps.  See!
-summary:             # A block of Markdown to summarize what the user did (optional)
-cleaning_up:
-next_steps:
+overview:            # Text introducing your example (optional)
+prerequisites:       # Text describing prerequisites (optional)
+sites:               # A map of named sites.  See below.
+steps:               # A list of steps.  See below.
+summary:             # Text to summarize what the user did (optional)
+cleaning_up:         # A special step for cleaning up (optional)
+next_steps:          # Text linking to more examples (optional)
 ~~~
 
 A site:
@@ -89,15 +93,28 @@ A site:
 A step:
 
 ~~~ yaml
-title:      # (required)
-preamble:   # (optional)
-commands:   # (optional)
-postamble:  # (optional)
+title:      # The step title (required)
+preamble:   # Text before the commands (optional)
+commands:   # Named groups of commands.  See below.
+postamble:  # Text after the commands (optional)
+~~~
+
+The step commands are separated into named groups corresponding to the
+sites.  Each named group contains a list of command entries.  Each
+command entry has a `run` field containing a shell command and other
+fields for awaiting completion or providing sample output.
+
+~~~ yaml
+commands:
+  east:
+    - run: echo Hello
+      output: Hello
 ~~~
 
 An example step:
 
 ~~~ yaml
+steps:
   - title: Expose the frontend service
     preamble: |
       We have established connectivity between the two namespaces and
