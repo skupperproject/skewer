@@ -89,9 +89,7 @@ _standard_steps = {
         "title": "Check the status of your namespaces",
         "preamble": _strings["check_the_status_of_your_namespaces_preamble"],
         "commands": [
-            {
-                "run": "skupper status",
-            }
+            {"run": "skupper status"}
         ],
         "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
     },

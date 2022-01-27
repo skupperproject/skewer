@@ -53,7 +53,7 @@ README and test your example.
 
 Usually this will do what you want:
 
-    git subrepo pull --force subrepos/skewer
+    git subrepo pull subrepos/skewer
 
 If you made changes to the Skewer subrepo, the command above will ask
 you to perform a merge.  You can use the procedure that the subrepo
@@ -64,6 +64,9 @@ and get the latest Skewer, you can use the following procedure:
     git rm -rf subrepos/skewer/
     git commit -am "Temporarily remove the previous version of Skewer"
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
+
+You should also be able to use `git subrepo pull --force`, to achieve
+the same, but it didn't work with my version of Git Subrepo.
 
 ## Skewer YAML
 
