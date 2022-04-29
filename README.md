@@ -165,8 +165,8 @@ A **command**:
 
 ~~~ yaml
 run:                # A shell command (optional)
-await:              # A list of Kubernetes resources to await existing (optional)
-await_external_ip:  # A list of Kubernetes resources to await a {.status.loadBalancer.ingress} value (optional)
+await:              # A list of resources for which to await readiness (optional)
+await_external_ip:  # A list of resources for which to await a {.status.loadBalancer.ingress} value (optional)
 sleep:              # An integer number of seconds to sleep after running and awaiting (optional)
 output:             # Sample output to include in the README (optional)
 ~~~
