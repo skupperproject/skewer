@@ -85,7 +85,7 @@ cleaning_up:         # A special step for cleaning up (optional)
 next_steps:          # Text linking to more examples (optional)
 ~~~
 
-A site:
+A **site**:
 
 ~~~ yaml
 <site-name>:
@@ -105,25 +105,13 @@ sites:
     namespace: east
 ~~~
 
-A step:
+A **step**:
 
 ~~~ yaml
 title:      # The step title (required)
 preamble:   # Text before the commands (optional)
 commands:   # Named groups of commands.  See below.
 postamble:  # Text after the commands (optional)
-~~~
-
-The step commands are separated into named groups corresponding to the
-sites.  Each named group contains a list of command entries.  Each
-command entry has a `run` field containing a shell command and other
-fields for awaiting completion or providing sample output.
-
-~~~ yaml
-commands:
-  east:
-    - run: echo Hello
-      output: Hello
 ~~~
 
 An example step:
@@ -154,6 +142,30 @@ steps:
             skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
             skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
             skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
+~~~
+
+The step commands are separated into named groups corresponding to the
+sites.  Each named group contains a list of command entries.  Each
+command entry has a `run` field containing a shell command and other
+fields for awaiting completion or providing sample output.
+
+A **command**:
+
+~~~ yaml
+run:                # A shell command (optional)
+await:              # A list of Kubernetes resources to wait for (optional)
+await_external_ip:  # A list of Kubernetes resources with {.status.loadBalancer.ingress} wait for (optional)
+sleep:              # An integer number of seconds to sleep after running and awaiting (optional)
+output:             # Sample output to include in the README (optional)
+~~~
+
+An example command:
+
+~~~ yaml
+commands:
+  east:
+    - run: echo Hello
+      output: Hello
 ~~~
 
 Or you can use a named, canned step from the library of standard
