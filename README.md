@@ -93,6 +93,9 @@ A site:
   namespace: <namespace-name>    # (required)
 ~~~
 
+A tilde (~) in the kubeconfig file path is replaced with a temporary
+working directory during testing.
+
 An example site:
 
 ~~~ yaml
