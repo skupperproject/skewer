@@ -103,6 +103,9 @@ sites:
   east:
     kubeconfig: ~/.kube/config-east
     namespace: east
+  west:
+    kubeconfig: ~/.kube/config-west
+    namespace: west
 ~~~
 
 A **step**:
@@ -129,43 +132,8 @@ steps:
       access to the frontend service.  Use `kubectl get services` to
       check for the service and its external IP address.
     commands:
-      west:
-        - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-          await_external_ip: [service/hello-world-frontend]
-          output: |
-            service/hello-world-frontend exposed
-        - run: kubectl get services
-          output: |
-            NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-            hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-            hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-            skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-            skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-            skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
-~~~
-
-The step commands are separated into named groups corresponding to the
-sites.  Each named group contains a list of command entries.  Each
-command entry has a `run` field containing a shell command and other
-fields for awaiting completion or providing sample output.
-
-A **command**:
-
-~~~ yaml
-run:                # A shell command (optional)
-await:              # A list of Kubernetes resources to wait for (optional)
-await_external_ip:  # A list of Kubernetes resources with {.status.loadBalancer.ingress} wait for (optional)
-sleep:              # An integer number of seconds to sleep after running and awaiting (optional)
-output:             # Sample output to include in the README (optional)
-~~~
-
-An example command:
-
-~~~ yaml
-commands:
-  east:
-    - run: echo Hello
-      output: Hello
+      east: <list-of-commands>
+      west: <list-of-commands>
 ~~~
 
 Or you can use a named, canned step from the library of standard
@@ -186,6 +154,48 @@ steps:
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
   [...]
+~~~
+
+The step commands are separated into named groups corresponding to the
+sites.  Each named group contains a list of command entries.  Each
+command entry has a `run` field containing a shell command and other
+fields for awaiting completion or providing sample output.
+
+A **command**:
+
+~~~ yaml
+run:                # A shell command (optional)
+await:              # A list of Kubernetes resources to await existing (optional)
+await_external_ip:  # A list of Kubernetes resources to await a {.status.loadBalancer.ingress} value (optional)
+sleep:              # An integer number of seconds to sleep after running and awaiting (optional)
+output:             # Sample output to include in the README (optional)
+~~~
+
+Only the `run` and `output` fields are used in the README content.
+The `output` field is used as sample output only, not for any kind of
+testing.
+
+Example commands:
+
+~~~ yaml
+commands:
+  east:
+    - run: echo Hello
+      sleep: 1
+      output: Hello
+  west:
+    - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
+      await_external_ip: [service/hello-world-frontend]
+      output: |
+        service/hello-world-frontend exposed
+    - run: kubectl get services
+      output: |
+        NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
+        hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
+        hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
+        skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
+        skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
+        skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
 ~~~
 
 Skewer has boilerplate strings for a lot of cases.  You can see what's
