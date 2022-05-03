@@ -165,6 +165,8 @@ A **command**:
 
 ~~~ yaml
 run:                # A shell command (optional)
+run_override:       # A command to use instead of the `run` one when testing
+suppress:           # If true, omit this command in the README (optional, default false)
 await:              # A list of resources for which to await readiness (optional)
 await_external_ip:  # A list of resources for which to await a {.status.loadBalancer.ingress} value (optional)
 sleep:              # An integer number of seconds to sleep after running and awaiting (optional)
