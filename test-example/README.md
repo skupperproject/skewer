@@ -215,8 +215,8 @@ skupper link create ~/west.token
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
 
-You can use the `skupper link status` command to see if the link was
-created.
+You can use the `skupper link status` command to check if linking
+succeeded.
 
 ## Step 7: Deploy the frontend and backend services
 
