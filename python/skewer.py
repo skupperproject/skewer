@@ -108,7 +108,7 @@ _standard_steps = {
                 "output": "OK",
             },
             {
-                "run": "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')",
+                "run": "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')",
                 "apply": "test",
             },
         ],
