@@ -203,13 +203,13 @@ token.  Then, use `skupper link create` in the other to create a link.
 Console for _west_:
 
 ~~~ shell
-skupper token create ~/west.token
+skupper token create ~/secret.token
 ~~~
 
 Console for _east_:
 
 ~~~ shell
-skupper link create ~/west.token
+skupper link create ~/secret.token
 ~~~
 
 If your console sessions are on different machines, you may need to
@@ -302,24 +302,6 @@ similar tool to request the `/api/health` endpoint at that address.
 placeholder.  The actual value is an IP address.
 
 Console for _west_:
-
-~~~ shell
-kubectl get service/frontend
-curl http://<external-ip>:8080/api/health
-~~~
-
-Sample output:
-
-~~~
-$ kubectl get service/frontend
-NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-
-$ curl http://<external-ip>:8080/api/health
-OK
-~~~
-
-Console for _east_:
 
 ~~~ shell
 kubectl get service/frontend
