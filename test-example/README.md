@@ -124,11 +124,25 @@ kubectl create namespace west
 kubectl config set-context --current --namespace west
 ~~~
 
+Sample output:
+
+~~~
+$ kubectl create namespace west
+namespace/west created
+~~~
+
 Console for _east_:
 
 ~~~ shell
 kubectl create namespace east
 kubectl config set-context --current --namespace east
+~~~
+
+Sample output:
+
+~~~
+$ kubectl create namespace east
+namespace/east created
 ~~~
 
 ## Step 4: Install Skupper in your namespaces
@@ -148,10 +162,26 @@ Console for _west_:
 skupper init
 ~~~
 
+Sample output:
+
+~~~
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
+~~~
+
 Console for _east_:
 
 ~~~ shell
 skupper init
+~~~
+
+Sample output:
+
+~~~
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
 ~~~
 
 ## Step 5: Check the status of your namespaces
@@ -206,14 +236,29 @@ Console for _west_:
 skupper token create ~/secret.token
 ~~~
 
+Sample output:
+
+~~~
+$ skupper token create ~/secret.token
+Token written to ~/secret.token
+~~~
+
 Console for _east_:
 
 ~~~ shell
 skupper link create ~/secret.token
 ~~~
 
+Sample output:
+
+~~~
+$ skupper link create ~/secret.token
+Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
+Check the status of the link using 'skupper link status'.
+~~~
+
 If your console sessions are on different machines, you may need to
-use `sftp` or a similar tool to transfer the token.
+use `sftp` or a similar tool to transfer the token securely.
 
 You can use the `skupper link status` command to check if linking
 succeeded.
@@ -267,14 +312,12 @@ Before we can test the application, we need external access to
 the frontend.
 
 Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.  Use `kubectl get services` to
-check for the service and its external IP address.
+access to the frontend service.
 
 Console for _west_:
 
 ~~~ shell
 kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-kubectl get services
 ~~~
 
 Sample output:
@@ -282,14 +325,6 @@ Sample output:
 ~~~
 $ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 service/frontend exposed
-
-$ kubectl get services
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-backend                ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-frontend               LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
 ~~~
 
 ## Step 10: Test the application

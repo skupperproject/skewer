@@ -73,7 +73,10 @@ _standard_steps = {
         "preamble": _strings["set_up_your_namespaces_preamble"],
         "commands": {
             "*": [
-                {"run": "kubectl create namespace @namespace@"},
+                {
+                    "run": "kubectl create namespace @namespace@",
+                    "output": "namespace/@namespace@ created",
+                },
                 {"run": "kubectl config set-context --current --namespace @namespace@"},
             ],
         },
@@ -85,8 +88,10 @@ _standard_steps = {
             "*": [
                 {
                     "run": "skupper init",
-                    "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
+                    "output": "Waiting for LoadBalancer IP or hostname...\n" \
+                              "Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.\n",
                 },
+                {"await": ["deployment/skupper-service-controller", "deployment/skupper-router"]},
             ],
         },
         "postamble": _strings["install_skupper_in_your_namespaces_postamble"],
@@ -106,14 +111,18 @@ _standard_steps = {
         "preamble": _strings["link_your_namespaces_preamble"],
         "commands": {
             "0": [
-                {"run": "skupper token create ~/secret.token"},
+                {
+                    "run": "skupper token create ~/secret.token",
+                    "output": "Token written to ~/secret.token",
+                 },
             ],
             "1": [
-                {"run": "skupper link create ~/secret.token"},
                 {
-                    "run": "skupper link status --wait 60",
-                    "apply": "test",
+                    "run": "skupper link create ~/secret.token",
+                    "output": "Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)\n" \
+                              "Check the status of the link using 'skupper link status'.\n"
                 },
+                {"run": "skupper link status --wait 60", "apply": "test",},
             ],
         },
         "postamble": _strings["link_your_namespaces_postamble"],
@@ -126,7 +135,8 @@ _standard_steps = {
                 {
                     "run": "kubectl get service/frontend",
                     "apply": "readme",
-                    "output": "NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE\nfrontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s\n",
+                    "output": "NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE\n" \
+                              "frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s\n",
                 },
                 {
                     "run": "curl http://<external-ip>:8080/api/health",
@@ -134,7 +144,7 @@ _standard_steps = {
                     "output": "OK",
                 },
                 {
-                    "await": ["service/frontend"],
+                    "await_external_ip": ["service/frontend"],
                 },
                 {
                     "run": "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')",
@@ -181,6 +191,22 @@ def await_resource(group, name, namespace=None):
         except:
             run(f"{base_command} logs {group}/{name}")
             raise
+
+def await_external_ip(group, name, namespace=None):
+    await_resource(group, name, namespace=namespace)
+
+    base_command = "kubectl"
+
+    if namespace is not None:
+        base_command = f"{base_command} -n {namespace}"
+
+    for i in range(180):
+        sleep(1)
+
+        if call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+            break
+    else:
+        fail(f"Timed out waiting for external IP for {group}/{name}")
 
 def run_steps_on_minikube(skewer_file):
     with open(skewer_file) as file:
@@ -258,6 +284,11 @@ def _run_step(work_dir, skewer_data, step_data):
                     for resource in command["await"]:
                         group, name = resource.split("/", 1)
                         await_resource(group, name)
+
+                if "await_external_ip" in command:
+                    for resource in command["await_external_ip"]:
+                        group, name = resource.split("/", 1)
+                        await_external_ip(group, name)
 
 def generate_readme(skewer_file, output_file):
     with open(skewer_file) as file:
@@ -375,6 +406,8 @@ def _generate_readme_step(skewer_data, step_data):
                     out.append(command["run"])
 
                 if "output" in command:
+                    assert "run" in command
+
                     outputs.append((command["run"], command["output"]))
 
             out.append("~~~")
@@ -415,18 +448,28 @@ def _apply_standard_steps(skewer_data):
                 assert len(standard_step_data["commands"]) == 1
 
                 for namespace, site_data in skewer_data["sites"].items():
-                    resolved_commands = list()
+                    commands = standard_step_data["commands"]["*"]
 
-                    for command in standard_step_data["commands"]["*"]:
-                        resolved_command = dict(command)
-                        resolved_command["run"] = command["run"].replace("@namespace@", namespace)
-
-                        resolved_commands.append(resolved_command)
-
-                    step_data["commands"][namespace] = resolved_commands
+                    step_data["commands"][namespace] = _resolve_commands(commands, namespace)
             else:
                 for site_index in standard_step_data["commands"]:
-                    namespace = list(skewer_data["sites"])[int(site_index)]
                     commands = standard_step_data["commands"][site_index]
+                    namespace = list(skewer_data["sites"])[int(site_index)]
 
-                    step_data["commands"][namespace] = commands
+                    step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+
+def _resolve_commands(commands, namespace):
+    resolved_commands = list()
+
+    for command in commands:
+        resolved_command = dict(command)
+
+        if "run" in command:
+            resolved_command["run"] = command["run"].replace("@namespace@", namespace)
+
+        if "output" in command:
+            resolved_command["output"] = command["output"].replace("@namespace@", namespace)
+
+        resolved_commands.append(resolved_command)
+
+    return resolved_commands

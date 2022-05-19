@@ -68,22 +68,12 @@ steps:
       the frontend.
 
       Use `kubectl expose` with `--type LoadBalancer` to open network
-      access to the frontend service.  Use `kubectl get services` to
-      check for the service and its external IP address.
+      access to the frontend service.
     commands:
       west:
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-          await_external_ip: [service/frontend]
           output: |
             service/frontend exposed
-        - run: kubectl get services
-          output: |
-            NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-            backend                ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-            frontend               LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-            skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-            skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-            skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
   - standard: test_the_application
 summary: |
   This example locates the frontend and backend services in different
