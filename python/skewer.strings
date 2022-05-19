@@ -115,10 +115,9 @@ token.  Then, use `skupper link create` in the other to create a link.
 [link_your_namespaces_postamble]
 
 If your console sessions are on different machines, you may need to
-use `sftp` or a similar tool to transfer the token securely.
-
-You can use the `skupper link status` command to check if linking
-succeeded.
+use `sftp` or a similar tool to transfer the token securely.  By
+default, tokens expire after a single use or 15 minutes after
+creation.
 
 [test_the_application_preamble]
 

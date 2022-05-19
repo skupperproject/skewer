@@ -167,8 +167,8 @@ A **command**:
 ~~~ yaml
 run:                # A shell command (optional)
 apply:              # Use this command only for "readme" or "test" (optional, default is both)
-await:              # A list of resources for which to await readiness (optional)
 output:             # Sample output to include in the README (optional)
+await:              # A resource or list of resources for which to await readiness (optional)
 ~~~
 
 Only the `run` and `output` fields are used in the README content.
@@ -179,18 +179,20 @@ The `apply` field is useful when you want the readme instructions to
 be different from the test procedure, or you simply want to omit
 something.
 
+The `await` field is often used by itself to pause for a condition you
+require before going to the next step.  It is used only for testing
+and does not impact the README.
+
 Example commands:
 
 ~~~ yaml
 commands:
   east:
-    - run: echo Hello
-      output: Hello
     - run: kubectl expose deployment/backend --port 8080 --type LoadBalancer
       output: |
         service/frontend exposed
   west:
-    - await: [service/backend]
+    - await: service/backend
     - run: kubectl get service/backend
       output: |
         NAME          TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)         AGE

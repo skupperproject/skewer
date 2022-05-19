@@ -264,10 +264,9 @@ Check the status of the link using 'skupper link status'.
 ~~~
 
 If your console sessions are on different machines, you may need to
-use `sftp` or a similar tool to transfer the token securely.
-
-You can use the `skupper link status` command to check if linking
-succeeded.
+use `sftp` or a similar tool to transfer the token securely.  By
+default, tokens expire after a single use or 15 minutes after
+creation.
 
 ## Step 7: Deploy the frontend and backend services
 
