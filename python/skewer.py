@@ -397,7 +397,7 @@ def _generate_readme_step(skewer_data, step_data):
             namespace = skewer_data["sites"][site_name]["namespace"]
             outputs = list()
 
-            out.append(f"Console for _{namespace}_:")
+            out.append(f"**Console for _{namespace}_:**")
             out.append("")
             out.append("~~~ shell")
 

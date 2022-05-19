@@ -84,13 +84,13 @@ Start a console session for each of your namespaces.  Set the
 `KUBECONFIG` environment variable to a different path in each
 session.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-west
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-east
@@ -117,7 +117,7 @@ Use `kubectl create namespace` to create the namespaces you wish to
 use (or use existing namespaces).  Use `kubectl config set-context` to
 set the current namespace for each session.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 kubectl create namespace west
@@ -134,7 +134,7 @@ $ kubectl config set-context --current --namespace west
 Context "minikube" modified.
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 kubectl create namespace east
@@ -162,7 +162,7 @@ tunnel`][minikube-tunnel] before you install Skupper.
 
 [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper init
@@ -176,7 +176,7 @@ Waiting for LoadBalancer IP or hostname...
 Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper init
@@ -195,13 +195,13 @@ Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more 
 Use `skupper status` in each console to check that Skupper is
 installed.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper status
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper status
@@ -236,7 +236,7 @@ have access to it.
 First, use `skupper token create` in one namespace to generate the
 token.  Then, use `skupper link create` in the other to create a link.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper token create ~/secret.token
@@ -249,7 +249,7 @@ $ skupper token create ~/secret.token
 Token written to ~/secret.token
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper link create ~/secret.token
@@ -274,13 +274,13 @@ succeeded.
 Use `kubectl create deployment` to deploy the frontend service
 in `west` and the backend service in `east`.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend
@@ -296,7 +296,7 @@ exposure on all the linked namespaces.
 Use `skupper expose` to expose the backend service to the
 frontend service.
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper expose deployment/backend --port 8080
@@ -306,8 +306,7 @@ Sample output:
 
 ~~~ console
 $ skupper expose deployment/backend --port 8080
-NAME       TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
+deployment backend exposed as backend
 ~~~
 
 ## Step 9: Expose the frontend service
@@ -320,7 +319,7 @@ the frontend.
 Use `kubectl expose` with `--type LoadBalancer` to open network
 access to the frontend service.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 kubectl expose deployment/frontend --port 8080 --type LoadBalancer
@@ -342,7 +341,7 @@ similar tool to request the `/api/health` endpoint at that address.
 **Note:** The `<external-ip>` field in the following commands is a
 placeholder.  The actual value is an IP address.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 kubectl get service/frontend
@@ -388,7 +387,7 @@ the frontend.
 To remove Skupper and the other resources from this exercise, use the
 following commands.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper delete
@@ -396,7 +395,7 @@ kubectl delete service/frontend
 kubectl delete deployment/frontend
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper delete
