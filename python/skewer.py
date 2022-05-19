@@ -77,7 +77,10 @@ _standard_steps = {
                     "run": "kubectl create namespace @namespace@",
                     "output": "namespace/@namespace@ created",
                 },
-                {"run": "kubectl config set-context --current --namespace @namespace@"},
+                {
+                    "run": "kubectl config set-context --current --namespace @namespace@",
+                    "output": "Context \"minikube\" modified."
+                },
             ],
         },
     },
@@ -416,7 +419,7 @@ def _generate_readme_step(skewer_data, step_data):
             if outputs:
                 out.append("Sample output:")
                 out.append("")
-                out.append("~~~")
+                out.append("~~~ console")
                 out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
                 out.append("~~~")
                 out.append("")

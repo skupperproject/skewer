@@ -126,9 +126,12 @@ kubectl config set-context --current --namespace west
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl create namespace west
 namespace/west created
+
+$ kubectl config set-context --current --namespace west
+Context "minikube" modified.
 ~~~
 
 Console for _east_:
@@ -140,9 +143,12 @@ kubectl config set-context --current --namespace east
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl create namespace east
 namespace/east created
+
+$ kubectl config set-context --current --namespace east
+Context "minikube" modified.
 ~~~
 
 ## Step 4: Install Skupper in your namespaces
@@ -164,7 +170,7 @@ skupper init
 
 Sample output:
 
-~~~
+~~~ console
 $ skupper init
 Waiting for LoadBalancer IP or hostname...
 Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
@@ -178,7 +184,7 @@ skupper init
 
 Sample output:
 
-~~~
+~~~ console
 $ skupper init
 Waiting for LoadBalancer IP or hostname...
 Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
@@ -238,7 +244,7 @@ skupper token create ~/secret.token
 
 Sample output:
 
-~~~
+~~~ console
 $ skupper token create ~/secret.token
 Token written to ~/secret.token
 ~~~
@@ -251,7 +257,7 @@ skupper link create ~/secret.token
 
 Sample output:
 
-~~~
+~~~ console
 $ skupper link create ~/secret.token
 Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
 Check the status of the link using 'skupper link status'.
@@ -298,7 +304,7 @@ skupper expose deployment/backend --port 8080
 
 Sample output:
 
-~~~
+~~~ console
 $ skupper expose deployment/backend --port 8080
 NAME       TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
 backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
@@ -322,7 +328,7 @@ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 service/frontend exposed
 ~~~
@@ -345,7 +351,7 @@ curl http://<external-ip>:8080/api/health
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl get service/frontend
 NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
 frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
