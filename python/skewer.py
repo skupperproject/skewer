@@ -165,6 +165,7 @@ def _string_loader(loader, node):
 _yaml.SafeLoader.add_constructor("!string", _string_loader)
 
 def check_environment():
+    check_program("curl")
     check_program("kubectl")
     check_program("skupper")
 
@@ -212,6 +213,9 @@ def await_external_ip(group, name, namespace=None):
         fail(f"Timed out waiting for external IP for {group}/{name}")
 
 def run_steps_on_minikube(skewer_file):
+    check_environment()
+    check_program("minikube")
+
     with open(skewer_file) as file:
         skewer_data = _yaml.safe_load(file)
 
@@ -236,6 +240,8 @@ def run_steps_on_minikube(skewer_file):
         run(f"minikube -p skewer delete")
 
 def run_steps_external(skewer_file, **kubeconfigs):
+    check_environment()
+
     with open(skewer_file) as file:
         skewer_data = _yaml.safe_load(file)
 
@@ -284,12 +290,22 @@ def _run_step(work_dir, skewer_data, step_data):
                     run(command["run"].replace("~", work_dir), shell=True)
 
                 if "await" in command:
-                    for resource in command["await"]:
+                    resources = command["await"]
+
+                    if isinstance(resources, str):
+                        resources = (resources,)
+
+                    for resource in resources:
                         group, name = resource.split("/", 1)
                         await_resource(group, name)
 
                 if "await_external_ip" in command:
-                    for resource in command["await_external_ip"]:
+                    resources = command["await_external_ip"]
+
+                    if isinstance(resources, str):
+                        resources = (resources,)
+
+                    for resource in resources:
                         group, name = resource.split("/", 1)
                         await_external_ip(group, name)
 
@@ -409,7 +425,7 @@ def _generate_readme_step(skewer_data, step_data):
                     out.append(command["run"])
 
                 if "output" in command:
-                    assert "run" in command
+                    assert "run" in command, command
 
                     outputs.append((command["run"], command["output"]))
 
@@ -448,7 +464,7 @@ def _apply_standard_steps(skewer_data):
             step_data["commands"] = dict()
 
             if "*" in standard_step_data["commands"]:
-                assert len(standard_step_data["commands"]) == 1
+                assert len(standard_step_data["commands"]) == 1, standard_step_data["commands"]
 
                 for namespace, site_data in skewer_data["sites"].items():
                     commands = standard_step_data["commands"]["*"]
