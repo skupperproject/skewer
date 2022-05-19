@@ -93,6 +93,27 @@ _standard_steps = {
         ],
         "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
     },
+    "test_the_application": {
+        "title": "Test the application",
+        "preamble": _strings["test_the_application_preamble"],
+        "commands": [
+            {
+                "run": "kubectl get service/frontend",
+                "apply": "readme",
+                "output": "NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE\nfrontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s\n",
+            },
+            {
+                "run": "curl http://<external-ip>:8080/api/health",
+                "apply": "readme",
+                "output": "OK",
+            },
+            {
+                "run": "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')",
+                "apply": "test",
+            },
+        ],
+        "postamble": _strings["test_the_application_postamble"],
+    },
 }
 
 def _string_loader(loader, node):
@@ -363,10 +384,12 @@ def _generate_readme_step(skewer_data, step_data):
                 out.append("")
                 out.append("~~~")
 
-                if len(outputs) > 1:
-                    out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
-                else:
-                    out.append(outputs[0][1].strip())
+                out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
+
+                # if len(outputs) > 1:
+                #     out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
+                # else:
+                #     out.append(outputs[0][1].strip())
 
                 out.append("~~~")
                 out.append("")
