@@ -260,8 +260,8 @@ def _run_steps(work_dir, skewer_data):
     for step_data in skewer_data["steps"]:
         _run_step(work_dir, skewer_data, step_data)
 
-    if "accessing_the_console" in skewer_data:
-        _run_step(work_dir, skewer_data, skewer_data["accessing_the_console"])
+    if "accessing_the_web_console" in skewer_data:
+        _run_step(work_dir, skewer_data, skewer_data["accessing_the_web_console"])
 
     if "cleaning_up" in skewer_data:
         _run_step(work_dir, skewer_data, skewer_data["cleaning_up"])
@@ -353,6 +353,9 @@ def generate_readme(skewer_file, output_file):
 
         out.append(f"* [{title}](#{fragment})")
 
+    if "accessing_the_web_console" in skewer_data:
+        out.append("* [Accessing the web console](#accessing-the-web-console)")
+
     if "summary" in skewer_data:
         out.append("* [Summary](#summary)")
 
@@ -382,10 +385,10 @@ def generate_readme(skewer_file, output_file):
         out.append(_generate_readme_step(skewer_data, step_data))
         out.append("")
 
-    if "accessing_the_console" in skewer_data:
-        out.append("## Accessing the console")
+    if "accessing_the_web_console" in skewer_data:
+        out.append("## Accessing the web console")
         out.append("")
-        out.append(_generate_readme_step(skewer_data, skewer_data["accessing_the_console"]))
+        out.append(_generate_readme_step(skewer_data, skewer_data["accessing_the_web_console"]))
         out.append("")
 
     if "summary" in skewer_data:

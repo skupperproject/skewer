@@ -25,6 +25,7 @@ across cloud providers, data centers, and edge sites.
 * [Step 8: Expose the backend service](#step-8-expose-the-backend-service)
 * [Step 9: Expose the frontend service](#step-9-expose-the-frontend-service)
 * [Step 10: Test the application](#step-10-test-the-application)
+* [Accessing the web console](#accessing-the-web-console)
 * [Summary](#summary)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
@@ -375,7 +376,7 @@ OK
 If everything is in order, you can now access the web interface by
 navigating to `http://<external-ip>:8080/` in your browser.
 
-## Accessing the console
+## Accessing the web console
 
 Skupper includes a web console you can use to view the network.
 To access it, use `kubectl get service/skupper` to look up the
@@ -383,24 +384,29 @@ external IP of the console.  Then use `kubectl get
 secret/skupper-console-users` to look up the console admin
 password.
 
+**Note:** The `<external-ip>` and `<password>` fields in the
+following commands are placeholders.  The actual values are
+specific to your environment.
+
 **Console for _west_:**
 
 ~~~ shell
+kubectl get service/skupper
 kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
-kubectl get service/skupper -o jsonpath={.status.loadBalancer.ingress[0].ip}
 ~~~
 
 Sample output:
 
 ~~~ console
-$ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
-PYXlVUss6j
+$ kubectl get service/skupper
+NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                           AGE
+skupper    LoadBalancer   10.96.54.251    <external-ip>   8080:31616/TCP,8081:30642/TCP     3m34s
 
-$ kubectl get service/skupper -o jsonpath={.status.loadBalancer.ingress[0].ip}
-10.105.131.243
+$ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
+<password>
 ~~~
 
-Navigate to `https://<external-ip>:8080/` in your browser.  Supply
+Navigate to `https://<external-ip>:8080/` in your browser.  Enter
 the admin password when prompted.
 
 ## Summary
