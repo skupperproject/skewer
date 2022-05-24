@@ -8,6 +8,20 @@ A `skewer.yaml` file describes the steps and commands to achieve an
 objective using Skupper.  Skewer takes the `skewer.yaml` file as input
 and produces a `README.md` file and a test routine as output.
 
+You can run any of the examples using `./plano test`.
+By default, examples remove all traces of the test run and delete the 
+minikube instance. To leave the example running, add a pause step to
+`skewer.yaml`, for example:
+
+```
+cleaning_up:
+  preamble: !string cleaning_up_preamble
+  commands:
+    west:
+      - pause:
+      - run: skupper delete
+```
+
 ## An example example
 
 [Example `skewer.yaml` file](test-example/skewer.yaml)

@@ -289,6 +289,9 @@ def _run_step(work_dir, skewer_data, step_data):
                 if "run" in command:
                     run(command["run"].replace("~", work_dir), shell=True)
 
+                if "pause" in command:
+                    input("Press Enter to continue...")
+
                 if "await" in command:
                     resources = command["await"]
 
