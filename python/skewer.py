@@ -356,11 +356,11 @@ def generate_readme(skewer_file, output_file):
     if "accessing_the_web_console" in skewer_data:
         out.append("* [Accessing the web console](#accessing-the-web-console)")
 
-    if "summary" in skewer_data:
-        out.append("* [Summary](#summary)")
-
     if "cleaning_up" in skewer_data:
         out.append("* [Cleaning up](#cleaning-up)")
+
+    if "summary" in skewer_data:
+        out.append("* [Summary](#summary)")
 
     if "next_steps" in skewer_data:
         out.append("* [Next steps](#next-steps)")
@@ -391,16 +391,16 @@ def generate_readme(skewer_file, output_file):
         out.append(_generate_readme_step(skewer_data, skewer_data["accessing_the_web_console"]))
         out.append("")
 
-    if "summary" in skewer_data:
-        out.append("## Summary")
-        out.append("")
-        out.append(skewer_data["summary"].strip())
-        out.append("")
-
     if "cleaning_up" in skewer_data:
         out.append("## Cleaning up")
         out.append("")
         out.append(_generate_readme_step(skewer_data, skewer_data["cleaning_up"]))
+        out.append("")
+
+    if "summary" in skewer_data:
+        out.append("## Summary")
+        out.append("")
+        out.append(skewer_data["summary"].strip())
         out.append("")
 
     if "next_steps" in skewer_data:

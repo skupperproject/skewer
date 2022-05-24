@@ -76,9 +76,9 @@ steps:
   - standard: test_the_application
 accessing_the_web_console:
   preamble: |
-    Skupper includes a web console you can use to view the network.
-    To access it, use `kubectl get service/skupper` to look up the
-    external IP of the console.  Then use `kubectl get
+    Skupper includes a web console you can use to view the application
+    network.  To access it, use `kubectl get service/skupper` to look
+    up the external IP of the web console.  Then use `kubectl get
     secret/skupper-console-users` to look up the console admin
     password.
 
@@ -99,8 +99,8 @@ accessing_the_web_console:
       - run: curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d)
         apply: test
   postamble: |
-    Navigate to `https://<external-ip>:8080/` in your browser.  Enter
-    the admin password when prompted.
+    Navigate to `https://<external-ip>:8080/` in your browser.  When
+    prompted, log in as user `admin` and enter the password.
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they

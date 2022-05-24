@@ -26,8 +26,8 @@ across cloud providers, data centers, and edge sites.
 * [Step 9: Expose the frontend service](#step-9-expose-the-frontend-service)
 * [Step 10: Test the application](#step-10-test-the-application)
 * [Accessing the web console](#accessing-the-web-console)
-* [Summary](#summary)
 * [Cleaning up](#cleaning-up)
+* [Summary](#summary)
 * [Next steps](#next-steps)
 
 ## Overview
@@ -378,9 +378,9 @@ navigating to `http://<external-ip>:8080/` in your browser.
 
 ## Accessing the web console
 
-Skupper includes a web console you can use to view the network.
-To access it, use `kubectl get service/skupper` to look up the
-external IP of the console.  Then use `kubectl get
+Skupper includes a web console you can use to view the application
+network.  To access it, use `kubectl get service/skupper` to look
+up the external IP of the web console.  Then use `kubectl get
 secret/skupper-console-users` to look up the console admin
 password.
 
@@ -406,28 +406,8 @@ $ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
 <password>
 ~~~
 
-Navigate to `https://<external-ip>:8080/` in your browser.  Enter
-the admin password when prompted.
-
-## Summary
-
-This example locates the frontend and backend services in different
-namespaces, on different clusters.  Ordinarily, this means that they
-have no way to communicate unless they are exposed to the public
-internet.
-
-Introducing Skupper into each namespace allows us to create a virtual
-application network that can connect services in different clusters.
-Any service exposed on the application network is represented as a
-local service in all of the linked namespaces.
-
-The backend service is located in `east`, but the frontend service
-in `west` can "see" it as if it were local.  When the frontend
-sends a request to the backend, Skupper forwards the request to the
-namespace where the backend is running and routes the response back to
-the frontend.
-
-<img src="images/sequence.svg" width="640"/>
+Navigate to `https://<external-ip>:8080/` in your browser.  When
+prompted, log in as user `admin` and enter the password.
 
 ## Cleaning up
 
@@ -448,6 +428,26 @@ kubectl delete deployment/frontend
 skupper delete
 kubectl delete deployment/backend
 ~~~
+
+## Summary
+
+This example locates the frontend and backend services in different
+namespaces, on different clusters.  Ordinarily, this means that they
+have no way to communicate unless they are exposed to the public
+internet.
+
+Introducing Skupper into each namespace allows us to create a virtual
+application network that can connect services in different clusters.
+Any service exposed on the application network is represented as a
+local service in all of the linked namespaces.
+
+The backend service is located in `east`, but the frontend service
+in `west` can "see" it as if it were local.  When the frontend
+sends a request to the backend, Skupper forwards the request to the
+namespace where the backend is running and routes the response back to
+the frontend.
+
+<img src="images/sequence.svg" width="640"/>
 
 ## Next steps
 
