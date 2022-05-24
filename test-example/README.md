@@ -37,11 +37,11 @@ be deployed across multiple Kubernetes clusters using Skupper.
 It contains two services:
 
 * A backend service that exposes an `/api/hello` endpoint.  It
-  returns greetings of the form `Hello from <pod-name>
-  (<request-count>)`.
+  returns greetings of the form `Hi, <your-name>.  I am <my-name>
+  (<pod-name>)`.
 
-* A frontend service that accepts HTTP requests, calls the backend
-  to fetch new greetings, and serves them to the user.
+* A frontend service that sends greetings to the backend and
+  fetches new greetings in response.
 
 With Skupper, you can place the backend in one cluster and the
 frontend in another and maintain connectivity between the two
@@ -289,13 +289,13 @@ deployment.apps/frontend created
 **Console for _east_:**
 
 ~~~ shell
-kubectl create deployment backend --image quay.io/skupper/hello-world-backend
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 ~~~
 
 Sample output:
 
 ~~~ console
-$ kubectl create deployment backend --image quay.io/skupper/hello-world-backend
+$ kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 deployment.apps/backend created
 ~~~
 
