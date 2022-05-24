@@ -74,6 +74,25 @@ steps:
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
           output: service/frontend exposed
   - standard: test_the_application
+accessing_the_console:
+  preamble: |
+    Skupper includes a web console you can use to view the network.
+    To access it, use `kubectl get service/skupper` to look up the
+    external IP of the console.  Then use `kubectl get
+    secret/skupper-console-users` to look up the console admin
+    password.
+  commands:
+    west:
+      - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
+        output: PYXlVUss6j
+      - await_external_ip: service/skupper
+      - run: kubectl get service/skupper -o jsonpath={.status.loadBalancer.ingress[0].ip}
+        output: 10.105.131.243
+      - run: curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d)
+        apply: test
+  postamble: |
+    Navigate to `https://<external-ip>:8080/` in your browser.  Supply
+    the admin password when prompted.
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they

@@ -375,6 +375,34 @@ OK
 If everything is in order, you can now access the web interface by
 navigating to `http://<external-ip>:8080/` in your browser.
 
+## Accessing the console
+
+Skupper includes a web console you can use to view the network.
+To access it, use `kubectl get service/skupper` to look up the
+external IP of the console.  Then use `kubectl get
+secret/skupper-console-users` to look up the console admin
+password.
+
+**Console for _west_:**
+
+~~~ shell
+kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
+kubectl get service/skupper -o jsonpath={.status.loadBalancer.ingress[0].ip}
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
+PYXlVUss6j
+
+$ kubectl get service/skupper -o jsonpath={.status.loadBalancer.ingress[0].ip}
+10.105.131.243
+~~~
+
+Navigate to `https://<external-ip>:8080/` in your browser.  Supply
+the admin password when prompted.
+
 ## Summary
 
 This example locates the frontend and backend services in different
