@@ -42,8 +42,7 @@ of your project:
 
     emacs skewer.yaml
 
-Run the `./plano` command to see what you can do: generate the
-README and test your example:
+Run the `./plano` command to see the available commands:
 
 ~~~ console
 $ ./plano
