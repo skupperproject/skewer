@@ -37,8 +37,8 @@ example `.planofile` there as well:
     ln -s subrepos/skewer/plano
     cp subrepos/skewer/test-example/.planofile .
 
-Use your editor to create a `skewer.yaml` file in the root directory
-of your project:
+Use your editor to create a `skewer.yaml` file in the root of your
+project:
 
     emacs skewer.yaml
 
