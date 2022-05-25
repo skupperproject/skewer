@@ -19,189 +19,34 @@
 
 from plano import *
 
-import yaml as _yaml
+_standard_steps = read_yaml("{}.yaml".format(split_extension(__file__)[0]))
 
-class _StringCatalog(dict):
-    def __init__(self, path):
-        super(_StringCatalog, self).__init__()
+_example_suite_para = """
+This example is part of a [suite of examples][examples] showing the
+different ways you can use [Skupper][website] to connect services
+across cloud providers, data centers, and edge sites.
 
-        self.path = "{}.strings".format(split_extension(path)[0])
+[website]: https://skupper.io/
+[examples]: https://skupper.io/examples/index.html
+"""
 
-        check_file(self.path)
+_standard_prerequisites = """
+* The `kubectl` command-line tool, version 1.15 or later
+  ([installation guide][install-kubectl])
 
-        key = None
-        out = list()
+* The `skupper` command-line tool, the latest version ([installation
+  guide][install-skupper])
 
-        for line in read_lines(self.path):
-            line = line.rstrip()
+* Access to at least one Kubernetes cluster, from any provider you
+  choose
 
-            if line.startswith("[") and line.endswith("]"):
-                if key:
-                    self[key] = "".join(out).strip()
+[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+[install-skupper]: https://skupper.io/install/index.html
+"""
 
-                out = list()
-                key = line[1:-1]
-
-                continue
-
-            out.append(line)
-            out.append("\n")
-
-        self[key] = "".join(out).strip()
-
-    def __repr__(self):
-        return format_repr(self)
-
-_strings = _StringCatalog(__file__)
-
-_standard_steps = {
-    "configure_separate_console_sessions": {
-        "title": "Configure separate console sessions",
-        "preamble": _strings["configure_separate_console_sessions_preamble"],
-        "commands": {
-            "*": [
-                {"run": "export KUBECONFIG=~/.kube/config-@namespace@"}
-            ],
-        },
-    },
-    "access_your_clusters": {
-        "title": "Access your clusters",
-        "preamble": _strings["access_your_clusters_preamble"],
-    },
-    "set_up_your_namespaces": {
-        "title": "Set up your namespaces",
-        "preamble": _strings["set_up_your_namespaces_preamble"],
-        "commands": {
-            "*": [
-                {
-                    "run": "kubectl create namespace @namespace@",
-                    "output": "namespace/@namespace@ created",
-                },
-                {
-                    "run": "kubectl config set-context --current --namespace @namespace@",
-                    "output": "Context \"minikube\" modified."
-                },
-            ],
-        },
-    },
-    "install_skupper_in_your_namespaces": {
-        "title": "Install Skupper in your namespaces",
-        "preamble": _strings["install_skupper_in_your_namespaces_preamble"],
-        "commands": {
-            "*": [
-                {
-                    "run": "skupper init",
-                    "output": "Waiting for LoadBalancer IP or hostname...\n" \
-                              "Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.\n",
-                },
-                {"await": ["deployment/skupper-service-controller", "deployment/skupper-router"]},
-            ],
-        },
-        "postamble": _strings["install_skupper_in_your_namespaces_postamble"],
-    },
-    "check_the_status_of_your_namespaces": {
-        "title": "Check the status of your namespaces",
-        "preamble": _strings["check_the_status_of_your_namespaces_preamble"],
-        "commands": {
-            "*": [
-                {"run": "skupper status"},
-            ],
-        },
-        "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
-    },
-    "link_your_namespaces": {
-        "title": "Link your namespaces",
-        "preamble": _strings["link_your_namespaces_preamble"],
-        "commands": {
-            "0": [
-                {
-                    "run": "skupper token create ~/secret.token",
-                    "output": "Token written to ~/secret.token",
-                 },
-            ],
-            "1": [
-                {
-                    "run": "skupper link create ~/secret.token",
-                    "output": "Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)\n" \
-                              "Check the status of the link using 'skupper link status'.\n"
-                },
-                {"run": "skupper link status --wait 60", "apply": "test",},
-            ],
-        },
-        "postamble": _strings["link_your_namespaces_postamble"],
-    },
-    "test_the_application": {
-        "title": "Test the application",
-        "preamble": _strings["test_the_application_preamble"],
-        "commands": {
-            "0": [
-                {
-                    "run": "kubectl get service/frontend",
-                    "apply": "readme",
-                    "output": "NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE\n" \
-                              "frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s\n",
-                },
-                {
-                    "run": "curl http://<external-ip>:8080/api/health",
-                    "apply": "readme",
-                    "output": "OK",
-                },
-                {
-                    "await_external_ip": "service/frontend",
-                },
-                {
-                    "run": "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')",
-                    "apply": "test",
-                },
-            ],
-        },
-        "postamble": _strings["test_the_application_postamble"],
-    },
-    "accessing_the_web_console": {
-        "title": "Accessing the web console",
-        "numbered": False,
-        "preamble": _strings["accessing_the_web_console_preamble"],
-        "commands": {
-            "0": [
-                {
-                    "run": "kubectl get service/skupper",
-                    "apply": "readme",
-                    "output": "NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                           AGE\n" \
-                              "skupper    LoadBalancer   10.96.54.251    <external-ip>   8080:31616/TCP,8081:30642/TCP     3m34s\n",
-                },
-                {
-                    "run": "kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d",
-                    "apply": "readme",
-                    "output": "<password>",
-                },
-                {
-                    "await_external_ip": "service/skupper",
-                },
-                {
-                    "run": "curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d)",
-                    "apply": "test",
-                },
-            ],
-        },
-        "postamble": _strings["accessing_the_web_console_postamble"],
-    },
-    "cleaning_up": {
-        "title": "Cleaning up",
-        "numbered": False,
-        "preamble": _strings["cleaning_up_preamble"],
-        "commands": {
-            "*": [
-                {"run": "skupper delete"},
-            ],
-        },
-        "postamble": _strings["cleaning_up_postamble"],
-    },
-}
-
-def _string_loader(loader, node):
-    return _strings[node.value]
-
-_yaml.SafeLoader.add_constructor("!string", _string_loader)
+_standard_next_steps = """
+Check out the other [examples][examples] on the Skupper website.
+"""
 
 def check_environment():
     check_program("base64")
@@ -256,12 +101,10 @@ def run_steps_on_minikube(skewer_file):
     check_environment()
     check_program("minikube")
 
-    with open(skewer_file) as file:
-        skewer_data = _yaml.safe_load(file)
+    skewer_data = read_yaml(skewer_file)
+    work_dir = make_temp_dir()
 
     _apply_standard_steps(skewer_data)
-
-    work_dir = make_temp_dir()
 
     try:
         run(f"minikube -p skewer start")
@@ -282,12 +125,10 @@ def run_steps_on_minikube(skewer_file):
 def run_steps_external(skewer_file, **kubeconfigs):
     check_environment()
 
-    with open(skewer_file) as file:
-        skewer_data = _yaml.safe_load(file)
+    skewer_data = read_yaml(skewer_file)
+    work_dir = make_temp_dir()
 
     _apply_standard_steps(skewer_data)
-
-    work_dir = make_temp_dir()
 
     for name, kubeconfig in kubeconfigs.items():
         skewer_data["sites"][name]["kubeconfig"] = kubeconfig
@@ -347,9 +188,7 @@ def _run_step(work_dir, skewer_data, step_data):
                         await_external_ip(group, name)
 
 def generate_readme(skewer_file, output_file):
-    with open(skewer_file) as file:
-        skewer_data = _yaml.safe_load(file)
-
+    skewer_data = read_yaml(skewer_file)
     out = list()
 
     out.append(f"# {skewer_data['title']}")
@@ -364,7 +203,7 @@ def generate_readme(skewer_file, output_file):
         out.append(f"#### {skewer_data['subtitle']}")
         out.append("")
 
-    out.append(_strings["example_suite_para"])
+    out.append(_example_suite_para)
     out.append("")
     out.append("#### Contents")
     out.append("")
@@ -372,8 +211,7 @@ def generate_readme(skewer_file, output_file):
     if "overview" in skewer_data:
         out.append("* [Overview](#overview)")
 
-    if "prerequisites" in skewer_data:
-        out.append("* [Prerequisites](#prerequisites)")
+    out.append("* [Prerequisites](#prerequisites)")
 
     _apply_standard_steps(skewer_data)
 
@@ -404,11 +242,15 @@ def generate_readme(skewer_file, output_file):
         out.append(skewer_data["overview"].strip())
         out.append("")
 
+    prerequisites = _standard_prerequisites
+
     if "prerequisites" in skewer_data:
-        out.append("## Prerequisites")
-        out.append("")
-        out.append(skewer_data["prerequisites"].strip())
-        out.append("")
+        prerequisites = skewer_data["prerequisites"].strip()
+
+    out.append("## Prerequisites")
+    out.append("")
+    out.append(prerequisites)
+    out.append("")
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
         if step_data.get("numbered", True):
@@ -427,10 +269,15 @@ def generate_readme(skewer_file, output_file):
         out.append(skewer_data["summary"].strip())
         out.append("")
 
+    next_steps = _standard_next_steps
+
     if "next_steps" in skewer_data:
-        out.append("## Next steps")
-        out.append("")
-        out.append(skewer_data["next_steps"].strip())
+        next_steps = skewer_data["next_steps"].strip()
+
+    out.append("## Next steps")
+    out.append("")
+    out.append(next_steps)
+    out.append("")
 
     write(output_file, "\n".join(out).strip() + "\n")
 

@@ -26,8 +26,8 @@ Add the Skewer code as a subrepo in your project:
 Symlink the Skewer libraries into your `python` directory:
 
     mkdir -p python
-    ln -s ../subrepos/skewer/python/skewer.strings python/skewer.strings
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
+    ln -s ../subrepos/skewer/python/skewer.yaml python/skewer.yaml
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Copy the
@@ -36,7 +36,8 @@ example `Planofile` there as well:
     ln -s subrepos/skewer/plano
     cp subrepos/skewer/test-example/Planofile .
 
-Use your editor to create a `skewer.yaml` file:
+Use your editor to create a `skewer.yaml` file in the root directory
+of your project:
 
      emacs skewer.yaml
 
@@ -197,12 +198,4 @@ commands:
       output: |
         NAME          TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)         AGE
         backend       ClusterIP      10.102.112.121   <none>           8080/TCP        30s
-~~~
-
-Skewer has boilerplate strings for a lot of cases.  You can see what's
-there in the `skewer.strings` file.  To include a string, use the
-`!string` directive.
-
-~~~ yaml
-next_steps: !string next_steps
 ~~~

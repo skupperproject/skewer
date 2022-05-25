@@ -4,12 +4,14 @@
 
 #### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
+
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
 across cloud providers, data centers, and edge sites.
 
 [website]: https://skupper.io/
 [examples]: https://skupper.io/examples/index.html
+
 
 #### Contents
 
@@ -28,7 +30,6 @@ across cloud providers, data centers, and edge sites.
 * [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
-* [Next steps](#next-steps)
 
 ## Overview
 
@@ -52,6 +53,7 @@ services without exposing the backend to the public internet.
 
 ## Prerequisites
 
+
 * The `kubectl` command-line tool, version 1.15 or later
   ([installation guide][install-kubectl])
 
@@ -63,6 +65,7 @@ services without exposing the backend to the public internet.
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [install-skupper]: https://skupper.io/install/index.html
+
 
 ## Step 1: Configure separate console sessions
 
@@ -449,5 +452,6 @@ the frontend.
 <img src="images/sequence.svg" width="640"/>
 
 ## Next steps
+
 
 Check out the other [examples][examples] on the Skupper website.

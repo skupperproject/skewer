@@ -19,7 +19,6 @@ overview: |
   services without exposing the backend to the public internet.
 
   <img src="images/entities.svg" width="640"/>
-prerequisites: !string prerequisites
 sites:
   west:
     kubeconfig: ~/.kube/config-west
@@ -102,4 +101,3 @@ summary: |
   the frontend.
 
   <img src="images/sequence.svg" width="640"/>
-next_steps: !string next_steps
