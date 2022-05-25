@@ -78,12 +78,11 @@ title:               # Your example's title (required)
 subtitle:            # Your chosen subtitle (required)
 github_actions_url:  # The URL of your workflow (optional)
 overview:            # Text introducing your example (optional)
-prerequisites:       # Text describing prerequisites (optional)
+prerequisites:       # Text describing prerequisites (optional, has default text)
 sites:               # A map of named sites.  See below.
 steps:               # A list of steps.  See below.
 summary:             # Text to summarize what the user did (optional)
-cleaning_up:         # A special step for cleaning up (optional)
-next_steps:          # Text linking to more examples (optional)
+next_steps:          # Text linking to more examples (optional, has default text)
 ~~~
 
 A **site**:
@@ -112,10 +111,10 @@ sites:
 A **step**:
 
 ~~~ yaml
-title:      # The step title (required)
-preamble:   # Text before the commands (optional)
-commands:   # Named groups of commands.  See below.
-postamble:  # Text after the commands (optional)
+- title:            # The step title (required)
+  preamble:         # Text before the commands (optional)
+  commands:         # Named groups of commands.  See below.
+  postamble:        # Text after the commands (optional)
 ~~~
 
 An example step:
@@ -141,11 +140,19 @@ Or you can use a named, canned step from the library of standard
 steps:
 
 ~~~ yaml
-standard: configure_separate_console_sessions
+- standard: configure_separate_console_sessions
 ~~~
 
-The initial steps are usually standard ones, so you may be able to use
-this:
+You can override the `title`, `preamble`, `commands`, or `postamble`
+field of a standard step by adding the field after `standard`:
+
+~~~ yaml
+- standard: configure_separate_console_sessions
+  postamble: My custom postamble
+~~~
+
+The initial steps are usually standard ones.  There are also some
+standard steps at the end.  You may be able to do something like this:
 
 ~~~ yaml
 steps:
@@ -155,8 +162,16 @@ steps:
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
   - standard: link_your_namespaces
-  [...]
+  <your-custom-steps>
+  - standard: test_the_application
+  - standard: accessing_the_web_console
+  - standard: cleaning_up
 ~~~
+
+Note that the `link_your_namespaces` and `test_the_application` are a
+bit less generic than the other steps, so check that the text and
+commands they produce are doing what you need.  If not, you'll need to
+provide a custom step.
 
 The step commands are separated into named groups corresponding to the
 sites.  Each named group contains a list of command entries.  Each
@@ -166,10 +181,9 @@ fields for awaiting completion or providing sample output.
 A **command**:
 
 ~~~ yaml
-run:                # A shell command (optional)
-apply:              # Use this command only for "readme" or "test" (optional, default is both)
-output:             # Sample output to include in the README (optional)
-await:              # A resource or list of resources for which to await readiness (optional)
+- run:              # A shell command (optional)
+  apply:            # Use this command only for "readme" or "test" (optional, default is both)
+  output:           # Sample output to include in the README (optional)
 ~~~
 
 Only the `run` and `output` fields are used in the README content.
@@ -180,9 +194,13 @@ The `apply` field is useful when you want the readme instructions to
 be different from the test procedure, or you simply want to omit
 something.
 
-The `await` field is often used by itself to pause for a condition you
-require before going to the next step.  It is used only for testing
-and does not impact the README.
+There is also a special `await` command you can use to pause for a
+condition you require before going to the next step.  It is used only
+for testing and does not impact the README.
+
+~~~ yaml
+- await:            # A resource or list of resources for which to await readiness (optional)
+~~~
 
 Example commands:
 
