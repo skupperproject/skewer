@@ -133,10 +133,28 @@ placeholder.  The actual value is an IP address.
 If everything is in order, you can now access the web interface by
 navigating to `http://<external-ip>:8080/` in your browser.
 
+[accessing_the_web_console_preamble]
+
+Skupper includes a web console you can use to view the application
+network.  To access it, use `kubectl get service/skupper` to look up
+the external IP of the web console.  Then use `kubectl get
+secret/skupper-console-users` to look up the console admin password.
+
+**Note:** The `<external-ip>` and `<password>` fields in the following
+commands are placeholders.  The actual values are specific to your
+environment.
+
+[accessing_the_web_console_postamble]
+
+Navigate to `https://<external-ip>:8080/` in your browser.  When
+prompted, log in as user `admin` and enter the password.
+
 [cleaning_up_preamble]
 
 To remove Skupper and the other resources from this exercise, use the
 following commands.
+
+[cleaning_up_postamble]
 
 [next_steps]
 

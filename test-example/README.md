@@ -379,14 +379,13 @@ navigating to `http://<external-ip>:8080/` in your browser.
 ## Accessing the web console
 
 Skupper includes a web console you can use to view the application
-network.  To access it, use `kubectl get service/skupper` to look
-up the external IP of the web console.  Then use `kubectl get
-secret/skupper-console-users` to look up the console admin
-password.
+network.  To access it, use `kubectl get service/skupper` to look up
+the external IP of the web console.  Then use `kubectl get
+secret/skupper-console-users` to look up the console admin password.
 
-**Note:** The `<external-ip>` and `<password>` fields in the
-following commands are placeholders.  The actual values are
-specific to your environment.
+**Note:** The `<external-ip>` and `<password>` fields in the following
+commands are placeholders.  The actual values are specific to your
+environment.
 
 **Console for _west_:**
 

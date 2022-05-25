@@ -147,7 +147,7 @@ _standard_steps = {
                     "output": "OK",
                 },
                 {
-                    "await_external_ip": ["service/frontend"],
+                    "await_external_ip": "service/frontend",
                 },
                 {
                     "run": "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')",
@@ -157,6 +157,34 @@ _standard_steps = {
         },
         "postamble": _strings["test_the_application_postamble"],
     },
+    "accessing_the_web_console": {
+        "title": "Accessing the web console",
+        "numbered": False,
+        "preamble": _strings["accessing_the_web_console_preamble"],
+        "commands": {
+            "0": [
+                {
+                    "run": "kubectl get service/skupper",
+                    "apply": "readme",
+                    "output": "NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                           AGE\n" \
+                              "skupper    LoadBalancer   10.96.54.251    <external-ip>   8080:31616/TCP,8081:30642/TCP     3m34s\n",
+                },
+                {
+                    "run": "kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d",
+                    "apply": "readme",
+                    "output": "<password>",
+                },
+                {
+                    "await_external_ip": "service/skupper",
+                },
+                {
+                    "run": "curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d)",
+                    "apply": "test",
+                },
+            ],
+        },
+        "postamble": _strings["accessing_the_web_console_postamble"],
+    },
 }
 
 def _string_loader(loader, node):
@@ -165,6 +193,7 @@ def _string_loader(loader, node):
 _yaml.SafeLoader.add_constructor("!string", _string_loader)
 
 def check_environment():
+    check_program("base64")
     check_program("curl")
     check_program("kubectl")
     check_program("skupper")
@@ -260,12 +289,6 @@ def _run_steps(work_dir, skewer_data):
     for step_data in skewer_data["steps"]:
         _run_step(work_dir, skewer_data, step_data)
 
-    if "accessing_the_web_console" in skewer_data:
-        _run_step(work_dir, skewer_data, skewer_data["accessing_the_web_console"])
-
-    if "cleaning_up" in skewer_data:
-        _run_step(work_dir, skewer_data, skewer_data["cleaning_up"])
-
 def _run_step(work_dir, skewer_data, step_data):
     if "commands" not in step_data:
         return
@@ -344,7 +367,10 @@ def generate_readme(skewer_file, output_file):
     _apply_standard_steps(skewer_data)
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
-        title = f"Step {i}: {step_data['title']}"
+        if step_data.get("numbered", True):
+            title = f"Step {i}: {step_data['title']}"
+        else:
+            title = step_data['title']
 
         fragment = replace(title, " ", "_")
         fragment = replace(fragment, r"[\W]", "")
@@ -352,12 +378,6 @@ def generate_readme(skewer_file, output_file):
         fragment = fragment.lower()
 
         out.append(f"* [{title}](#{fragment})")
-
-    if "accessing_the_web_console" in skewer_data:
-        out.append("* [Accessing the web console](#accessing-the-web-console)")
-
-    if "cleaning_up" in skewer_data:
-        out.append("* [Cleaning up](#cleaning-up)")
 
     if "summary" in skewer_data:
         out.append("* [Summary](#summary)")
@@ -380,21 +400,14 @@ def generate_readme(skewer_file, output_file):
         out.append("")
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
-        out.append(f"## Step {i}: {step_data['title']}")
+        if step_data.get("numbered", True):
+            title = f"Step {i}: {step_data['title']}"
+        else:
+            title = step_data['title']
+
+        out.append(f"## {title}")
         out.append("")
         out.append(_generate_readme_step(skewer_data, step_data))
-        out.append("")
-
-    if "accessing_the_web_console" in skewer_data:
-        out.append("## Accessing the web console")
-        out.append("")
-        out.append(_generate_readme_step(skewer_data, skewer_data["accessing_the_web_console"]))
-        out.append("")
-
-    if "cleaning_up" in skewer_data:
-        out.append("## Cleaning up")
-        out.append("")
-        out.append(_generate_readme_step(skewer_data, skewer_data["cleaning_up"]))
         out.append("")
 
     if "summary" in skewer_data:
@@ -465,6 +478,7 @@ def _apply_standard_steps(skewer_data):
         standard_step_data = _standard_steps[step_data["standard"]]
 
         step_data["title"] = standard_step_data["title"]
+        step_data["numbered"] = standard_step_data.get("numbered", True)
 
         if "preamble" in standard_step_data:
             step_data["preamble"] = standard_step_data["preamble"]
