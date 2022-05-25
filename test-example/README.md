@@ -71,8 +71,8 @@ services without exposing the backend to the public internet.
 
 Skupper is designed for use with multiple namespaces, typically on
 different clusters.  The `skupper` command uses your
-[kubeconfig][kubeconfig] and current context to select the namespace
-where it operates.
+[kubeconfig][kubeconfig] and current context to select the
+namespace where it operates.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -102,10 +102,10 @@ export KUBECONFIG=~/.kube/config-east
 
 ## Step 2: Access your clusters
 
-The methods for accessing your clusters vary by Kubernetes provider.
-Find the instructions for your chosen providers and use them to
-authenticate and configure access for each console session.  See the
-following links for more information:
+The methods for accessing your clusters vary by Kubernetes
+provider. Find the instructions for your chosen providers and use
+them to authenticate and configure access for each console
+session.  See the following links for more information:
 
 * [Minikube](https://skupper.io/start/minikube.html)
 * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
@@ -117,9 +117,9 @@ following links for more information:
 
 ## Step 3: Set up your namespaces
 
-Use `kubectl create namespace` to create the namespaces you wish to
-use (or use existing namespaces).  Use `kubectl config set-context` to
-set the current namespace for each session.
+Use `kubectl create namespace` to create the namespaces you wish
+to use (or use existing namespaces).  Use `kubectl config
+set-context` to set the current namespace for each session.
 
 **Console for _west_:**
 
@@ -214,9 +214,12 @@ skupper status
 You should see output like this for each namespace:
 
 ~~~
-Skupper is enabled for namespace "<namespace>" in interior mode. It is not connected to any other sites. It has no exposed services.
+Skupper is enabled for namespace "<namespace>" in interior
+mode. It is not connected to any other sites. It has no exposed
+services.
 The site console url is: http://<address>:8080
-The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+The credentials for internal console-auth mode are held in secret:
+'skupper-console-users'
 ~~~
 
 As you move through the steps below, you can use `skupper status` at
@@ -224,21 +227,22 @@ any time to check your progress.
 
 ## Step 6: Link your namespaces
 
-Creating a link requires use of two `skupper` commands in conjunction,
-`skupper token create` and `skupper link create`.
+Creating a link requires use of two `skupper` commands in
+conjunction, `skupper token create` and `skupper link create`.
 
 The `skupper token create` command generates a secret token that
 signifies permission to create a link.  The token also carries the
-link details.  Then, in a remote namespace, The `skupper link create`
-command uses the token to create a link to the namespace that
-generated it.
+link details.  Then, in a remote namespace, The `skupper link
+create` command uses the token to create a link to the namespace
+that generated it.
 
 **Note:** The link token is truly a *secret*.  Anyone who has the
-token can link to your namespace.  Make sure that only those you trust
-have access to it.
+token can link to your namespace.  Make sure that only those you
+trust have access to it.
 
 First, use `skupper token create` in one namespace to generate the
-token.  Then, use `skupper link create` in the other to create a link.
+token.  Then, use `skupper link create` in the other to create a
+link.
 
 **Console for _west_:**
 
@@ -267,9 +271,9 @@ Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-0
 Check the status of the link using 'skupper link status'.
 ~~~
 
-If your console sessions are on different machines, you may need to
-use `sftp` or a similar tool to transfer the token securely.  By
-default, tokens expire after a single use or 15 minutes after
+If your console sessions are on different machines, you may need
+to use `sftp` or a similar tool to transfer the token securely.
+By default, tokens expire after a single use or 15 minutes after
 creation.
 
 ## Step 7: Deploy the frontend and backend services
@@ -351,9 +355,10 @@ service/frontend exposed
 
 ## Step 10: Test the application
 
-Now we're ready to try it out.  Use `kubectl get service/frontend` to
-look up the external IP of the frontend service.  Then use `curl` or a
-similar tool to request the `/api/health` endpoint at that address.
+Now we're ready to try it out.  Use `kubectl get service/frontend`
+to look up the external IP of the frontend service.  Then use
+`curl` or a similar tool to request the `/api/health` endpoint at
+that address.
 
 **Note:** The `<external-ip>` field in the following commands is a
 placeholder.  The actual value is an IP address.
@@ -382,13 +387,14 @@ navigating to `http://<external-ip>:8080/` in your browser.
 ## Accessing the web console
 
 Skupper includes a web console you can use to view the application
-network.  To access it, use `kubectl get service/skupper` to look up
-the external IP of the web console.  Then use `kubectl get
-secret/skupper-console-users` to look up the console admin password.
+network.  To access it, use `kubectl get service/skupper` to look
+up the external IP of the web console.  Then use `kubectl get
+secret/skupper-console-users` to look up the console admin
+password.
 
-**Note:** The `<external-ip>` and `<password>` fields in the following
-commands are placeholders.  The actual values are specific to your
-environment.
+**Note:** The `<external-ip>` and `<password>` fields in the
+following commands are placeholders.  The actual values are
+specific to your environment.
 
 **Console for _west_:**
 
@@ -413,8 +419,8 @@ prompted, log in as user `admin` and enter the password.
 
 ## Cleaning up
 
-To remove Skupper and the other resources from this exercise, use the
-following commands.
+To remove Skupper and the other resources from this exercise, use
+the following commands.
 
 **Console for _west_:**
 
