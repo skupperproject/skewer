@@ -14,7 +14,7 @@ and produces two outputs: a `README.md` file and a test routine.
 
 [Example `README.md` output](test-example/README.md)
 
-[Example generate and test functions](test-example/Planofile)
+[Example generate and test functions](test-example/.planofile)
 
 ## Setting up Skewer for your own example
 
@@ -32,10 +32,10 @@ Symlink the Skewer libraries into your `python` directory:
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Copy the
-example `Planofile` there as well:
+example `.planofile` there as well:
 
     ln -s subrepos/skewer/plano
-    cp subrepos/skewer/test-example/Planofile .
+    cp subrepos/skewer/test-example/.planofile .
 
 Use your editor to create a `skewer.yaml` file in the root directory
 of your project:
