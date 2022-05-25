@@ -89,13 +89,15 @@ def await_external_ip(group, name, namespace=None):
     if namespace is not None:
         base_command = f"{base_command} -n {namespace}"
 
-    for i in range(180):
-        sleep(1)
+    for i in range(90):
+        sleep(2)
 
         if call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
     else:
         fail(f"Timed out waiting for external IP for {group}/{name}")
+
+    return call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
 
 def run_steps_on_minikube(skewer_file):
     check_environment()
@@ -136,10 +138,48 @@ def run_steps_external(skewer_file, **kubeconfigs):
     _run_steps(work_dir, skewer_data)
 
 def _run_steps(work_dir, skewer_data):
-    sites = skewer_data["sites"]
-
     for step_data in skewer_data["steps"]:
+        if step_data.get("id") == "cleaning_up" and "SKEWER_DEMO" in ENV:
+            _pause_for_demo(work_dir, skewer_data)
+
         _run_step(work_dir, skewer_data, step_data)
+
+def _pause_for_demo(work_dir, skewer_data):
+    first_site_name, first_site_data = list(skewer_data["sites"].items())[0]
+    first_site_kubeconfig = first_site_data["kubeconfig"].replace("~", work_dir)
+    frontend_url = None
+
+    with working_env(KUBECONFIG=first_site_kubeconfig):
+        console_ip = await_external_ip("service", "skupper")
+        console_url = f"https://{console_ip}:8080/"
+        password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
+        password = base64_decode(password_data).decode("ascii")
+
+        if run("kubectl get service/frontend", check=False, output=DEVNULL).exit_code == 0:
+            frontend_ip = await_external_ip("service", "frontend")
+            frontend_url = f"http://{frontend_ip}:8080/"
+
+    print()
+    print("Demo time!")
+    print()
+    print("Sites:")
+
+    for site_name, site_data in skewer_data["sites"].items():
+        kubeconfig = site_data["kubeconfig"].replace("~", work_dir)
+        print(f"  {site_name}: export KUBECONFIG={kubeconfig}")
+
+    if frontend_url:
+        print()
+        print(f"Frontend URL:     {frontend_url}")
+
+    print()
+    print(f"Console URL:      {console_url}")
+    print( "Console user:     admin")
+    print(f"Console password: {password}")
+    print()
+
+    while input("Are you done (yes)? ") != "yes":
+        pass
 
 def _run_step(work_dir, skewer_data, step_data):
     if "commands" not in step_data:
@@ -334,6 +374,9 @@ def _apply_standard_steps(skewer_data):
             continue
 
         standard_step_data = _standard_steps[step_data["standard"]]
+
+        if "id" not in step_data:
+            step_data["id"] = standard_step_data.get("id")
 
         if "title" not in step_data:
             step_data["title"] = standard_step_data["title"]

@@ -61,6 +61,7 @@ commands:
     generate            Generate README.md from the data in skewer.yaml
     render              Render README.html from the data in skewer.yaml
     test-external       Test the example against external clusters
+    demo                Run the example steps and pause before cleaning up
 ~~~
 
 ## Updating a Skewer subrepo inside your example project
@@ -159,8 +160,13 @@ field of a standard step by adding the field in addition to
 `standard`:
 
 ~~~ yaml
-- standard: configure_separate_console_sessions
-  postamble: My custom postamble
+- standard: cleaning_up
+  commands:
+    east:
+     - run: skupper delete
+     - run: kubectl delete deployment/database
+    west:
+     - run: skupper delete
 ~~~
 
 The initial steps are usually standard ones.  There are also some

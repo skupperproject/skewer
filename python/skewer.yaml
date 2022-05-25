@@ -145,7 +145,7 @@ test_the_application:
         apply: readme
         output: OK
       - await_external_ip: service/frontend
-      - run: curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
+      - run: curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health'); echo
         apply: test
   postamble: |
     If everything is in order, you can now access the web interface by
@@ -174,12 +174,13 @@ accessing_the_web_console:
         apply: readme
         output: <password>
       - await_external_ip: service/skupper
-      - run: curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d)
+      - run: curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d); echo
         apply: test
   postamble: |
     Navigate to `https://<external-ip>:8080/` in your browser.  When
     prompted, log in as user `admin` and enter the password.
 cleaning_up:
+  id: cleaning_up
   title: Cleaning up
   numbered: false
   preamble: |
