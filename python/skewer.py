@@ -185,6 +185,17 @@ _standard_steps = {
         },
         "postamble": _strings["accessing_the_web_console_postamble"],
     },
+    "cleaning_up": {
+        "title": "Cleaning up",
+        "numbered": False,
+        "preamble": _strings["cleaning_up_preamble"],
+        "commands": {
+            "*": [
+                {"run": "skupper delete"},
+            ],
+        },
+        "postamble": _strings["cleaning_up_postamble"],
+    },
 }
 
 def _string_loader(loader, node):
@@ -477,31 +488,37 @@ def _apply_standard_steps(skewer_data):
 
         standard_step_data = _standard_steps[step_data["standard"]]
 
-        step_data["title"] = standard_step_data["title"]
-        step_data["numbered"] = standard_step_data.get("numbered", True)
+        if "title" not in step_data:
+            step_data["title"] = standard_step_data["title"]
 
-        if "preamble" in standard_step_data:
-            step_data["preamble"] = standard_step_data["preamble"]
+        if "numbered" not in step_data:
+            step_data["numbered"] = standard_step_data.get("numbered", True)
 
-        if "postamble" in standard_step_data:
-            step_data["postamble"] = standard_step_data["postamble"]
+        if "preamble" not in step_data:
+            if "preamble" in standard_step_data:
+                step_data["preamble"] = standard_step_data["preamble"]
 
-        if "commands" in standard_step_data:
-            step_data["commands"] = dict()
+        if "postamble" not in step_data:
+            if "postamble" in standard_step_data:
+                step_data["postamble"] = standard_step_data["postamble"]
 
-            if "*" in standard_step_data["commands"]:
-                assert len(standard_step_data["commands"]) == 1, standard_step_data["commands"]
+        if "commands" not in step_data:
+            if "commands" in standard_step_data:
+                step_data["commands"] = dict()
 
-                for namespace, site_data in skewer_data["sites"].items():
-                    commands = standard_step_data["commands"]["*"]
+                if "*" in standard_step_data["commands"]:
+                    assert len(standard_step_data["commands"]) == 1, standard_step_data["commands"]
 
-                    step_data["commands"][namespace] = _resolve_commands(commands, namespace)
-            else:
-                for site_index in standard_step_data["commands"]:
-                    commands = standard_step_data["commands"][site_index]
-                    namespace = list(skewer_data["sites"])[int(site_index)]
+                    for namespace, site_data in skewer_data["sites"].items():
+                        commands = standard_step_data["commands"]["*"]
 
-                    step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+                        step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+                else:
+                    for site_index in standard_step_data["commands"]:
+                        commands = standard_step_data["commands"][site_index]
+                        namespace = list(skewer_data["sites"])[int(site_index)]
+
+                        step_data["commands"][namespace] = _resolve_commands(commands, namespace)
 
 def _resolve_commands(commands, namespace):
     resolved_commands = list()
