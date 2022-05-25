@@ -6,7 +6,7 @@ A library for documenting and testing Skupper examples
 
 A `skewer.yaml` file describes the steps and commands to achieve an
 objective using Skupper.  Skewer takes the `skewer.yaml` file as input
-and produces a `README.md` file and a test routine as output.
+and produces two outputs: a `README.md` file and a test routine.
 
 ## An example example
 
@@ -18,7 +18,8 @@ and produces a `README.md` file and a test routine as output.
 
 ## Setting up Skewer for your own example
 
-Add the Skewer code as a subrepo in your project:
+Add the Skewer code as a subrepo in your project.  If necessary, you
+can use `dnf install git-subrepo` to install it on Fedora.
 
     cd project-dir/
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
@@ -39,50 +40,59 @@ example `Planofile` there as well:
 Use your editor to create a `skewer.yaml` file in the root directory
 of your project:
 
-     emacs skewer.yaml
+    emacs skewer.yaml
 
 Run the `./plano` command to see what you can do: generate the
-README and test your example.
+README and test your example:
 
-     ./plano
+~~~ console
+$ ./plano
+usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,test-external} ...
 
-## Installing Git Subrepo on Fedora
+options:
+  --verbose             Print detailed logging to the console
+  --quiet               Print no logging to the console
+  --debug               Print debugging output to the console
+  -h, --help            Show this help message and exit
+  -f FILE, --file FILE  Load commands from FILE (default 'Planofile' or '.planofile')
 
-    dnf install git-subrepo
+commands:
+  {test,generate,render,test-external}
+    test                Test the example using Minikube
+    generate            Generate README.md from the data in skewer.yaml
+    render              Render README.html from the data in skewer.yaml
+    test-external       Test the example against external clusters
+~~~
 
 ## Updating a Skewer subrepo inside your example project
 
-Usually this will do what you want:
+Use `git subrepo pull`:
 
-    git subrepo pull subrepos/skewer
+    git subrepo pull --force subrepos/skewer
 
-If you made changes to the Skewer subrepo, the command above will ask
-you to perform a merge.  You can use the procedure that the subrepo
-tooling offers, but if you'd prefer to simply blow away your changes
-and get the latest Skewer, you can use the following procedure:
+Some older versions of git-subrepo won't complete a force pull.  If
+that happens, you can simply blow away your changes and get the latest
+Skewer, using these commands:
 
     git subrepo clean subrepos/skewer
     git rm -rf subrepos/skewer/
     git commit -am "Temporarily remove the previous version of Skewer"
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
 
-You should also be able to use `git subrepo pull --force`, to achieve
-the same, but it didn't work with my version of Git Subrepo.
-
 ## Skewer YAML
 
 The top level:
 
 ~~~ yaml
-title:               # Your example's title (required)
-subtitle:            # Your chosen subtitle (required)
-github_actions_url:  # The URL of your workflow (optional)
-overview:            # Text introducing your example (optional)
-prerequisites:       # Text describing prerequisites (optional, has default text)
-sites:               # A map of named sites.  See below.
-steps:               # A list of steps.  See below.
-summary:             # Text to summarize what the user did (optional)
-next_steps:          # Text linking to more examples (optional, has default text)
+title:              # Your example's title (required)
+subtitle:           # Your chosen subtitle (required)
+github_actions_url: # The URL of your workflow (optional)
+overview:           # Text introducing your example (optional)
+prerequisites:      # Text describing prerequisites (optional, has default text)
+sites:              # A map of named sites.  See below.
+steps:              # A list of steps.  See below.
+summary:            # Text to summarize what the user did (optional)
+next_steps:         # Text linking to more examples (optional, has default text)
 ~~~
 
 A **site**:
@@ -136,15 +146,18 @@ steps:
       west: <list-of-commands>
 ~~~
 
-Or you can use a named, canned step from the library of standard
-steps:
+Or you can use a named step from the library of standard steps:
 
 ~~~ yaml
 - standard: configure_separate_console_sessions
 ~~~
 
+The standard steps are defined in
+[python/skewer.yaml](python/skewer.yaml).
+
 You can override the `title`, `preamble`, `commands`, or `postamble`
-field of a standard step by adding the field after `standard`:
+field of a standard step by adding the field in addition to
+`standard`:
 
 ~~~ yaml
 - standard: configure_separate_console_sessions
@@ -168,8 +181,8 @@ steps:
   - standard: cleaning_up
 ~~~
 
-Note that the `link_your_namespaces` and `test_the_application` are a
-bit less generic than the other steps, so check that the text and
+Note that the `link_your_namespaces` and `test_the_application` steps
+are less generic than the other steps, so check that the text and
 commands they produce are doing what you need.  If not, you'll need to
 provide a custom step.
 
@@ -181,7 +194,7 @@ fields for awaiting completion or providing sample output.
 A **command**:
 
 ~~~ yaml
-- run:              # A shell command (optional)
+- run:              # A shell command (required)
   apply:            # Use this command only for "readme" or "test" (optional, default is both)
   output:           # Sample output to include in the README (optional)
 ~~~
