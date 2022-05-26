@@ -387,35 +387,35 @@ navigating to `http://<external-ip>:8080/` in your browser.
 ## Accessing the web console
 
 Skupper includes a web console you can use to view the application
-network.  To access it, use `kubectl get service/skupper` to look
-up the external IP of the web console.  Then use `kubectl get
-secret/skupper-console-users` to look up the console admin
-password.
+network.  To access it, use `skupper status` to look up URL of the
+web console.  Then use `kubectl get secret/skupper-console-users`
+to look up the console admin password.
 
-**Note:** The `<external-ip>` and `<password>` fields in the
+**Note:** The `<console-url>` and `<password>` fields in the
 following commands are placeholders.  The actual values are
 specific to your environment.
 
 **Console for _west_:**
 
 ~~~ shell
-kubectl get service/skupper
+skupper status
 kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
 ~~~
 
 Sample output:
 
 ~~~ console
-$ kubectl get service/skupper
-NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                           AGE
-skupper    LoadBalancer   10.96.54.251    <external-ip>   8080:31616/TCP,8081:30642/TCP     3m34s
+$ skupper status
+Skupper is enabled for namespace "west" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+The site console url is: <console-url>
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 
 $ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
 <password>
 ~~~
 
-Navigate to `https://<external-ip>:8080/` in your browser.  When
-prompted, log in as user `admin` and enter the password.
+Navigate to `<console-url>` in your browser.  When prompted, log
+in as user `admin` and enter the password.
 
 ## Cleaning up
 
