@@ -349,7 +349,7 @@ def _generate_readme_step(skewer_data, step_data):
             namespace = skewer_data["sites"][site_name]["namespace"]
             outputs = list()
 
-            out.append(f"**Console for _{namespace}_:**")
+            out.append(f"_**Console for {namespace}:**_")
             out.append("")
             out.append("~~~ shell")
 
@@ -369,7 +369,7 @@ def _generate_readme_step(skewer_data, step_data):
             out.append("")
 
             if outputs:
-                out.append("Sample output:")
+                out.append("_Sample output:_")
                 out.append("")
                 out.append("~~~ console")
                 out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
