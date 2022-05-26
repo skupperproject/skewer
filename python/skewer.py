@@ -138,11 +138,24 @@ def run_steps_external(skewer_file, **kubeconfigs):
     _run_steps(work_dir, skewer_data)
 
 def _run_steps(work_dir, skewer_data):
-    for step_data in skewer_data["steps"]:
-        if step_data.get("id") == "cleaning_up" and "SKEWER_DEMO" in ENV:
-            _pause_for_demo(work_dir, skewer_data)
+    steps = list()
+    cleaning_up_step = None
 
-        _run_step(work_dir, skewer_data, step_data)
+    for step in skewer_data["steps"]:
+        if step.get("id") == "cleaning_up":
+            cleaning_up_step = step
+        else:
+            steps.append(step)
+
+    try:
+        for step in steps:
+            _run_step(work_dir, skewer_data, step)
+
+        if "SKEWER_DEMO" in ENV:
+            _pause_for_demo(work_dir, skewer_data)
+    finally:
+        if cleaning_up_step is not None:
+            _run_step(work_dir, skewer_data, cleaning_up_step, check=False)
 
 def _pause_for_demo(work_dir, skewer_data):
     first_site_name, first_site_data = list(skewer_data["sites"].items())[0]
@@ -181,7 +194,7 @@ def _pause_for_demo(work_dir, skewer_data):
     while input("Are you done (yes)? ") != "yes":
         pass
 
-def _run_step(work_dir, skewer_data, step_data):
+def _run_step(work_dir, skewer_data, step_data, check=True):
     if "commands" not in step_data:
         return
 
@@ -205,7 +218,7 @@ def _run_step(work_dir, skewer_data, step_data):
                     continue
 
                 if "run" in command:
-                    run(command["run"].replace("~", work_dir), shell=True)
+                    run(command["run"].replace("~", work_dir), shell=True, check=check)
 
                 if "await" in command:
                     resources = command["await"]
