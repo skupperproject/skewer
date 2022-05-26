@@ -18,8 +18,11 @@ and produces two outputs: a `README.md` file and a test routine.
 
 ## Setting up Skewer for your own example
 
-Add the Skewer code as a subrepo in your project.  If necessary, you
-can use `dnf install git-subrepo` to install it on Fedora.
+Make sure you have git-subrepo installed:
+
+    dnf install git-subrepo
+
+Add the Skewer code as a subrepo in your example project:
 
     cd project-dir/
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
@@ -170,7 +173,8 @@ field of a standard step by adding the field in addition to
 ~~~
 
 The initial steps are usually standard ones.  There are also some
-standard steps at the end.  You may be able to do something like this:
+standard steps at the end.  You may be able to use something like
+this:
 
 ~~~ yaml
 steps:
@@ -235,3 +239,12 @@ commands:
         NAME          TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)         AGE
         backend       ClusterIP      10.102.112.121   <none>           8080/TCP        30s
 ~~~
+
+## Demo mode
+
+Skewer has a mode where it executes all the steps, but before cleaning
+up and exiting, it pauses so you can inspect things.
+
+It is enabled by setting the environment variable `SKEWER_DEMO` to any
+value when you run the test routine.  You can also use `./plano demo`,
+which sets the variable for you.
