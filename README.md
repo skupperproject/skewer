@@ -31,7 +31,6 @@ Symlink the Skewer libraries into your `python` directory:
 
     mkdir -p python
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
-    ln -s ../subrepos/skewer/python/skewer.yaml python/skewer.yaml
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Copy the
