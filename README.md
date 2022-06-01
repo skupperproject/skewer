@@ -33,11 +33,11 @@ Symlink the Skewer libraries into your `python` directory:
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
-Symlink the `plano` command into the root of your project.  Copy the
-example `.planofile` there as well:
+Symlink the `plano` command into the root of your project.  Symlink
+the standard `example.planofile` as `.planofile` in the root as well:
 
     ln -s subrepos/skewer/plano
-    cp subrepos/skewer/test-example/.planofile .
+    ln -s subrepos/skewer/example.planofile .planofile
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
@@ -48,7 +48,7 @@ Run the `./plano` command to see the available commands:
 
 ~~~ console
 $ ./plano
-usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,test-external} ...
+usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,test-external,demo} ...
 
 options:
   --verbose             Print detailed logging to the console
