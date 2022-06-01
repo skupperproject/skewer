@@ -154,8 +154,8 @@ accessing_the_web_console:
     password.
 
     **Note:** The `<console-url>` and `<password>` fields in the
-    following commands are placeholders.  The actual values are
-    specific to your environment.
+    following output are placeholders.  The actual values are specific
+    to your environment.
   commands:
     "0":
       - run: skupper status
