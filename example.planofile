@@ -21,19 +21,17 @@ def render(app):
     print(f"file:{get_real_path('README.html')}")
 
 @command
-def test(app):
+def run_(app):
     """
-    Test the example using Minikube
+    Run the example steps using Minikube
     """
-    generate_readme("skewer.yaml", make_temp_file())
     run_steps_on_minikube("skewer.yaml")
 
 @command
-def test_external(app, west_kubeconfig, east_kubeconfig):
+def run_external(app, west_kubeconfig, east_kubeconfig):
     """
-    Test the example against external clusters
+    Run the example steps against external clusters
     """
-    generate_readme("skewer.yaml", make_temp_file())
     run_steps_external("skewer.yaml", west=west_kubeconfig, east=east_kubeconfig)
 
 @command
@@ -43,3 +41,11 @@ def demo(app):
     """
     with working_env(SKEWER_DEMO=1):
         run_steps_on_minikube("skewer.yaml")
+
+@command
+def test(app):
+    """
+    Test README generation and run the steps on Minikube
+    """
+    generate_readme("skewer.yaml", make_temp_file())
+    run_steps_on_minikube("skewer.yaml")

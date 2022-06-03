@@ -341,6 +341,8 @@ def _run_steps(work_dir, skewer_data):
 
         if "SKEWER_DEMO" in ENV:
             _pause_for_demo(work_dir, skewer_data)
+    except:
+        run("skupper debug events")
     finally:
         if cleaning_up_step is not None:
             _run_step(work_dir, skewer_data, cleaning_up_step, check=False)
