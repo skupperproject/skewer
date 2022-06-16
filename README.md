@@ -35,12 +35,18 @@ Symlink the `plano` command into the root of your project.  Symlink
 the standard `config/.planofile` as `.planofile` in the root as well:
 
     ln -s subrepos/skewer/plano
-    ln -s subrepos/skewer/config/.planofile .planofile
+    ln -s subrepos/skewer/config/.planofile
 
-Symlink the standard GitHub actions workflow file:
+<!-- This sucks.  GitHub Actions doesn't support workflow files as symlinks. -->
 
-    mkdir -p .github/workflows
-    ln -s ../../subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml
+<!-- Symlink the standard GitHub Actions workflow file: -->
+
+<!--     mkdir -p .github/workflows -->
+<!--     ln -s ../../subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml -->
+
+Copy the standard GitHub Actions workflow file:
+
+    cp subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
