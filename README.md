@@ -32,10 +32,15 @@ Symlink the Skewer libraries into your `python` directory:
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Symlink
-the standard `example.planofile` as `.planofile` in the root as well:
+the standard `config/.planofile` as `.planofile` in the root as well:
 
     ln -s subrepos/skewer/plano
-    ln -s subrepos/skewer/example.planofile .planofile
+    ln -s subrepos/skewer/config/.planofile .planofile
+
+Symlink the standard GitHub actions workflow file:
+
+    mkdir -p .github/workflows
+    ln -s ../../subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
