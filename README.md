@@ -44,9 +44,12 @@ the standard `config/.planofile` as `.planofile` in the root as well:
 <!--     mkdir -p .github/workflows -->
 <!--     ln -s ../../subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml -->
 
-Copy the standard GitHub Actions workflow file:
+<!-- So I have a convenience for copying the latest version into place. -->
 
-    cp subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml
+Use the `plano update-workflow` to copy the latest GitHub Actions
+workflow file into your project:
+
+    ./plano update-workflow
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
