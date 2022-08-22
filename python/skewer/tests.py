@@ -19,34 +19,6 @@
 
 from skewer import *
 
-@command
-def generate():
-    """
-    Generate README.md from the data in skewer.yaml
-    """
-    with working_dir("test-example"):
-        generate_readme("skewer.yaml", "README.md")
-        print(read("README.md"))
-
-@command
-def test(debug=False):
-    clean()
-
-    import skewer.tests
-    run_tests(skewer.tests)
-
-    with working_dir("test-example"):
-        generate_readme("skewer.yaml", "README.md")
-        check_file("README.md")
-        run_steps_on_minikube("skewer.yaml", debug=debug)
-
-@command
-def render():
-    check_program("pandoc")
-    run(f"pandoc -o README.html README.md")
-    print(f"file:{get_real_path('README.html')}")
-
-@command
-def clean():
-    remove(join("python", "__pycache__"))
-    remove(join("test-example", "python", "__pycache__"))
+@test
+def check_environment_():
+    check_environment()

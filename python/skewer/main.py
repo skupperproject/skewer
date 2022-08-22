@@ -287,7 +287,7 @@ def await_external_ip(group, name, namespace=None):
 
     return call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
 
-def run_steps_on_minikube(skewer_file):
+def run_steps_on_minikube(skewer_file, debug=False):
     check_environment()
     check_program("minikube")
 
@@ -308,7 +308,7 @@ def run_steps_on_minikube(skewer_file):
 
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
             with start(f"minikube -p skewer tunnel", output=tunnel_output_file):
-                _run_steps(work_dir, skewer_data)
+                _run_steps(work_dir, skewer_data, debug=debug)
     finally:
         run(f"minikube -p skewer delete")
 
@@ -325,7 +325,7 @@ def run_steps_external(skewer_file, **kubeconfigs):
 
     _run_steps(work_dir, skewer_data)
 
-def _run_steps(work_dir, skewer_data):
+def _run_steps(work_dir, skewer_data, debug=False):
     steps = list()
     cleaning_up_step = None
 
@@ -342,29 +342,30 @@ def _run_steps(work_dir, skewer_data):
         if "SKEWER_DEMO" in ENV:
             _pause_for_demo(work_dir, skewer_data)
     except:
-        print("TROUBLE!")
-        print("-- Start of debug output")
+        if debug:
+            print("TROUBLE!")
+            print("-- Start of debug output")
 
-        for site_name, site_data in skewer_data["sites"].items():
-            kubeconfig = site_data["kubeconfig"].replace("~", work_dir)
-            print(f"---- Debug output for site '{site_name}'")
+            for site_name, site_data in skewer_data["sites"].items():
+                kubeconfig = site_data["kubeconfig"].replace("~", work_dir)
+                print(f"---- Debug output for site '{site_name}'")
 
-            with working_env(KUBECONFIG=kubeconfig):
-                run("kubectl get services", check=False)
-                run("kubectl get deployments", check=False)
-                run("kubectl get statefulsets", check=False)
-                run("kubectl get pods", check=False)
-                run("skupper version", check=False)
-                run("skupper status", check=False)
-                run("skupper link status", check=False)
-                run("skupper service status", check=False)
-                run("skupper gateway status", check=False)
-                run("skupper network status", check=False)
-                run("skupper debug events", check=False)
-                run("kubectl logs deployment/skupper-router", check=False)
-                run("kubectl logs deployment/skupper-service-controller", check=False)
+                with working_env(KUBECONFIG=kubeconfig):
+                    run("kubectl get services", check=False)
+                    run("kubectl get deployments", check=False)
+                    run("kubectl get statefulsets", check=False)
+                    run("kubectl get pods", check=False)
+                    run("skupper version", check=False)
+                    run("skupper status", check=False)
+                    run("skupper link status", check=False)
+                    run("skupper service status", check=False)
+                    run("skupper gateway status", check=False)
+                    run("skupper network status", check=False)
+                    run("skupper debug events", check=False)
+                    run("kubectl logs deployment/skupper-router", check=False)
+                    run("kubectl logs deployment/skupper-service-controller", check=False)
 
-        print("-- End of debug output")
+            print("-- End of debug output")
     finally:
         if cleaning_up_step is not None:
             _run_step(work_dir, skewer_data, cleaning_up_step, check=False)
