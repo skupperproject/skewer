@@ -20,15 +20,6 @@
 from skewer import *
 
 @command
-def generate():
-    """
-    Generate README.md from the data in skewer.yaml
-    """
-    with working_dir("test-example"):
-        generate_readme("skewer.yaml", "README.md")
-        print(read("README.md"))
-
-@command
 def test(debug=False):
     clean()
 
@@ -42,8 +33,13 @@ def test(debug=False):
 
 @command
 def render():
+    """
+    Render README.html from README.md
+    """
     check_program("pandoc")
+
     run(f"pandoc -o README.html README.md")
+
     print(f"file:{get_real_path('README.html')}")
 
 @command
