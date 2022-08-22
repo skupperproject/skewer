@@ -20,16 +20,22 @@
 from skewer import *
 
 @command
-def test(debug=False):
+def test(coverage=False):
     clean()
 
-    import skewer.tests
-    run_tests(skewer.tests)
+    if coverage:
+        check_program("coverage")
 
-    with working_dir("test-example"):
-        generate_readme("skewer.yaml", "README.md")
-        check_file("README.md")
-        run_steps_on_minikube("skewer.yaml", debug=debug)
+        with working_env(PYTHONPATH="python"):
+            run("coverage run --source skewer -m skewer.tests")
+
+        run("coverage report")
+        run("coverage html")
+
+        print(f"file:{get_current_dir()}/htmlcov/index.html")
+    else:
+        with working_env(PYTHONPATH="python"):
+            run("python -m skewer.tests")
 
 @command
 def render():
@@ -46,3 +52,6 @@ def render():
 def clean():
     remove(join("python", "__pycache__"))
     remove(join("test-example", "python", "__pycache__"))
+    remove("README.html")
+    remove("htmlcov")
+    remove(".coverage")

@@ -22,3 +22,18 @@ from skewer import *
 @test
 def check_environment_():
     check_environment()
+
+@test
+def generate_readme_():
+    with working_dir("test-example"):
+        generate_readme("skewer.yaml", "README.md")
+        check_file("README.md")
+
+@test
+def run_on_minikube():
+    with working_dir("test-example"):
+        run_steps_on_minikube("skewer.yaml", debug=True)
+
+if __name__ == "__main__":
+    import skewer.tests
+    run_tests(skewer.tests)
