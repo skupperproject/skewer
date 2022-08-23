@@ -30,9 +30,30 @@ def generate_readme_():
         check_file("README.md")
 
 @test
-def run_on_minikube():
+def run_steps_minikube_():
     with working_dir("test-example"):
-        run_steps_on_minikube("skewer.yaml", debug=True)
+        run_steps_minikube("skewer.yaml", debug=True)
+
+@test
+def run_steps_external_():
+    check_program("minikube")
+
+    try:
+        run("minikube -p skewer start")
+
+        kubeconfigs = make_temp_file(), make_temp_file()
+
+        for kubeconfig in kubeconfigs:
+            with working_env(KUBECONFIG=kubeconfig):
+                run("minikube -p skewer update-context")
+                check_file(ENV["KUBECONFIG"])
+
+        with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
+            with start("minikube -p skewer tunnel", output=tunnel_output_file):
+                with working_dir("test-example"):
+                    run_steps_external("skewer.yaml", east=kubeconfigs[0], west=kubeconfigs[1])
+    finally:
+        run("minikube -p skewer delete")
 
 if __name__ == "__main__":
     import skewer.tests

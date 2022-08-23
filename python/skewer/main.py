@@ -246,48 +246,41 @@ def check_environment():
 # https://github.com/kubernetes/kubernetes/pull/87399
 # https://github.com/kubernetes/kubernetes/issues/80828
 # https://github.com/kubernetes/kubernetes/issues/83094
-def await_resource(group, name, namespace=None):
-    base_command = "kubectl"
-
-    if namespace is not None:
-        base_command = f"{base_command} -n {namespace}"
-
+def await_resource(group, name, timeout=180):
     notice(f"Waiting for {group}/{name} to become available")
 
-    for i in range(90):
-        sleep(2)
+    for i in range(timeout):
+        sleep(1)
 
-        if run(f"{base_command} get {group}/{name}", check=False).exit_code == 0:
+        if run(f"kubectl get {group}/{name}", check=False).exit_code == 0:
             break
     else:
         fail(f"Timed out waiting for {group}/{name}")
 
     if group == "deployment":
         try:
-            run(f"{base_command} wait --for condition=available --timeout 180s {group}/{name}")
+            run(f"kubectl wait --for condition=available --timeout 180s {group}/{name}")
         except:
-            run(f"{base_command} logs {group}/{name}")
+            run(f"kubectl logs {group}/{name}")
             raise
 
-def await_external_ip(group, name, namespace=None):
-    await_resource(group, name, namespace=namespace)
+def await_external_ip(group, name, timeout=180):
+    await_resource(group, name, timeout=timeout)
 
-    base_command = "kubectl"
+    for i in range(timeout):
+        sleep(1)
 
-    if namespace is not None:
-        base_command = f"{base_command} -n {namespace}"
-
-    for i in range(90):
-        sleep(2)
-
-        if call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+        if call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
     else:
         fail(f"Timed out waiting for external IP for {group}/{name}")
 
-    return call(f"{base_command} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
+    return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
 
-def run_steps_on_minikube(skewer_file, debug=False):
+def run_steps_on_minikube(skewer_file, debug=False): # pragma: nocover
+    return run_steps_minikube(skewer_file, debug=debug)
+
+def run_steps_minikube(skewer_file, debug=False):
     check_environment()
     check_program("minikube")
 
@@ -297,20 +290,20 @@ def run_steps_on_minikube(skewer_file, debug=False):
     _apply_standard_steps(skewer_data)
 
     try:
-        run(f"minikube -p skewer start")
+        run("minikube -p skewer start")
 
         for name, value in skewer_data["sites"].items():
             kubeconfig = value["kubeconfig"].replace("~", work_dir)
 
             with working_env(KUBECONFIG=kubeconfig):
-                run(f"minikube -p skewer update-context")
+                run("minikube -p skewer update-context")
                 check_file(ENV["KUBECONFIG"])
 
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
-            with start(f"minikube -p skewer tunnel", output=tunnel_output_file):
+            with start("minikube -p skewer tunnel", output=tunnel_output_file):
                 _run_steps(work_dir, skewer_data, debug=debug)
     finally:
-        run(f"minikube -p skewer delete")
+        run("minikube -p skewer delete")
 
 def run_steps_external(skewer_file, **kubeconfigs):
     check_environment()
