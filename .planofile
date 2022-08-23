@@ -19,15 +19,25 @@
 
 from skewer import *
 
-@command
-def test(coverage=False):
+@command(args=[CommandArgument("include", metavar="PATTERN", positional=True)])
+def test(include=None, verbose=False, coverage=False):
     clean()
+
+    args = list()
+
+    if include is not None:
+        args.append(include)
+
+    if verbose:
+        args.append("--verbose")
+
+    args = " ".join(args)
 
     if coverage:
         check_program("coverage")
 
         with working_env(PYTHONPATH="python"):
-            run("coverage run --source skewer -m skewer.tests")
+            run(f"coverage run --source skewer -m skewer.tests {args}")
 
         run("coverage report")
         run("coverage html")
@@ -35,7 +45,7 @@ def test(coverage=False):
         print(f"file:{get_current_dir()}/htmlcov/index.html")
     else:
         with working_env(PYTHONPATH="python"):
-            run("python -m skewer.tests")
+            run(f"python -m skewer.tests {args}")
 
 @command
 def render():

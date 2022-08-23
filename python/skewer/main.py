@@ -259,7 +259,7 @@ def await_resource(group, name, timeout=180):
 
     if group == "deployment":
         try:
-            run(f"kubectl wait --for condition=available --timeout 180s {group}/{name}")
+            run(f"kubectl wait --for condition=available --timeout {timeout}s {group}/{name}")
         except:
             run(f"kubectl logs {group}/{name}")
             raise
@@ -305,7 +305,7 @@ def run_steps_minikube(skewer_file, debug=False):
     finally:
         run("minikube -p skewer delete")
 
-def run_steps_external(skewer_file, **kubeconfigs):
+def run_steps_external(skewer_file, debug=False, **kubeconfigs):
     check_environment()
 
     skewer_data = read_yaml(skewer_file)
@@ -316,7 +316,7 @@ def run_steps_external(skewer_file, **kubeconfigs):
     for name, kubeconfig in kubeconfigs.items():
         skewer_data["sites"][name]["kubeconfig"] = kubeconfig
 
-    _run_steps(work_dir, skewer_data)
+    _run_steps(work_dir, skewer_data, debug=debug)
 
 def _run_steps(work_dir, skewer_data, debug=False):
     steps = list()
@@ -397,8 +397,9 @@ def _pause_for_demo(work_dir, skewer_data):
     print(f"Console password: {password}")
     print()
 
-    while input("Are you done (yes)? ") != "yes":
-        pass
+    if "SKEWER_DEMO_NO_WAIT" not in ENV:
+        while input("Are you done (yes)? ") != "yes":
+            pass
 
 def _run_step(work_dir, skewer_data, step_data, check=True):
     if "commands" not in step_data:
@@ -515,7 +516,7 @@ def generate_readme(skewer_file, output_file):
         if step_data.get("numbered", True):
             title = f"Step {i}: {step_data['title']}"
         else:
-            title = step_data['title']
+            title = step_data["title"]
 
         out.append(f"## {title}")
         out.append("")

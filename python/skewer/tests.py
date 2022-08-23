@@ -30,9 +30,23 @@ def generate_readme_():
         check_file("README.md")
 
 @test
+def await_resource_():
+    try:
+        run("minikube -p skewer start")
+
+        with expect_error():
+            await_resource("deployment", "not-there", timeout=1)
+
+        with expect_error():
+            await_external_ip("service", "not-there", timeout=1)
+    finally:
+        run("minikube -p skewer delete")
+
+@test
 def run_steps_minikube_():
     with working_dir("test-example"):
-        run_steps_minikube("skewer.yaml", debug=True)
+        with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
+            run_steps_minikube("skewer.yaml", debug=True)
 
 @test
 def run_steps_external_():
@@ -41,9 +55,10 @@ def run_steps_external_():
     try:
         run("minikube -p skewer start")
 
-        kubeconfigs = make_temp_file(), make_temp_file()
+        east_kubeconfig = make_temp_file()
+        west_kubeconfig = make_temp_file()
 
-        for kubeconfig in kubeconfigs:
+        for kubeconfig in (east_kubeconfig, west_kubeconfig):
             with working_env(KUBECONFIG=kubeconfig):
                 run("minikube -p skewer update-context")
                 check_file(ENV["KUBECONFIG"])
@@ -51,10 +66,12 @@ def run_steps_external_():
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
             with start("minikube -p skewer tunnel", output=tunnel_output_file):
                 with working_dir("test-example"):
-                    run_steps_external("skewer.yaml", east=kubeconfigs[0], west=kubeconfigs[1])
+                    run_steps_external("skewer.yaml", east=east_kubeconfig, west=west_kubeconfig, debug=True)
     finally:
         run("minikube -p skewer delete")
 
 if __name__ == "__main__":
-    import skewer.tests
-    run_tests(skewer.tests)
+    from plano.commands import PlanoTestCommand
+    from . import tests
+
+    PlanoTestCommand(tests).main()
