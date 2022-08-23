@@ -55,5 +55,5 @@ def process_error():
     run("expr 1 / 0")
 
 @test(disabled=True)
-def system_exit():
+def system_exit_():
     exit(1)

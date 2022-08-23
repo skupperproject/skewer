@@ -919,16 +919,16 @@ def test_operations():
                     run_tests(chucker.tests, enable="*badbye*", fail_fast=True, verbose=verbose)
 
                 with expect_exception(KeyboardInterrupt):
-                    run_tests(chucker.tests, enable="keyboard_interrupt", verbose=verbose)
+                    run_tests(chucker.tests, enable="keyboard-interrupt", verbose=verbose)
 
                 with expect_error():
                     run_tests(chucker.tests, enable="timeout", verbose=verbose)
 
                 with expect_error():
-                    run_tests(chucker.tests, enable="process_error", verbose=verbose)
+                    run_tests(chucker.tests, enable="process-error", verbose=verbose)
 
                 with expect_error():
-                    run_tests(chucker.tests, enable="system_exit", verbose=verbose)
+                    run_tests(chucker.tests, enable="system-exit", verbose=verbose)
 
             with expect_system_exit():
                 PlanoTestCommand().main(["--module", "nosuchmodule"])

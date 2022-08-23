@@ -1641,7 +1641,7 @@ def test(_function=None, name=None, timeout=None, disabled=False):
     class Test(object):
         def __init__(self, function):
             self.function = function
-            self.name = nvl(name, self.function.__name__)
+            self.name = nvl(name, self.function.__name__.rstrip("_").replace("_", "-"))
             self.timeout = timeout
             self.disabled = disabled
 
@@ -1961,7 +1961,7 @@ def command(_function=None, name=None, args=None, parent=None):
             self.parent = parent
 
             if self.parent is None:
-                self.name = nvl(self.name, function.__name__.rstrip("_").replace("_", "-"))
+                self.name = nvl(self.name, self.function.__name__.rstrip("_").replace("_", "-"))
                 self.args = self.process_args(self.args)
             else:
                 self.name = nvl(self.name, self.parent.name)
