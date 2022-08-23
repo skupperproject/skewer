@@ -30,6 +30,7 @@ across cloud providers, data centers, and edge sites.
 * [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
+* [Next steps](#next-steps)
 
 ## Overview
 
@@ -53,19 +54,7 @@ services without exposing the backend to the public internet.
 
 ## Prerequisites
 
-
-* The `kubectl` command-line tool, version 1.15 or later
-  ([installation guide][install-kubectl])
-
-* The `skupper` command-line tool, the latest version ([installation
-  guide][install-skupper])
-
-* Access to at least one Kubernetes cluster, from any provider you
-  choose
-
-[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[install-skupper]: https://skupper.io/install/index.html
-
+Custom prerequisites
 
 ## Step 1: Configure separate console sessions
 
@@ -467,5 +456,4 @@ the frontend.
 
 ## Next steps
 
-
-Check out the other [examples][examples] on the Skupper website.
+Custom next steps
