@@ -114,6 +114,8 @@ class PlanoCommand(BaseCommand):
         self.default_command_args = None
         self.default_command_kwargs = None
 
+        self.passthrough_args = None
+
         global _plano_command
         _plano_command = self
 
@@ -128,7 +130,9 @@ class PlanoCommand(BaseCommand):
         self._load_config(getattr(pre_args, "file", None))
         self._process_commands()
 
-        return self.parser.parse_args(args)
+        args, self.passthrough_args = self.parser.parse_known_args(args)
+
+        return args
 
     def init(self, args):
         self.help = args.help
@@ -145,7 +149,13 @@ class PlanoCommand(BaseCommand):
         else:
             self.selected_command = self.bound_commands[args.command]
 
+            if not self.selected_command.passthrough and self.passthrough_args:
+                self.parser.error(f"unrecognized arguments: {' '.join(self.passthrough_args)}")
+
             for arg in self.selected_command.args.values():
+                if arg.name == "passthrough_args":
+                    continue
+
                 if arg.positional:
                     if arg.multiple:
                         self.command_args.extend(getattr(args, arg.name))
@@ -153,6 +163,9 @@ class PlanoCommand(BaseCommand):
                         self.command_args.append(getattr(args, arg.name))
                 else:
                     self.command_kwargs[arg.name] = getattr(args, arg.name)
+
+            if self.selected_command.passthrough:
+                self.command_kwargs["passthrough_args"] = self.passthrough_args
 
     def run(self):
         if self.help or self.selected_command is None:
@@ -213,8 +226,10 @@ class PlanoCommand(BaseCommand):
         subparsers = self.parser.add_subparsers(title="commands", dest="command")
 
         for command in self.bound_commands.values():
+            add_help = False if command.passthrough else True
+
             subparser = subparsers.add_parser(command.name, help=command.help,
-                                              description=nvl(command.description, command.help),
+                                              description=nvl(command.description, command.help), add_help=add_help,
                                               formatter_class=_argparse.RawDescriptionHelpFormatter)
 
             for arg in command.args.values():

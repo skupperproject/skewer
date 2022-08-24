@@ -1950,7 +1950,7 @@ _command_help = {
     "test":     "Run the tests",
 }
 
-def command(_function=None, name=None, args=None, parent=None):
+def command(_function=None, name=None, args=None, parent=None, passthrough=False):
     class Command(object):
         def __init__(self, function):
             self.function = function
@@ -1979,6 +1979,8 @@ def command(_function=None, name=None, args=None, parent=None):
             if self.parent is not None:
                 self.help = nvl(self.help, self.parent.help)
                 self.description = nvl(self.description, self.parent.description)
+
+            self.passthrough = passthrough
 
             debug("Defining {}", self)
 
