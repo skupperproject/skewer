@@ -277,35 +277,31 @@ def await_external_ip(group, name, timeout=180):
 
     return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
 
-def run_steps_on_minikube(skewer_file, debug=False): # pragma: nocover
-    return run_steps_minikube(skewer_file, debug=debug)
-
 def run_steps_minikube(skewer_file, debug=False):
     check_environment()
     check_program("minikube")
 
     skewer_data = read_yaml(skewer_file)
-    work_dir = make_temp_dir()
+    kubeconfigs = list()
 
-    _apply_standard_steps(skewer_data)
+    for site in skewer_data["sites"]:
+        kubeconfigs.append(make_temp_file())
 
     try:
         run("minikube -p skewer start")
 
-        for name, value in skewer_data["sites"].items():
-            kubeconfig = value["kubeconfig"].replace("~", work_dir)
-
+        for kubeconfig in kubeconfigs:
             with working_env(KUBECONFIG=kubeconfig):
                 run("minikube -p skewer update-context")
                 check_file(ENV["KUBECONFIG"])
 
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
             with start("minikube -p skewer tunnel", output=tunnel_output_file):
-                _run_steps(work_dir, skewer_data, debug=debug)
+                run_steps(skewer_file, *kubeconfigs, debug=debug)
     finally:
         run("minikube -p skewer delete")
 
-def run_steps_external(skewer_file, debug=False, **kubeconfigs):
+def run_steps(skewer_file, *kubeconfigs, debug=False):
     check_environment()
 
     skewer_data = read_yaml(skewer_file)
@@ -313,12 +309,9 @@ def run_steps_external(skewer_file, debug=False, **kubeconfigs):
 
     _apply_standard_steps(skewer_data)
 
-    for name, kubeconfig in kubeconfigs.items():
-        skewer_data["sites"][name]["kubeconfig"] = kubeconfig
+    for i, site in enumerate(skewer_data["sites"].values()):
+        site["kubeconfig"] = kubeconfigs[i]
 
-    _run_steps(work_dir, skewer_data, debug=debug)
-
-def _run_steps(work_dir, skewer_data, debug=False):
     steps = list()
     cleaning_up_step = None
 

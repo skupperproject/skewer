@@ -40,34 +40,34 @@ def render():
     print(f"file:{get_real_path('README.html')}")
 
 @command
-def run_():
+def run_(debug=False):
     """
     Run the example steps using Minikube
     """
-    run_steps_on_minikube("skewer.yaml")
+    run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
-def run_external(kubeconfig1, kubeconfig2):
+def run_external(*kubeconfigs, debug=False):
     """
     Run the example steps against external clusters
     """
-    run_steps_external("skewer.yaml", site1=kubeconfig1, site2=kubeconfig2)
+    run_steps("skewer.yaml", *kubeconfigs, debug=debug)
 
 @command
-def demo():
+def demo(debug=False):
     """
     Run the example steps and pause before cleaning up
     """
     with working_env(SKEWER_DEMO=1):
-        run_steps_on_minikube("skewer.yaml")
+        run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
-def test():
+def test(debug=False):
     """
     Test README generation and run the steps on Minikube
     """
     generate_readme("skewer.yaml", make_temp_file())
-    run_steps_on_minikube("skewer.yaml")
+    run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
 def update_workflow():

@@ -43,33 +43,14 @@ def await_resource_():
         run("minikube -p skewer delete")
 
 @test
-def run_steps_minikube_():
+def run_steps_():
     with working_dir("test-example"):
         with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
             run_steps_minikube("skewer.yaml", debug=True)
+            run(f"./plano run --debug")
 
-@test
-def run_steps_external_():
-    check_program("minikube")
-
-    try:
-        run("minikube -p skewer start")
-
-        east_kubeconfig = make_temp_file()
-        west_kubeconfig = make_temp_file()
-
-        for kubeconfig in (east_kubeconfig, west_kubeconfig):
-            with working_env(KUBECONFIG=kubeconfig):
-                run("minikube -p skewer update-context")
-                check_file(ENV["KUBECONFIG"])
-
-        with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
-            with start("minikube -p skewer tunnel", output=tunnel_output_file):
-                with working_dir("test-example"):
-                    with working_env(SKEWER_FAIL=1):
-                        run_steps_external("skewer.yaml", east=east_kubeconfig, west=west_kubeconfig, debug=True)
-    finally:
-        run("minikube -p skewer delete")
+        with working_env(SKEWER_FAIL=1):
+            run_steps_minikube("skewer.yaml", debug=True)
 
 if __name__ == "__main__":
     from plano.commands import PlanoTestCommand
