@@ -398,7 +398,7 @@ def _pause_for_demo(work_dir, skewer_data):
     print()
 
     if "SKEWER_DEMO_NO_WAIT" not in ENV:
-        while input("Are you done (yes)? ") != "yes":
+        while input("Are you done (yes)? ") != "yes": # pragma: nocover
             pass
 
 def _run_step(work_dir, skewer_data, step_data, check=True):
@@ -408,13 +408,17 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
     if "title" in step_data:
         notice("Running step '{}'", step_data["title"])
 
-    try:
-        items = step_data["commands"].items()
-    except AttributeError:
-        items = list()
+    items = step_data["commands"].items()
 
-        for site_name in skewer_data["sites"]:
-            items.append((site_name, step_data["commands"]))
+    # XXX I think this is no longer needed
+    #
+    # try:
+    #     items = step_data["commands"].items()
+    # except AttributeError:
+    #     items = list()
+    #
+    #     for site_name in skewer_data["sites"]:
+    #         items.append((site_name, step_data["commands"]))
 
     for site_name, commands in items:
         kubeconfig = skewer_data["sites"][site_name]["kubeconfig"].replace("~", work_dir)

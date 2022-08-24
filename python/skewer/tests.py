@@ -66,7 +66,8 @@ def run_steps_external_():
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
             with start("minikube -p skewer tunnel", output=tunnel_output_file):
                 with working_dir("test-example"):
-                    run_steps_external("skewer.yaml", east=east_kubeconfig, west=west_kubeconfig, debug=True)
+                    with working_env(SKEWER_FAIL=1):
+                        run_steps_external("skewer.yaml", east=east_kubeconfig, west=west_kubeconfig, debug=True)
     finally:
         run("minikube -p skewer delete")
 

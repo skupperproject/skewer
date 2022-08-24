@@ -29,6 +29,7 @@ across cloud providers, data centers, and edge sites.
 * [Step 10: Test the application](#step-10-test-the-application)
 * [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
+* [Step 13: Fail on demand](#step-13-fail-on-demand)
 * [Summary](#summary)
 * [Next steps](#next-steps)
 
@@ -432,6 +433,15 @@ _**Console for east:**_
 ~~~ shell
 skupper delete
 kubectl delete deployment/backend
+~~~
+
+## Step 13: Fail on demand
+
+_**Console for east:**_
+
+~~~ shell
+if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
+
 ~~~
 
 ## Summary

@@ -19,19 +19,11 @@
 
 from skewer import *
 
-@command(args=[CommandArgument("include", metavar="PATTERN", positional=True)])
-def test(include=None, verbose=False, coverage=False):
+@command(passthrough=True)
+def test(coverage=False, passthrough_args=[]):
     clean()
 
-    args = list()
-
-    if include is not None:
-        args.append(include)
-
-    if verbose:
-        args.append("--verbose")
-
-    args = " ".join(args)
+    args = " ".join(passthrough_args)
 
     if coverage:
         check_program("coverage")
