@@ -28,7 +28,6 @@ def planofile():
     with working_dir("test-example"):
         run("./plano")
         run("./plano generate")
-        run("./plano render")
 
 @test
 def workflow():
