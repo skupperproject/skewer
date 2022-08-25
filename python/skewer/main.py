@@ -20,6 +20,29 @@
 from plano import *
 
 _standard_steps_yaml = """
+install_the_skupper_command_line_tool:
+  title: Install the Skupper command-line tool
+  preamble: |
+    The `skupper` command-line tool is the primary entrypoint for
+    installing and configuring the Skupper infrastructure.  You need
+    to install the `skupper` command only once for each development
+    environment.
+
+    On Linux or Mac, you can use the install script (inspect it
+    [here][install-script]) to download and extract the command:
+
+    ~~~ shell
+    curl -f https://skupper.io/install.sh | sh
+    ~~~
+
+    The script installs the command under your home directory.  It
+    prompts you to add the command to your path if necessary.
+
+    For Windows and other installation options, see [Installing
+    Skupper][install-docs].
+
+    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+    [install-docs]: https://skupper.io/install/index.html
 configure_separate_console_sessions:
   title: Configure separate console sessions
   preamble: |
@@ -237,8 +260,8 @@ Check out the other [examples][examples] on the Skupper website.
 """.strip()
 
 _about_this_example = """
-This example was produced using [Skewer][skewer], a library for developing and
-testing Skupper examples.
+This example was produced using [Skewer][skewer], a library for
+documenting and testing Skupper examples.
 
 [skewer]: https://github.com/skupperproject/skewer
 
