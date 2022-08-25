@@ -30,6 +30,7 @@ across cloud providers, data centers, and edge sites.
 * [Step 13: Fail on demand](#step-13-fail-on-demand)
 * [Summary](#summary)
 * [Next steps](#next-steps)
+* [About this example](#about-this-example)
 
 ## Overview
 
@@ -465,3 +466,17 @@ the frontend.
 ## Next steps
 
 Custom next steps
+
+## About this example
+
+This example was produced using [Skewer][skewer], a library for developing and
+testing Skupper examples.
+
+[skewer]: https://github.com/skupperproject/skewer
+
+Skewer provides some utilities for generating the README and running
+the example steps.  Use the `./plano` command in the project root to
+see what is available.
+
+To quickly stand up the example using Minikube, try the `./plano demo`
+command.

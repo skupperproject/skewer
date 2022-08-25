@@ -236,6 +236,20 @@ _standard_next_steps = """
 Check out the other [examples][examples] on the Skupper website.
 """.strip()
 
+_about_this_example = """
+This example was produced using [Skewer][skewer], a library for developing and
+testing Skupper examples.
+
+[skewer]: https://github.com/skupperproject/skewer
+
+Skewer provides some utilities for generating the README and running
+the example steps.  Use the `./plano` command in the project root to
+see what is available.
+
+To quickly stand up the example using Minikube, try the `./plano demo`
+command.
+""".strip()
+
 def check_environment():
     check_program("base64")
     check_program("curl")
@@ -481,6 +495,7 @@ def generate_readme(skewer_file, output_file):
     if "next_steps" in skewer_data:
         out.append("* [Next steps](#next-steps)")
 
+    out.append("* [About this example](#about-this-example)")
     out.append("")
 
     if "overview" in skewer_data:
@@ -524,6 +539,11 @@ def generate_readme(skewer_file, output_file):
     out.append("## Next steps")
     out.append("")
     out.append(next_steps)
+    out.append("")
+
+    out.append("## About this example")
+    out.append("")
+    out.append(_about_this_example)
     out.append("")
 
     write(output_file, "\n".join(out).strip() + "\n")

@@ -49,7 +49,7 @@ def run_(debug=False):
 @command
 def run_external(*kubeconfigs, debug=False):
     """
-    Run the example steps against external clusters
+    Run the example steps with user-provided kubeconfigs
     """
     run_steps("skewer.yaml", *kubeconfigs, debug=debug)
 
