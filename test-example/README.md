@@ -22,13 +22,13 @@ across cloud providers, data centers, and edge sites.
 * [Step 5: Install Skupper in your namespaces](#step-5-install-skupper-in-your-namespaces)
 * [Step 6: Check the status of your namespaces](#step-6-check-the-status-of-your-namespaces)
 * [Step 7: Link your namespaces](#step-7-link-your-namespaces)
-* [Step 8: Deploy the frontend and backend services](#step-8-deploy-the-frontend-and-backend-services)
-* [Step 9: Expose the backend service](#step-9-expose-the-backend-service)
-* [Step 10: Expose the frontend service](#step-10-expose-the-frontend-service)
-* [Step 11: Test the application](#step-11-test-the-application)
+* [Step 8: Fail on demand](#step-8-fail-on-demand)
+* [Step 9: Deploy the frontend and backend services](#step-9-deploy-the-frontend-and-backend-services)
+* [Step 10: Expose the backend service](#step-10-expose-the-backend-service)
+* [Step 11: Expose the frontend service](#step-11-expose-the-frontend-service)
+* [Step 12: Test the application](#step-12-test-the-application)
 * [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
-* [Step 14: Fail on demand](#step-14-fail-on-demand)
 * [Summary](#summary)
 * [Next steps](#next-steps)
 * [About this example](#about-this-example)
@@ -77,12 +77,12 @@ prompts you to add the command to your path if necessary.
 For Windows and other installation options, see [Installing
 Skupper][install-docs].
 
-[install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+[install-script]: https://github.com/skupperproject/skupper-website/blob/main/docs/install.sh
 [install-docs]: https://skupper.io/install/index.html
 
 ## Step 2: Configure separate console sessions
 
-Skupper is designed for use with multiple namespaces, typically on
+Skupper is designed for use with multiple namespaces, usually on
 different clusters.  The `skupper` command uses your
 [kubeconfig][kubeconfig] and current context to select the
 namespace where it operates.
@@ -296,7 +296,16 @@ to use `sftp` or a similar tool to transfer the token securely.
 By default, tokens expire after a single use or 15 minutes after
 creation.
 
-## Step 8: Deploy the frontend and backend services
+## Step 8: Fail on demand
+
+_**Console for west:**_
+
+~~~ shell
+if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
+
+~~~
+
+## Step 9: Deploy the frontend and backend services
 
 Use `kubectl create deployment` to deploy the frontend service
 in `west` and the backend service in `east`.
@@ -327,7 +336,7 @@ $ kubectl create deployment backend --image quay.io/skupper/hello-world-backend 
 deployment.apps/backend created
 ~~~
 
-## Step 9: Expose the backend service
+## Step 10: Expose the backend service
 
 We now have two namespaces linked to form a Skupper network, but
 no services are exposed on it.  Skupper uses the `skupper
@@ -350,7 +359,7 @@ $ skupper expose deployment/backend --port 8080
 deployment backend exposed as backend
 ~~~
 
-## Step 10: Expose the frontend service
+## Step 11: Expose the frontend service
 
 We have established connectivity between the two namespaces and
 made the backend in `east` available to the frontend in `west`.
@@ -373,7 +382,7 @@ $ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 service/frontend exposed
 ~~~
 
-## Step 11: Test the application
+## Step 12: Test the application
 
 Now we're ready to try it out.  Use `kubectl get service/frontend`
 to look up the external IP of the frontend service.  Then use
@@ -456,15 +465,6 @@ _**Console for east:**_
 ~~~ shell
 skupper delete
 kubectl delete deployment/backend
-~~~
-
-## Step 14: Fail on demand
-
-_**Console for east:**_
-
-~~~ shell
-if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
-
 ~~~
 
 ## Summary

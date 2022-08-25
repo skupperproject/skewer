@@ -41,12 +41,12 @@ install_the_skupper_command_line_tool:
     For Windows and other installation options, see [Installing
     Skupper][install-docs].
 
-    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/docs/install.sh
     [install-docs]: https://skupper.io/install/index.html
 configure_separate_console_sessions:
   title: Configure separate console sessions
   preamble: |
-    Skupper is designed for use with multiple namespaces, typically on
+    Skupper is designed for use with multiple namespaces, usually on
     different clusters.  The `skupper` command uses your
     [kubeconfig][kubeconfig] and current context to select the
     namespace where it operates.
