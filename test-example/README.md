@@ -4,14 +4,12 @@
 
 #### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
-
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
 across cloud providers, data centers, and edge sites.
 
 [website]: https://skupper.io/
 [examples]: https://skupper.io/examples/index.html
-
 
 #### Contents
 

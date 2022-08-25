@@ -62,7 +62,7 @@ def demo(debug=False):
         run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
-def test(debug=False):
+def test_(debug=False):
     """
     Test README generation and run the steps on Minikube
     """

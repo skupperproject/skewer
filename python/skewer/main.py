@@ -216,7 +216,7 @@ across cloud providers, data centers, and edge sites.
 
 [website]: https://skupper.io/
 [examples]: https://skupper.io/examples/index.html
-"""
+""".strip()
 
 _standard_prerequisites = """
 * The `kubectl` command-line tool, version 1.15 or later
@@ -230,11 +230,11 @@ _standard_prerequisites = """
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [install-skupper]: https://skupper.io/install/index.html
-"""
+""".strip()
 
 _standard_next_steps = """
 Check out the other [examples][examples] on the Skupper website.
-"""
+""".strip()
 
 def check_environment():
     check_program("base64")
