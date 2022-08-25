@@ -403,16 +403,6 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
 
     items = step_data["commands"].items()
 
-    # XXX I think this is no longer needed
-    #
-    # try:
-    #     items = step_data["commands"].items()
-    # except AttributeError:
-    #     items = list()
-    #
-    #     for site_name in skewer_data["sites"]:
-    #         items.append((site_name, step_data["commands"]))
-
     for site_name, commands in items:
         kubeconfig = skewer_data["sites"][site_name]["kubeconfig"].replace("~", work_dir)
 

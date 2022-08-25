@@ -31,6 +31,10 @@ def planofile():
         run("./plano render")
 
 @test
+def workflow():
+    parse_yaml(read("config/.github/workflows/main.yaml"))
+
+@test
 def generate_readme_():
     with working_dir("test-example"):
         generate_readme("skewer.yaml", "README.md")
