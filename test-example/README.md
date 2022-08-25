@@ -15,7 +15,7 @@ across cloud providers, data centers, and edge sites.
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
-* [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-commandline-tool)
+* [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
 * [Step 2: Configure separate console sessions](#step-2-configure-separate-console-sessions)
 * [Step 3: Access your clusters](#step-3-access-your-clusters)
 * [Step 4: Set up your namespaces](#step-4-set-up-your-namespaces)

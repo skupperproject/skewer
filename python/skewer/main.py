@@ -245,14 +245,11 @@ _standard_prerequisites = """
 * The `kubectl` command-line tool, version 1.15 or later
   ([installation guide][install-kubectl])
 
-* The `skupper` command-line tool, the latest version ([installation
-  guide][install-skupper])
-
-* Access to at least one Kubernetes cluster, from any provider you
-  choose
+* Access to at least one Kubernetes cluster, from [any provider you
+  choose][kube-providers]
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[install-skupper]: https://skupper.io/install/index.html
+[kube-providers]: https://skupper.io/start/index.html#prerequisites
 """.strip()
 
 _standard_next_steps = """
@@ -505,7 +502,7 @@ def generate_readme(skewer_file, output_file):
         else:
             title = step_data['title']
 
-        fragment = replace(title, " ", "_")
+        fragment = replace(title, r"[ -]", "_")
         fragment = replace(fragment, r"[\W]", "")
         fragment = replace(fragment, "_", "-")
         fragment = fragment.lower()
