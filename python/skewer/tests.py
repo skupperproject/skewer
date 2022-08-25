@@ -24,6 +24,13 @@ def check_environment_():
     check_environment()
 
 @test
+def planofile():
+    with working_dir("test-example"):
+        run("./plano")
+        run("./plano generate")
+        run("./plano render")
+
+@test
 def generate_readme_():
     with working_dir("test-example"):
         generate_readme("skewer.yaml", "README.md")
@@ -42,12 +49,11 @@ def await_resource_():
     finally:
         run("minikube -p skewer delete")
 
-@test
+@test(timeout=600)
 def run_steps_():
     with working_dir("test-example"):
         with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
             run_steps_minikube("skewer.yaml", debug=True)
-            run(f"./plano run --debug")
 
         with working_env(SKEWER_FAIL=1):
             run_steps_minikube("skewer.yaml", debug=True)
