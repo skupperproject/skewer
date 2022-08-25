@@ -50,6 +50,12 @@ the standard `config/.planofile` as `.planofile` in the root as well:
 
 <!-- So I have a convenience for copying the latest version into place. -->
 
+To use the `./plano` command, you must have the Python `pyyaml`
+package installed.  Use `pip` (or `pip3` on some systems) to install
+it:
+
+    pip install pyyaml
+
 Use the `plano update-workflow` command to copy the latest GitHub
 Actions workflow file into your project:
 
