@@ -385,6 +385,8 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
                     run("kubectl logs deployment/skupper-service-controller", check=False)
 
             print("-- End of debug output")
+
+        raise
     finally:
         if cleaning_up_step is not None:
             _run_step(work_dir, skewer_data, cleaning_up_step, check=False)
@@ -534,12 +536,13 @@ def generate_readme(skewer_file, output_file):
     out.append("")
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
+        notice("Generating step '{}'", step_data["title"])
+
         if step_data.get("numbered", True):
             title = f"Step {i}: {step_data['title']}"
         else:
             title = step_data["title"]
 
-        print(f"Generating step '{title}'")
 
         out.append(f"## {title}")
         out.append("")
@@ -617,7 +620,7 @@ def _generate_readme_step(skewer_data, step_data):
     return "\n".join(out).strip()
 
 def _apply_standard_steps(skewer_data):
-    print("Applying standard steps")
+    notice("Applying standard steps")
 
     for step_data in skewer_data["steps"]:
         if "standard" not in step_data:
