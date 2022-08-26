@@ -24,9 +24,8 @@ install_the_skupper_command_line_tool:
   title: Install the Skupper command-line tool
   preamble: |
     The `skupper` command-line tool is the primary entrypoint for
-    installing and configuring the Skupper infrastructure.  You need
-    to install the `skupper` command only once for each development
-    environment.
+    installing and configuring Skupper.  You need to install the
+    `skupper` command only once for each development environment.
 
     On Linux or Mac, you can use the install script (inspect it
     [here][install-script]) to download and extract the command:
@@ -70,8 +69,8 @@ configure_separate_console_sessions:
 access_your_clusters:
   title: Access your clusters
   preamble: |
-    The methods for accessing your clusters vary by Kubernetes
-    provider. Find the instructions for your chosen providers and use
+    The procedure for accessing a Kubernetes cluster varies by
+    provider. Find the instructions for your chosen provider and use
     them to authenticate and configure access for each console
     session.  See the following links for more information:
 
@@ -90,10 +89,10 @@ set_up_your_namespaces:
     set-context` to set the current namespace for each session.
   commands:
     "*":
-      - output: namespace/@namespace@ created
-        run: kubectl create namespace @namespace@
-      - output: Context "minikube" modified.
-        run: kubectl config set-context --current --namespace @namespace@
+      - run: kubectl create namespace @namespace@
+        output: namespace/@namespace@ created
+      - run: kubectl config set-context --current --namespace @namespace@
+        output: Context "minikube" modified.
 install_skupper_in_your_namespaces:
   title: Install Skupper in your namespaces
   preamble: |
@@ -540,6 +539,8 @@ def generate_readme(skewer_file, output_file):
         else:
             title = step_data["title"]
 
+        print(f"Generating step '{title}'")
+
         out.append(f"## {title}")
         out.append("")
         out.append(_generate_readme_step(skewer_data, step_data))
@@ -616,6 +617,8 @@ def _generate_readme_step(skewer_data, step_data):
     return "\n".join(out).strip()
 
 def _apply_standard_steps(skewer_data):
+    print("Applying standard steps")
+
     for step_data in skewer_data["steps"]:
         if "standard" not in step_data:
             continue
