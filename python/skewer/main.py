@@ -261,9 +261,9 @@ documenting and testing Skupper examples.
 
 [skewer]: https://github.com/skupperproject/skewer
 
-Skewer provides some utilities for generating the README and running
-the example steps.  Use the `./plano` command in the project root to
-see what is available.
+Skewer provides utility functions for generating the README and
+running the example steps.  Use the `./plano` command in the project
+root to see what is available.
 
 To quickly stand up the example using Minikube, try the `./plano demo`
 command.
