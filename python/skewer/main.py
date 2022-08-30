@@ -182,7 +182,7 @@ test_the_application:
         apply: readme
         output: OK
       - await_external_ip: service/frontend
-      - run: curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health'); echo
+      - run: curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
         apply: test
   postamble: |
     If everything is in order, you can now access the web interface by
