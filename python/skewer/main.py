@@ -23,9 +23,9 @@ _standard_steps_yaml = """
 install_the_skupper_command_line_tool:
   title: Install the Skupper command-line tool
   preamble: |
-    The `skupper` command-line tool is the primary entrypoint for
-    installing and configuring Skupper.  You need to install the
-    `skupper` command only once for each development environment.
+    The `skupper` command-line tool is the entrypoint for installing
+    and configuring Skupper.  You need to install the `skupper`
+    command only once for each development environment.
 
     On Linux or Mac, you can use the install script (inspect it
     [here][install-script]) to download and extract the command:
@@ -69,18 +69,13 @@ configure_separate_console_sessions:
 access_your_clusters:
   title: Access your clusters
   preamble: |
-    The procedure for accessing a Kubernetes cluster varies by
-    provider. Find the instructions for your chosen provider and use
-    them to authenticate and configure access for each console
-    session.  See the following links for more information:
 
-    * [Minikube](https://skupper.io/start/minikube.html)
-    * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
-    * [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html)
-    * [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html)
-    * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html)
-    * [OpenShift](https://skupper.io/start/openshift.html)
-    * [More providers](https://kubernetes.io/partners/#kcsp)
+    The procedure for accessing a Kubernetes cluster varies by
+    provider. [Find the instructions for your chosen
+    provider][kube-providers] and use them to authenticate and
+    configure access for each console session.
+
+    [kube-providers]: https://skupper.io/start/kubernetes.html
 set_up_your_namespaces:
   title: Set up your namespaces
   preamble: |
@@ -90,9 +85,7 @@ set_up_your_namespaces:
   commands:
     "*":
       - run: kubectl create namespace @namespace@
-        output: namespace/@namespace@ created
       - run: kubectl config set-context --current --namespace @namespace@
-        output: Context "minikube" modified.
 install_skupper_in_your_namespaces:
   title: Install Skupper in your namespaces
   preamble: |
@@ -107,9 +100,14 @@ install_skupper_in_your_namespaces:
   commands:
     "*":
       - run: skupper init
-        output: |
-          Waiting for LoadBalancer IP or hostname...
-          Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.
+  postamble: |
+    _Sample output:_
+
+    ~~~ console
+    $ skupper init
+    Waiting for LoadBalancer IP or hostname...
+    Skupper is now installed in namespace '<namespace>'.  Use 'skupper status' to get more information.
+    ~~~
 check_the_status_of_your_namespaces:
   title: Check the status of your namespaces
   preamble: |
@@ -119,11 +117,15 @@ check_the_status_of_your_namespaces:
     "*":
       - await: [deployment/skupper-service-controller, deployment/skupper-router]
       - run: skupper status
-        output: |
-          Skupper is enabled for namespace "@namespace@" in interior mode. It is connected to 1 other site. It has 1 exposed service.
-          The site console url is: <console-url>
-          The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
   postamble: |
+    _Sample output:_
+
+    ~~~ console
+    Skupper is enabled for namespace "<namespace>" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+    The site console url is: <console-url>
+    The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+    ~~~
+
     As you move through the steps below, you can use `skupper status` at
     any time to check your progress.
 link_your_namespaces:
