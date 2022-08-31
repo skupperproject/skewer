@@ -76,6 +76,11 @@ def render():
     print(f"file:{get_real_path('README.html')}")
 
 @command
+def clean():
+    remove(find(".", "__pycache__"))
+    remove("README.html")
+
+@command
 def run_(debug=False):
     """
     Run the example steps using Minikube
