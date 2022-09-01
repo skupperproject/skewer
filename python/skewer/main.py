@@ -65,7 +65,7 @@ configure_separate_console_sessions:
     session.
   commands:
     "*":
-      - run: export KUBECONFIG=~/.kube/config-@namespace@
+      - run: export KUBECONFIG=@kubeconfig@
 access_your_clusters:
   title: Access your clusters
   preamble: |
@@ -342,22 +342,16 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
     skewer_data = read_yaml(skewer_file)
     work_dir = make_temp_dir()
 
-    _apply_standard_steps(skewer_data)
-
     for i, site in enumerate(skewer_data["sites"].values()):
         site["kubeconfig"] = kubeconfigs[i]
 
-    steps = list()
-    cleaning_up_step = None
-
-    for step in skewer_data["steps"]:
-        if step.get("id") == "cleaning_up":
-            cleaning_up_step = step
-        else:
-            steps.append(step)
+    _apply_standard_steps(skewer_data)
 
     try:
-        for step in steps:
+        for step in skewer_data["steps"]:
+            if step.get("id") == "cleaning_up":
+                continue
+
             _run_step(work_dir, skewer_data, step)
 
         if "SKEWER_DEMO" in ENV:
@@ -390,8 +384,11 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
 
         raise
     finally:
-        if cleaning_up_step is not None:
-            _run_step(work_dir, skewer_data, cleaning_up_step, check=False)
+        for step in skewer_data["steps"]:
+            if step.get("id") == "cleaning_up":
+                _run_step(work_dir, skewer_data, step, check=False)
+                break
+
 
 def _pause_for_demo(work_dir, skewer_data):
     first_site_name, first_site_data = list(skewer_data["sites"].items())[0]
@@ -654,28 +651,32 @@ def _apply_standard_steps(skewer_data):
                 if "*" in standard_step_data["commands"]:
                     assert len(standard_step_data["commands"]) == 1, standard_step_data["commands"]
 
-                    for namespace, site_data in skewer_data["sites"].items():
+                    for site_key, site_data in skewer_data["sites"].items():
                         commands = standard_step_data["commands"]["*"]
 
-                        step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+                        step_data["commands"][site_key] = _resolve_commands(commands, site_data)
                 else:
                     for site_index in standard_step_data["commands"]:
                         commands = standard_step_data["commands"][site_index]
-                        namespace = list(skewer_data["sites"])[int(site_index)]
+                        site_key, site_data = list(skewer_data["sites"].items())[int(site_index)]
 
-                        step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+                        step_data["commands"][site_key] = _resolve_commands(commands, site_data)
 
-def _resolve_commands(commands, namespace):
+def _resolve_commands(commands, site_data):
     resolved_commands = list()
 
     for command in commands:
         resolved_command = dict(command)
 
         if "run" in command:
-            resolved_command["run"] = command["run"].replace("@namespace@", namespace)
+            resolved_command["run"] = command["run"]
+            resolved_command["run"] = resolved_command["run"].replace("@kubeconfig@", site_data["kubeconfig"])
+            resolved_command["run"] = resolved_command["run"].replace("@namespace@", site_data["namespace"])
 
         if "output" in command:
-            resolved_command["output"] = command["output"].replace("@namespace@", namespace)
+            resolved_command["output"] = command["output"]
+            resolved_command["output"] = resolved_command["output"].replace("@kubeconfig@", site_data["kubeconfig"])
+            resolved_command["output"] = resolved_command["output"].replace("@namespace@", site_data["namespace"])
 
         resolved_commands.append(resolved_command)
 
