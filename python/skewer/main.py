@@ -250,7 +250,7 @@ _standard_prerequisites = """
   choose][kube-providers]
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/index.html#prerequisites
+[kube-providers]: https://skupper.io/start/kubernetes.html
 """.strip()
 
 _standard_next_steps = """
