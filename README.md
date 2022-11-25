@@ -183,6 +183,7 @@ Or you can use a named step from the library of standard steps:
 The standard steps are defined in
 [python/skewer.yaml](python/skewer.yaml).
 
+Typically, you do not edit these steps, you create custom steps in `skewer.yaml`.
 You can override the `title`, `preamble`, `commands`, or `postamble`
 field of a standard step by adding the field in addition to
 `standard`:
