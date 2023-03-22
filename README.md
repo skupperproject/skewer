@@ -36,10 +36,10 @@ Symlink the Skewer library into your `python` directory:
     ln -s ../subrepos/skewer/python/skewer python/skewer
 
 Symlink the `plano` command into the root of your project.  Symlink
-the standard `config/.planofile` as `.planofile` in the root as well:
+the standard `config/.plano.py` as `.plano.py` in the root as well:
 
     ln -s subrepos/skewer/plano
-    ln -s subrepos/skewer/config/.planofile
+    ln -s subrepos/skewer/config/.plano.py
 
 <!-- This sucks.  GitHub Actions doesn't support workflow files as symlinks. -->
 
@@ -79,7 +79,7 @@ options:
   --quiet               Print no logging to the console
   --debug               Print debugging output to the console
   -h, --help            Show this help message and exit
-  -f FILE, --file FILE  Load commands from FILE (default 'Planofile' or '.planofile')
+  -f FILE, --file FILE  Load commands from FILE (default '.plano.py')
 
 commands:
   {generate,render,run,run-external,demo,test,update-workflow}
