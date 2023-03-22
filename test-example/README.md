@@ -161,7 +161,7 @@ skupper init --enable-console --enable-flow-collector
 _**Console for east:**_
 
 ~~~ shell
-skupper init --enable-console --enable-flow-collector
+skupper init
 ~~~
 
 _Sample output:_

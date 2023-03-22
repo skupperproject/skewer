@@ -95,8 +95,10 @@ install_skupper_in_your_namespaces:
 
     [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
   commands:
-    "*":
+    "0":
       - run: skupper init --enable-console --enable-flow-collector
+    "*":
+      - run: skupper init
   postamble: |
     _Sample output:_
 
