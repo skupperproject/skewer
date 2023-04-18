@@ -186,7 +186,7 @@ def _pause_for_demo(work_dir, skewer_data):
 
     with working_env(KUBECONFIG=first_site_kubeconfig):
         console_ip = await_external_ip("service", "skupper")
-        console_url = f"https://{console_ip}:8080/"
+        console_url = f"https://{console_ip}:8010/"
         password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
         password = base64_decode(password_data).decode("ascii")
 
