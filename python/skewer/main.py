@@ -159,6 +159,7 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
                     run("kubectl get deployments", check=False)
                     run("kubectl get statefulsets", check=False)
                     run("kubectl get pods", check=False)
+                    run("kubectl get events", check=False)
                     run("skupper version", check=False)
                     run("skupper status", check=False)
                     run("skupper link status", check=False)
@@ -231,6 +232,8 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
         kubeconfig = skewer_data["sites"][site_name]["kubeconfig"].replace("~", work_dir)
 
         with working_env(KUBECONFIG=kubeconfig):
+            run(f"kubectl config set-context --current --namespace {site_name}")
+
             for command in commands:
                 if command.get("apply") == "readme":
                     continue

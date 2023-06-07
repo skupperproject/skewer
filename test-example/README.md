@@ -82,9 +82,9 @@ Skupper][install-docs].
 ## Step 2: Configure separate console sessions
 
 Skupper is designed for use with multiple namespaces, usually on
-different clusters.  The `skupper` command uses your
+different clusters.  The `skupper` and `kubectl` commands use your
 [kubeconfig][kubeconfig] and current context to select the
-namespace where it operates.
+namespace where they operate.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
