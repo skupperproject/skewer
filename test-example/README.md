@@ -143,7 +143,7 @@ kubectl config set-context --current --namespace east
 
 ## Step 5: Install Skupper in your namespaces
 
-The `skupper init` command installs the Skupper router and service
+The `skupper init` command installs the Skupper router and
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
 

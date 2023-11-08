@@ -86,7 +86,7 @@ set_up_your_namespaces:
 install_skupper_in_your_namespaces:
   title: Install Skupper in your namespaces
   preamble: |
-    The `skupper init` command installs the Skupper router and service
+    The `skupper init` command installs the Skupper router and
     controller in the current namespace.  Run the `skupper init` command
     in each namespace.
 
@@ -183,7 +183,7 @@ test_the_application:
         apply: readme
         output: OK
       - await_external_ip: service/frontend
-      - run: curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
+      - run: curl --fail --verbose --retry 40 --retry-connrefused --retry-delay 5 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
         apply: test
   postamble: |
     If everything is in order, you can now access the web interface by
@@ -213,7 +213,7 @@ accessing_the_web_console:
         apply: readme
         output: <password>
       - await_external_ip: service/skupper
-      - run: curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d); echo
+      - run: curl --fail --insecure --verbose --retry 40 --retry-connrefused --retry-delay 5 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d); echo
         apply: test
   postamble: |
     Navigate to `<console-url>` in your browser.  When prompted, log

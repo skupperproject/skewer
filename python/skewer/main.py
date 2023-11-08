@@ -70,16 +70,19 @@ def check_environment():
 # https://github.com/kubernetes/kubernetes/pull/87399
 # https://github.com/kubernetes/kubernetes/issues/80828
 # https://github.com/kubernetes/kubernetes/issues/83094
-def await_resource(group, name, timeout=180):
+def await_resource(group, name, timeout=240):
+    start_time = get_time()
+
     notice(f"Waiting for {group}/{name} to become available")
 
-    for i in range(timeout):
-        sleep(1)
-
+    while True:
         if run(f"kubectl get {group}/{name}", check=False).exit_code == 0:
             break
-    else:
-        fail(f"Timed out waiting for {group}/{name}")
+
+        if get_time() - start_time > timeout:
+            fail(f"Timed out waiting for {group}/{name}")
+
+        sleep(5)
 
     if group == "deployment":
         try:
@@ -88,16 +91,19 @@ def await_resource(group, name, timeout=180):
             run(f"kubectl logs {group}/{name}")
             raise
 
-def await_external_ip(group, name, timeout=180):
+def await_external_ip(group, name, timeout=240):
+    start_time = get_time()
+
     await_resource(group, name, timeout=timeout)
 
-    for i in range(timeout):
-        sleep(1)
-
+    while True:
         if call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
-    else:
-        fail(f"Timed out waiting for external IP for {group}/{name}")
+
+        if get_time() - start_time > timeout:
+            fail(f"Timed out waiting for external IP for {group}/{name}")
+
+        sleep(5)
 
     return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
 
