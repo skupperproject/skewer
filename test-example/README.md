@@ -391,7 +391,7 @@ _Sample output:_
 
 ~~~ console
 $ skupper status
-Skupper is enabled for namespace "west" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+Skupper is enabled for namespace "west". It is connected to 1 other site. It has 1 exposed service.
 The site console url is: <console-url>
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 

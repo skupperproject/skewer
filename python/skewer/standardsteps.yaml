@@ -114,7 +114,7 @@ check_the_status_of_your_namespaces:
     installed.
   commands:
     "*":
-      - await: [deployment/skupper-service-controller, deployment/skupper-router]
+      - await: [deployment/skupper-service-controller, deployment/skupper-router, configmap/skupper-network-status]
       - run: skupper status
   postamble: |
     _Sample output:_
@@ -206,7 +206,7 @@ accessing_the_web_console:
       - run: skupper status
         apply: readme
         output: |
-          Skupper is enabled for namespace "@namespace@" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+          Skupper is enabled for namespace "@namespace@". It is connected to 1 other site. It has 1 exposed service.
           The site console url is: <console-url>
           The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
       - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
