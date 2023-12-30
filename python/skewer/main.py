@@ -114,7 +114,10 @@ def run_steps_minikube(skewer_file, debug=False):
     skewer_data = read_yaml(skewer_file)
     kubeconfigs = list()
 
-    for site in skewer_data["sites"]:
+    for site in skewer_data["sites"].values():
+        if site.get("platform", "kubernetes") != "kubernetes":
+            continue
+
         kubeconfigs.append(make_temp_file())
 
     try:
@@ -184,7 +187,6 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
             if step.get("id") == "cleaning_up":
                 _run_step(work_dir, skewer_data, step, check=False)
                 break
-
 
 def _pause_for_demo(work_dir, skewer_data):
     first_site_name, first_site_data = list(skewer_data["sites"].items())[0]
@@ -382,8 +384,12 @@ def _generate_readme_step(skewer_data, step_data):
 
         for i, item in enumerate(items):
             site_name, commands = item
-            namespace = skewer_data["sites"][site_name]["namespace"]
+            namespace = skewer_data["sites"][site_name].get("namespace")
             title = skewer_data["sites"][site_name].get("title", namespace)
+
+            if title is None:
+                fail(f"Site '{site_name}' has no namespace or title")
+
             outputs = list()
 
             out.append(f"_**Console for {title}:**_")
