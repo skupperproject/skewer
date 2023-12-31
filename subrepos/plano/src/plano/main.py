@@ -905,7 +905,7 @@ def _print_message(level, message, args):
     line.append(level)
 
     for name in _logging_contexts:
-        line.append(name)
+        line.append(cformat(name, color="yellow"))
 
     if isinstance(message, BaseException):
         exception = message
