@@ -507,7 +507,7 @@ def link_operations():
 @test
 def logging_operations():
     error("Error!")
-    warn("Warning!")
+    warning("Warning!")
     notice("Take a look!")
     notice(123)
     debug("By the way")
@@ -519,7 +519,7 @@ def logging_operations():
     with expect_error():
         fail("Error!")
 
-    for level in ("debug", "notice", "warn", "error"):
+    for level in ("debug", "notice", "warning", "error"):
         with expect_output(contains="Hello") as out:
             with logging_disabled():
                 with logging_enabled(level=level, output=out):

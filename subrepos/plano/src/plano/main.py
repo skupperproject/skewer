@@ -85,7 +85,7 @@ def make_archive(input_dir, output_file=None, quiet=False):
     if output_file is None:
         output_file = "{}.tar.gz".format(join(get_current_dir(), archive_stem))
 
-    _info(quiet, "Making archive {} from directory {}", repr(output_file), repr(input_dir))
+    _notice(quiet, "Making archive {} from directory {}", repr(output_file), repr(input_dir))
 
     with working_dir(get_parent_dir(input_dir)):
         run("tar -czf temp.tar.gz {}".format(archive_stem))
@@ -99,7 +99,7 @@ def extract_archive(input_file, output_dir=None, quiet=False):
     if output_dir is None:
         output_dir = get_current_dir()
 
-    _info(quiet, "Extracting archive {} to directory {}", repr(input_file), repr(output_dir))
+    _notice(quiet, "Extracting archive {} to directory {}", repr(input_file), repr(output_dir))
 
     input_file = get_absolute_path(input_file)
 
@@ -114,7 +114,7 @@ def extract_archive(input_file, output_dir=None, quiet=False):
     return output_dir
 
 def rename_archive(input_file, new_archive_stem, quiet=False):
-    _info(quiet, "Renaming archive {} with stem {}", repr(input_file), repr(new_archive_stem))
+    _notice(quiet, "Renaming archive {} with stem {}", repr(input_file), repr(new_archive_stem))
 
     output_dir = get_absolute_path(get_parent_dir(input_file))
     output_file = "{}.tar.gz".format(join(output_dir, new_archive_stem))
@@ -213,7 +213,7 @@ class output_redirected:
     def __enter__(self):
         flush()
 
-        _info(self.quiet, "Redirecting output to file {}", repr(self.output))
+        _notice(self.quiet, "Redirecting output to file {}", repr(self.output))
 
         if is_string(self.output):
             output = open(self.output, "w")
@@ -292,7 +292,7 @@ def make_dir(dir, quiet=False):
         return dir
 
     if not exists(dir):
-        _info(quiet, "Making directory '{}'", dir)
+        _notice(quiet, "Making directory '{}'", dir)
         _os.makedirs(dir)
 
     return dir
@@ -356,7 +356,7 @@ class working_dir:
         if self.dir == ".":
             return
 
-        _info(self.quiet, "Entering directory {}", repr(get_absolute_path(self.dir)))
+        _notice(self.quiet, "Entering directory {}", repr(get_absolute_path(self.dir)))
 
         make_dir(self.dir, quiet=True)
 
@@ -494,7 +494,7 @@ def print_env(file=None):
 def touch(file, quiet=False):
     file = expand(file)
 
-    _info(quiet, "Touching {}", repr(file))
+    _notice(quiet, "Touching {}", repr(file))
 
     try:
         _os.utime(file, None)
@@ -509,7 +509,7 @@ def copy(from_path, to_path, symlinks=True, inside=True, quiet=False):
     from_path = expand(from_path)
     to_path = expand(to_path)
 
-    _info(quiet, "Copying {} to {}", repr(from_path), repr(to_path))
+    _notice(quiet, "Copying {} to {}", repr(from_path), repr(to_path))
 
     if is_dir(to_path) and inside:
         to_path = join(to_path, get_base_name(from_path))
@@ -533,7 +533,7 @@ def move(from_path, to_path, inside=True, quiet=False):
     from_path = expand(from_path)
     to_path = expand(to_path)
 
-    _info(quiet, "Moving {} to {}", repr(from_path), repr(to_path))
+    _notice(quiet, "Moving {} to {}", repr(from_path), repr(to_path))
 
     to_path = copy(from_path, to_path, inside=inside, quiet=True)
     remove(from_path, quiet=True)
@@ -775,7 +775,7 @@ def http_post_json(url, data, insecure=False):
 ## Link operations
 
 def make_link(path: str, linked_path: str, quiet=False) -> str:
-    _info(quiet, "Making symlink {} to {}", repr(path), repr(linked_path))
+    _notice(quiet, "Making symlink {} to {}", repr(path), repr(linked_path))
 
     make_parent_dir(path, quiet=True)
     remove(path, quiet=True)
@@ -791,17 +791,15 @@ def read_link(path):
 
 _logging_levels = (
     "debug",
-    "info",
     "notice",
-    "warn",
+    "warning",
     "error",
     "disabled",
 )
 
 _DEBUG = _logging_levels.index("debug")
-_INFO = _logging_levels.index("info")
 _NOTICE = _logging_levels.index("notice")
-_WARN = _logging_levels.index("warn")
+_WARNING = _logging_levels.index("warning")
 _ERROR = _logging_levels.index("error")
 _DISABLED = _logging_levels.index("disabled")
 
@@ -809,10 +807,10 @@ _logging_output = None
 _logging_threshold = _NOTICE
 _logging_contexts = list()
 
-def enable_logging(level="notice", output=None):
-    assert level in _logging_levels
+def enable_logging(level="notice", output=None, quiet=False):
+    assert level in _logging_levels, level
 
-    info("Enabling logging (level={}, output={})", repr(level), repr(nvl(output, "stderr")))
+    _notice(quiet, "Enabling logging (level={}, output={})", repr(level), repr(nvl(output, "stderr")))
 
     global _logging_threshold
     _logging_threshold = _logging_levels.index(level)
@@ -823,8 +821,8 @@ def enable_logging(level="notice", output=None):
     global _logging_output
     _logging_output = output
 
-def disable_logging():
-    info("Disabling logging")
+def disable_logging(quiet=False):
+    _notice(quiet, "Disabling logging")
 
     global _logging_threshold
     _logging_threshold = _DISABLED
@@ -839,15 +837,15 @@ class logging_enabled:
         self.prev_output = _logging_output
 
         if self.level == "disabled":
-            disable_logging()
+            disable_logging(quiet=True)
         else:
-            enable_logging(level=self.level, output=self.output)
+            enable_logging(level=self.level, output=self.output, quiet=True)
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.prev_level == "disabled":
-            disable_logging()
+            disable_logging(quiet=True)
         else:
-            enable_logging(level=self.prev_level, output=self.prev_output)
+            enable_logging(level=self.prev_level, output=self.prev_output, quiet=True)
 
 class logging_disabled(logging_enabled):
     def __init__(self):
@@ -874,14 +872,11 @@ def fail(message, *args):
 def error(message, *args):
     log(_ERROR, message, *args)
 
-def warn(message, *args):
-    log(_WARN, message, *args)
+def warning(message, *args):
+    log(_WARNING, message, *args)
 
 def notice(message, *args):
     log(_NOTICE, message, *args)
-
-def info(message, *args):
-    log(_INFO, message, *args)
 
 def debug(message, *args):
     log(_DEBUG, message, *args)
@@ -897,11 +892,13 @@ def _print_message(level, message, args):
     line = list()
     out = nvl(_logging_output, _sys.stderr)
 
-    line.append(cformat("{}:".format(get_program_name()), color="gray"))
+    program_text = "{}:".format(get_program_name())
 
-    level_color = ("cyan", "cyan", "cyan", "yellow", "red", None)[level]
-    level_bright = (False, False, False, False, True, False)[level]
-    level_text = "{}:".format(_logging_levels[level])
+    line.append(cformat(program_text, color="gray"))
+
+    level_text = "{}:".format(_logging_levels[level]).ljust(8)
+    level_color = ("white", "cyan", "yellow", "red", None)[level]
+    level_bright = (False, False, False, True, False)[level]
 
     line.append(cformat(level_text, color=level_color, bright=level_bright))
 
@@ -930,17 +927,15 @@ def _print_message(level, message, args):
 
     out.flush()
 
-def _debug(quiet, message, *args):
+def _notice(quiet, message, *args):
     if quiet:
         debug(message, *args)
     else:
         notice(message, *args)
 
-def _info(quiet, message, *args):
-    if quiet:
-        info(message, *args)
-    else:
-        notice(message, *args)
+def _debug(quiet, message, *args):
+    if not quiet:
+        debug(message, *args)
 
 ## Path operations
 
@@ -1073,7 +1068,7 @@ def check_dir(path):
 def await_exists(path, timeout=30, quiet=False):
     path = expand(path)
 
-    _info(quiet, "Waiting for path {} to exist", repr(path))
+    _notice(quiet, "Waiting for path {} to exist", repr(path))
 
     timeout_message = "Timed out waiting for path {} to exist".format(path)
     period = 0.03125
@@ -1109,7 +1104,7 @@ def check_port(port, host="localhost"):
         raise PlanoError("Port {} (host {}) is not reachable".format(repr(port), repr(host)))
 
 def await_port(port, host="localhost", timeout=30, quiet=False):
-    _info(quiet, "Waiting for port {}", port)
+    _notice(quiet, "Waiting for port {}", port)
 
     if is_string(port):
         port = int(port)
@@ -1154,7 +1149,7 @@ def _format_command(command, represent=True):
 # stderr=<file> - Send stderr to a file
 # shell=False - XXX
 def start(command, stdin=None, stdout=None, stderr=None, output=None, shell=False, stash=False, quiet=False):
-    _info(quiet, "Starting command {}", _format_command(command))
+    _notice(quiet, "Starting command {}", _format_command(command))
 
     if output is not None:
         stdout, stderr = output, output
@@ -1211,7 +1206,7 @@ def start(command, stdin=None, stdout=None, stderr=None, output=None, shell=Fals
     return proc
 
 def stop(proc, timeout=None, quiet=False):
-    _info(quiet, "Stopping {}", proc)
+    _notice(quiet, "Stopping {}", proc)
 
     if proc.poll() is not None:
         if proc.exit_code == 0:
@@ -1228,12 +1223,12 @@ def stop(proc, timeout=None, quiet=False):
     return wait(proc, timeout=timeout, quiet=True)
 
 def kill(proc, quiet=False):
-    _info(quiet, "Killing {}", proc)
+    _notice(quiet, "Killing {}", proc)
 
     proc.terminate()
 
 def wait(proc, timeout=None, check=False, quiet=False):
-    _info(quiet, "Waiting for {} to exit", proc)
+    _notice(quiet, "Waiting for {} to exit", proc)
 
     try:
         proc.wait(timeout=timeout)
@@ -1262,7 +1257,7 @@ def wait(proc, timeout=None, check=False, quiet=False):
 # input=<string> - Pipe <string> to the process
 def run(command, stdin=None, stdout=None, stderr=None, input=None, output=None,
         stash=False, shell=False, check=True, quiet=False):
-    _info(quiet, "Running command {}", _format_command(command))
+    _notice(quiet, "Running command {}", _format_command(command))
 
     if input is not None:
         assert stdin in (None, _subprocess.PIPE), stdin
@@ -1285,7 +1280,7 @@ def run(command, stdin=None, stdout=None, stderr=None, input=None, output=None,
 
 # input=<string> - Pipe the given input into the process
 def call(command, input=None, shell=False, quiet=False):
-    _info(quiet, "Calling {}", _format_command(command))
+    _notice(quiet, "Calling {}", _format_command(command))
 
     proc = run(command, stdin=_subprocess.PIPE, stdout=_subprocess.PIPE, stderr=_subprocess.PIPE,
                input=input, shell=shell, check=True, quiet=True)
@@ -1553,7 +1548,7 @@ def format_duration(seconds, align=False):
         return remove_suffix("{:.1f}".format(value), ".0") + unit
 
 def sleep(seconds, quiet=False):
-    _info(quiet, "Sleeping for {} {}", seconds, plural("second", seconds))
+    _notice(quiet, "Sleeping for {} {}", seconds, plural("second", seconds))
 
     _time.sleep(seconds)
 

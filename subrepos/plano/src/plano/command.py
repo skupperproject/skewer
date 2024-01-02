@@ -40,10 +40,10 @@ class BaseCommand:
         self.debug_enabled = args.debug
         self.init_only = args.init_only
 
-        level = "notice"
+        level = "warning"
 
         if self.verbose:
-            level = "info"
+            level = "notice"
 
         if self.quiet:
             level = "error"
@@ -419,7 +419,7 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
 
             app.running_commands.append(self)
 
-            dashes = "----" * (len(app.running_commands) - 1)
+            dashes = "--- " * (len(app.running_commands) - 1)
             display_args = list(self._get_display_args(args, kwargs))
 
             with console_color("magenta", file=_sys.stderr):
@@ -431,9 +431,6 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
                 eprint()
 
             self.function(*args, **kwargs)
-
-            if dashes:
-                dashes = dashes[:-1] + " "
 
             cprint("{}<-- {}".format(dashes, self.name), color="magenta", file=_sys.stderr)
 

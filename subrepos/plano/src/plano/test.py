@@ -234,7 +234,7 @@ def run_tests(modules, include="*", exclude=(), enable=(), unskip=(), test_timeo
             cprint("=== Module {} ===".format(repr(module.__name__)), color="cyan")
 
         if not hasattr(module, "_plano_tests"):
-            warn("Module {} has no tests", repr(module.__name__))
+            warning("Module {} has no tests", repr(module.__name__))
             continue
 
         for test in module._plano_tests:
