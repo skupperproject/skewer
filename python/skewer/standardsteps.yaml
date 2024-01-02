@@ -182,9 +182,7 @@ test_the_application:
       - run: curl http://<external-ip>:8080/api/health
         apply: readme
         output: OK
-      - await_external_ip: service/frontend
-      - run: curl --fail --verbose --retry 40 --retry-connrefused --retry-delay 5 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
-        apply: test
+      - await_http_ok: [frontend, "http://{}:8080/api/health"]
   postamble: |
     If everything is in order, you can now access the web interface by
     navigating to `http://<external-ip>:8080/` in your browser.
@@ -212,9 +210,7 @@ accessing_the_web_console:
       - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
         apply: readme
         output: <password>
-      - await_external_ip: service/skupper
-      - run: curl --fail --insecure --verbose --retry 40 --retry-connrefused --retry-delay 5 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8010/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d); echo
-        apply: test
+      - await_console_ok:
   postamble: |
     Navigate to `<console-url>` in your browser.  When prompted, log
     in as user `admin` and enter the password.

@@ -73,20 +73,20 @@ def check_environment():
 def await_resource(group, name, timeout=240):
     start_time = get_time()
 
-    notice(f"Waiting for {group}/{name} to become available")
+    debug(f"Waiting for {group}/{name} to become available")
 
     while True:
-        if run(f"kubectl get {group}/{name}", check=False).exit_code == 0:
+        if run(f"kubectl get {group}/{name}", check=False, quiet=True, stdout=DEVNULL).exit_code == 0:
             break
 
         if get_time() - start_time > timeout:
             fail(f"Timed out waiting for {group}/{name}")
 
-        sleep(5)
+        sleep(5, quiet=True)
 
     if group == "deployment":
         try:
-            run(f"kubectl wait --for condition=available --timeout {timeout}s {group}/{name}")
+            run(f"kubectl wait --for condition=available --timeout {timeout}s {group}/{name}", quiet=True, stash=True)
         except:
             run(f"kubectl logs {group}/{name}")
             raise
@@ -94,18 +94,98 @@ def await_resource(group, name, timeout=240):
 def await_external_ip(group, name, timeout=240):
     start_time = get_time()
 
+    debug(f"Waiting for external IP from {group}/{name} to become available")
+
     await_resource(group, name, timeout=timeout)
 
     while True:
-        if call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+        if call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'", quiet=True) != "":
             break
 
         if get_time() - start_time > timeout:
             fail(f"Timed out waiting for external IP for {group}/{name}")
 
-        sleep(5)
+        sleep(5, quiet=True)
 
-    return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
+    return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
+
+# def parse_url(url):
+#     from urllib.parse import urlparse
+#     return urlparse(url)
+
+# def emit_url(url_object):
+#     from urllib.parse import urlparse
+#     return urlparse(url)
+
+def await_http_ok(service_name, url_template, user=None, password=None, timeout=240):
+    start_time = get_time()
+
+    ip = await_external_ip("service", service_name)
+    url = url_template.format(ip)
+    insecure = url.startswith("https")
+
+    debug(f"Waiting for an HTTP OK response to HTTP GET {url}")
+
+    while True:
+        try:
+            http_get(url, insecure=insecure, user=user, password=password)
+        except:
+            if get_time() - start_time > timeout:
+                fail(f"Timed out waiting for {url}")
+
+            sleep(5, quiet=True)
+        else:
+            break
+
+def await_console_ok():
+    password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d", shell=True)
+    await_http_ok("skupper", "https://{}:8010/", user="admin", password=password)
+
+def _run_curl(method, url, content=None, content_file=None, content_type=None, output_file=None, insecure=False,
+              user=None, password=None):
+    check_program("curl")
+
+    # XXX args
+
+    options = ["-sf"]
+
+    if method != "GET":
+        options.extend(("-X", method))
+
+    if content is not None:
+        assert content_file is None
+        options.extend(("-H", "Expect:"))
+        options.extend(("-d", "@-"))
+
+    if content_file is not None:
+        assert content is None, content
+        options.extend(("-H", "Expect:"))
+        options.extend(("-d", f"@{content_file}"))
+
+    if content_type is not None:
+        options.extend(("-H", f"'Content-Type: {content_type}'"))
+
+    if output_file is not None:
+        options.extend(("-o", output_file))
+
+    if insecure:
+        options.append("--insecure")
+
+    if user is not None:
+        assert password is not None
+        options.extend(("--user", f"{user}:{password}"))
+
+    options = " ".join(options)
+    command = "curl {} {}".format(options, url)
+
+    if output_file is None:
+        return call(command, input=content)
+    else:
+        make_parent_dir(output_file, quiet=True)
+        run(command, input=content)
+
+def http_get(url, output_file=None, insecure=False, user=None, password=None):
+    return _run_curl("GET", url, output_file=output_file, insecure=insecure, user=user, password=password)
 
 def run_steps_minikube(skewer_file, debug=False):
     work_dir = make_temp_dir()
@@ -136,7 +216,6 @@ def run_steps_minikube(skewer_file, debug=False):
                 kubeconfig = ENV["KUBECONFIG"]
 
                 check_file(kubeconfig)
-                notice(f"Site '{site_name}' kubeconfig: export KUBECONFIG={kubeconfig}")
 
         with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
             with start("minikube -p skewer tunnel", output=tunnel_output_file):
@@ -204,11 +283,11 @@ def _pause_for_demo(work_dir, skewer_data):
             with working_env(**first_site["env"]):
                 console_ip = await_external_ip("service", "skupper")
                 console_url = f"https://{console_ip}:8010/"
-                password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
+                password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'", quiet=True)
                 password = base64_decode(password_data).decode("ascii")
 
-                if run("kubectl get service/frontend", check=False, output=DEVNULL).exit_code == 0:
-                    if call("kubectl get service/frontend -o jsonpath='{.spec.type}'") == "LoadBalancer":
+                if run("kubectl get service/frontend", check=False, output=DEVNULL, quiet=True).exit_code == 0:
+                    if call("kubectl get service/frontend -o jsonpath='{.spec.type}'", quiet=True) == "LoadBalancer":
                         frontend_ip = await_external_ip("service", "frontend")
                         frontend_url = f"http://{frontend_ip}:8080/"
 
@@ -252,7 +331,7 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
             with working_env(**site["env"]):
                 if site["platform"] == "kubernetes":
                     namespace = site["namespace"]
-                    run(f"kubectl config set-context --current --namespace {namespace}", quiet=True)
+                    run(f"kubectl config set-context --current --namespace {namespace}", stdout=DEVNULL, quiet=True)
 
                 for command in commands:
                     if command.get("apply") == "readme":
@@ -280,6 +359,13 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
                         for resource in resources:
                             group, name = resource.split("/", 1)
                             await_external_ip(group, name)
+
+                    if "await_http_ok" in command:
+                        service_name, url_template = command["await_http_ok"]
+                        await_http_ok(service_name, url_template)
+
+                    if "await_console_ok" in command:
+                        await_console_ok()
 
 def generate_readme(skewer_file, output_file):
     notice("Generating the readme")
