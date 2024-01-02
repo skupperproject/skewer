@@ -87,12 +87,14 @@ def run_(debug=False):
     """
     run_steps_minikube("skewer.yaml", debug=debug)
 
-@command
-def run_external(*kubeconfigs, debug=False):
-    """
-    Run the example steps with user-provided kubeconfigs
-    """
-    run_steps("skewer.yaml", *kubeconfigs, debug=debug)
+# XXX
+#
+# @command
+# def run_external(*kubeconfigs, debug=False):
+#     """
+#     Run the example steps with user-provided kubeconfigs
+#     """
+#     run_steps("skewer.yaml", *kubeconfigs, debug=debug)
 
 @command
 def demo(debug=False):

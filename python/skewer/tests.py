@@ -52,12 +52,15 @@ def await_resource_():
     finally:
         run("minikube -p skewer delete")
 
-@test(timeout=600)
-def run_steps_():
+@test
+def run_steps_demo():
     with working_dir("test-example"):
         with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
             run_steps_minikube("skewer.yaml", debug=True)
 
+@test
+def run_steps_debug():
+    with working_dir("test-example"):
         with expect_error():
             with working_env(SKEWER_FAIL=1):
                 run_steps_minikube("skewer.yaml", debug=True)

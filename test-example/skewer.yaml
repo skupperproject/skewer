@@ -23,11 +23,15 @@ prerequisites: |
   Custom prerequisites
 sites:
   west:
-    kubeconfig: ~/.kube/config-west
+    platform: kubernetes
     namespace: west
+    env:
+      KUBECONFIG: ~/.kube/config-west
   east:
-    kubeconfig: ~/.kube/config-east
+    platform: kubernetes
     namespace: east
+    env:
+      KUBECONFIG: ~/.kube/config-east
 steps:
   - standard: install_the_skupper_command_line_tool
   - standard: configure_separate_console_sessions
