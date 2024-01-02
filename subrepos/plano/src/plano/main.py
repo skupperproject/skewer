@@ -1149,7 +1149,7 @@ def _format_command(command, represent=True):
 # stderr=<file> - Send stderr to a file
 # shell=False - XXX
 def start(command, stdin=None, stdout=None, stderr=None, output=None, shell=False, stash=False, quiet=False):
-    _notice(quiet, "Starting command {}", _format_command(command))
+    _notice(quiet, "Starting a new process (command {})", _format_command(command))
 
     if output is not None:
         stdout, stderr = output, output
@@ -1201,7 +1201,7 @@ def start(command, stdin=None, stdout=None, stderr=None, output=None, shell=Fals
     except OSError as e:
         raise PlanoError("Command {}: {}".format(_format_command(command), str(e)))
 
-    debug("{} started", proc)
+    _notice(quiet, "{} started", proc)
 
     return proc
 
