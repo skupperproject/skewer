@@ -155,6 +155,7 @@ _color_codes = {
     "magenta": "\u001b[35",
     "cyan": "\u001b[36",
     "white": "\u001b[37",
+    "gray": "\u001b[90",
 }
 
 _color_reset = "\u001b[0m"
@@ -896,16 +897,16 @@ def _print_message(level, message, args):
     line = list()
     out = nvl(_logging_output, _sys.stderr)
 
-    line.append(get_program_name())
+    line.append(cformat("{}:".format(get_program_name()), color="gray"))
 
     level_color = ("cyan", "cyan", "cyan", "yellow", "red", None)[level]
     level_bright = (False, False, False, False, True, False)[level]
-    level = cformat("{:>6}".format(_logging_levels[level]), color=level_color, bright=level_bright, file=out)
+    level_text = "{}:".format(_logging_levels[level])
 
-    line.append(level)
+    line.append(cformat(level_text, color=level_color, bright=level_bright))
 
     for name in _logging_contexts:
-        line.append(cformat(name, color="yellow"))
+        line.append(cformat("{}:".format(name), color="yellow"))
 
     if isinstance(message, BaseException):
         exception = message
@@ -913,7 +914,7 @@ def _print_message(level, message, args):
         line.append(type(exception).__name__)
         line.append(str(exception))
 
-        print(": ".join(line), file=out)
+        print(" ".join(line), file=out)
 
         if hasattr(exception, "__traceback__"):
             _traceback.print_exception(type(exception), exception, exception.__traceback__, file=out)
@@ -925,7 +926,7 @@ def _print_message(level, message, args):
 
         line.append(capitalize(message))
 
-        print(": ".join(line), file=out)
+        print(" ".join(line), file=out)
 
     out.flush()
 

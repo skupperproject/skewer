@@ -419,11 +419,11 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
 
             app.running_commands.append(self)
 
-            dashes = "--" * len(app.running_commands)
+            dashes = "----" * (len(app.running_commands) - 1)
             display_args = list(self._get_display_args(args, kwargs))
 
             with console_color("magenta", file=_sys.stderr):
-                eprint("{}> {}".format(dashes, self.name), end="")
+                eprint("{}--> {}".format(dashes, self.name), end="")
 
                 if display_args:
                     eprint(" ({})".format(", ".join(display_args)), end="")
@@ -432,14 +432,12 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
 
             self.function(*args, **kwargs)
 
-            cprint("<{} {}".format(dashes, self.name), color="magenta", file=_sys.stderr)
+            if dashes:
+                dashes = dashes[:-1] + " "
+
+            cprint("{}<-- {}".format(dashes, self.name), color="magenta", file=_sys.stderr)
 
             app.running_commands.pop()
-
-            if app.running_commands:
-                name = app.running_commands[-1].name
-
-                cprint("{}| {}".format(dashes[:-2], name), color="magenta", file=_sys.stderr)
 
         def _get_display_args(self, args, kwargs):
             for i, param in enumerate(self.parameters.values()):
