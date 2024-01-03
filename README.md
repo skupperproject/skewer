@@ -241,12 +241,15 @@ The `apply` field is useful when you want the readme instructions to
 be different from the test procedure, or you simply want to omit
 something.
 
-There is also a special `await` command you can use to pause for a
-condition you require before going to the next step.  It is used only
-for testing and does not impact the README.
+There are also some special "await" commands that you can use to pause
+for a condition you require before going to the next step.  They are
+used only for testing and do not impact the README.
 
 ~~~ yaml
-- await:            # A resource or list of resources for which to await readiness (optional)
+- await_resource:     # A resource (as in, deployment/frontend) for which to await readiness (optional)
+- await_external_ip:  # A service (as in, service/frontend) for which to await an external IP (optional)
+- await_http_ok:      # A service and URL template (as in, service/frontend and "http://{}:8080/api/hello")
+                      # for which to await an HTTP OK response (optional)
 ~~~
 
 Example commands:
@@ -258,7 +261,7 @@ commands:
       output: |
         service/frontend exposed
   west:
-    - await: service/backend
+    - await_resource: service/backend
     - run: kubectl get service/backend
       output: |
         NAME          TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)         AGE

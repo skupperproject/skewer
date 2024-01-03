@@ -70,53 +70,59 @@ def check_environment():
 # https://github.com/kubernetes/kubernetes/pull/87399
 # https://github.com/kubernetes/kubernetes/issues/80828
 # https://github.com/kubernetes/kubernetes/issues/83094
-def await_resource(group, name, timeout=240):
+def await_resource(resource, timeout=240):
+    assert "/" in resource, resource
+
     start_time = get_time()
 
-    debug(f"Waiting for {group}/{name} to become available")
+    debug(f"Waiting for {resource} to become available")
 
     while True:
-        if run(f"kubectl get {group}/{name}", check=False, quiet=True, stdout=DEVNULL).exit_code == 0:
+        if run(f"kubectl get {resource}", check=False, quiet=True, stdout=DEVNULL).exit_code == 0:
             break
 
         if get_time() - start_time > timeout:
-            fail(f"Timed out waiting for {group}/{name}")
+            fail(f"Timed out waiting for {resource}")
 
         sleep(5, quiet=True)
 
-        notice(f"Waiting for {group}/{name} to become available")
+        notice(f"Waiting for {resource} to become available")
 
-    if group == "deployment":
+    if resource.startswith("deployment/"):
         try:
-            run(f"kubectl wait --for condition=available --timeout {timeout}s {group}/{name}", quiet=True, stash=True)
+            run(f"kubectl wait --for condition=available --timeout {timeout}s {resource}", quiet=True, stash=True)
         except:
-            run(f"kubectl logs {group}/{name}")
+            run(f"kubectl logs {resource}")
             raise
 
-def await_external_ip(group, name, timeout=240):
+def await_external_ip(service, timeout=240):
+    assert service.startswith("service/"), service
+
     start_time = get_time()
 
-    debug(f"Waiting for external IP from {group}/{name} to become available")
+    debug(f"Waiting for external IP from {service} to become available")
 
-    await_resource(group, name, timeout=timeout)
+    await_resource(service, timeout=timeout)
 
     while True:
-        if call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'", quiet=True) != "":
+        if call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress}}'", quiet=True) != "":
             break
 
         if get_time() - start_time > timeout:
-            fail(f"Timed out waiting for external IP for {group}/{name}")
+            fail(f"Timed out waiting for external IP for {service}")
 
         sleep(5, quiet=True)
 
-        notice(f"Waiting for external IP from {group}/{name} to become available")
+        notice(f"Waiting for external IP from {service} to become available")
 
-    return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
+    return call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
 
-def await_http_ok(service_name, url_template, user=None, password=None, timeout=240):
+def await_http_ok(service, url_template, user=None, password=None, timeout=240):
+    assert service.startswith("service/"), service
+
     start_time = get_time()
 
-    ip = await_external_ip("service", service_name)
+    ip = await_external_ip(service, timeout=timeout)
     url = url_template.format(ip)
     insecure = url.startswith("https")
 
@@ -137,7 +143,7 @@ def await_http_ok(service_name, url_template, user=None, password=None, timeout=
 
 def await_console_ok():
     password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d", shell=True)
-    await_http_ok("skupper", "https://{}:8010/", user="admin", password=password)
+    await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
 
 def run_steps_minikube(skewer_file, debug=False):
     work_dir = make_temp_dir()
@@ -233,14 +239,14 @@ def _pause_for_demo(work_dir, skewer_data):
     if first_site["platform"] == "kubernetes":
         with logging_context(first_site_name):
             with working_env(**first_site["env"]):
-                console_ip = await_external_ip("service", "skupper")
+                console_ip = await_external_ip("service/skupper")
                 console_url = f"https://{console_ip}:8010/"
                 password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'", quiet=True)
                 password = base64_decode(password_data).decode("ascii")
 
                 if run("kubectl get service/frontend", check=False, output=DEVNULL, quiet=True).exit_code == 0:
                     if call("kubectl get service/frontend -o jsonpath='{.spec.type}'", quiet=True) == "LoadBalancer":
-                        frontend_ip = await_external_ip("service", "frontend")
+                        frontend_ip = await_external_ip("service/frontend")
                         frontend_url = f"http://{frontend_ip}:8080/"
 
     print()
@@ -292,29 +298,17 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
                     if "run" in command:
                         run(command["run"].replace("~", work_dir), shell=True, check=check)
 
-                    if "await" in command:
-                        resources = command["await"]
-
-                        if isinstance(resources, str):
-                            resources = (resources,)
-
-                        for resource in resources:
-                            group, name = resource.split("/", 1)
-                            await_resource(group, name)
+                    if "await_resource" in command:
+                        resource = command["await_resource"]
+                        await_resource(resource)
 
                     if "await_external_ip" in command:
-                        resources = command["await_external_ip"]
-
-                        if isinstance(resources, str):
-                            resources = (resources,)
-
-                        for resource in resources:
-                            group, name = resource.split("/", 1)
-                            await_external_ip(group, name)
+                        service = command["await_external_ip"]
+                        await_external_ip(service)
 
                     if "await_http_ok" in command:
-                        service_name, url_template = command["await_http_ok"]
-                        await_http_ok(service_name, url_template)
+                        service, url_template = command["await_http_ok"]
+                        await_http_ok(service, url_template)
 
                     if "await_console_ok" in command:
                         await_console_ok()

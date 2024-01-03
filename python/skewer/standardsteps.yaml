@@ -114,7 +114,6 @@ check_the_status_of_your_namespaces:
     installed.
   commands:
     "*":
-      - await: [deployment/skupper-service-controller, deployment/skupper-router]
       - run: skupper status
   postamble: |
     _Sample output:_
@@ -182,7 +181,7 @@ test_the_application:
       - run: curl http://<external-ip>:8080/api/health
         apply: readme
         output: OK
-      - await_http_ok: [frontend, "http://{}:8080/api/health"]
+      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
   postamble: |
     If everything is in order, you can now access the web interface by
     navigating to `http://<external-ip>:8080/` in your browser.
