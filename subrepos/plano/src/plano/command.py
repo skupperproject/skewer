@@ -27,6 +27,10 @@ import sys as _sys
 import traceback as _traceback
 
 class BaseCommand:
+    initial_logging_level = "warning"
+    verbose_logging_level = "notice"
+    quiet_logging_level = "error"
+
     def main(self, args=None):
         if args is None:
             args = ARGS[1:]
@@ -37,18 +41,18 @@ class BaseCommand:
 
         self.verbose = args.verbose or args.debug
         self.quiet = args.quiet
-        self.debug_enabled = args.debug
+        self.debug = args.debug
         self.init_only = args.init_only
 
-        level = "warning"
+        level = self.initial_logging_level
 
         if self.verbose:
-            level = "notice"
+            level = self.verbose_logging_level
 
         if self.quiet:
-            level = "error"
+            level = self.quiet_logging_level
 
-        if self.debug_enabled:
+        if self.debug:
             level = "debug"
 
         with logging_enabled(level=level):
@@ -62,7 +66,7 @@ class BaseCommand:
             except KeyboardInterrupt:
                 pass
             except PlanoError as e:
-                if self.debug_enabled:
+                if self.debug:
                     _traceback.print_exc()
                     exit(1)
                 else:
@@ -98,6 +102,9 @@ class BaseArgumentParser(_argparse.ArgumentParser):
 _plano_command = None
 
 class PlanoCommand(BaseCommand):
+    initial_logging_level = "notice"
+    verbose_logging_level = "debug"
+
     def __init__(self, module=None, description="Run commands defined as Python functions", epilog=None):
         self.module = module
         self.bound_commands = dict()

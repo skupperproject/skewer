@@ -357,6 +357,9 @@ def http_operations():
             result = http_get(url, insecure=True)
             assert result == "[1]", result
 
+            result = http_get(url, user="fritz", password="secret")
+            assert result == "[1]", result
+
             result = http_get(url, output_file="a")
             output = read("a")
             assert result is None, result
@@ -880,6 +883,9 @@ def string_operations():
     encoded_result = url_encode("abc=123&yeah!")
     decoded_result = url_decode(encoded_result)
     assert decoded_result == "abc=123&yeah!", decoded_result
+
+    result = parse_url("http://example.net/index.html")
+    assert result.hostname == "example.net"
 
 @test
 def temp_operations():

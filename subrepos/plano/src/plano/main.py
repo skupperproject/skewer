@@ -713,64 +713,71 @@ def print_json(data, **kwargs):
 
 ## HTTP operations
 
-def _run_curl(method, url, content=None, content_file=None, content_type=None, output_file=None, insecure=False):
+def _run_curl(method, url, content=None, content_file=None, content_type=None, output_file=None, insecure=False,
+              user=None, password=None):
     check_program("curl")
 
-    options = [
-        "-sf",
-        "-X", method,
-        "-H", "'Expect:'",
-    ]
+    args = ["curl", "-sf"]
+
+    if method != "GET":
+        args.extend(["-X", method])
 
     if content is not None:
         assert content_file is None
-        options.extend(("-d", "@-"))
+        args.extend(["-H", "Expect:", "-d", "@-"])
 
     if content_file is not None:
         assert content is None, content
-        options.extend(("-d", "@{}".format(content_file)))
+        args.extend(["-H", "Expect:", "-d", f"@{content_file}"])
 
     if content_type is not None:
-        options.extend(("-H", "'Content-Type: {}'".format(content_type)))
+        args.extend(["-H", f"'Content-Type: {content_type}'"])
 
     if output_file is not None:
-        options.extend(("-o", output_file))
+        args.extend(["-o", output_file])
 
     if insecure:
-        options.append("--insecure")
+        args.append("--insecure")
 
-    options = " ".join(options)
-    command = "curl {} {}".format(options, url)
+    if user is not None:
+        assert password is not None
+        args.extend(["--user", f"{user}:{password}"])
+
+    args.append(url)
 
     if output_file is None:
-        return call(command, input=content)
+        return call(args, input=content)
     else:
         make_parent_dir(output_file, quiet=True)
-        run(command, input=content)
+        run(args, input=content)
 
-def http_get(url, output_file=None, insecure=False):
-    return _run_curl("GET", url, output_file=output_file, insecure=insecure)
+def http_get(url, output_file=None, insecure=False, user=None, password=None):
+    return _run_curl("GET", url, output_file=output_file, insecure=insecure, user=user, password=password)
 
-def http_get_json(url, insecure=False):
-    return parse_json(http_get(url, insecure=insecure))
+def http_get_json(url, insecure=False, user=None, password=None):
+    return parse_json(http_get(url, insecure=insecure, user=user, password=password))
 
-def http_put(url, content, content_type=None, insecure=False):
-    _run_curl("PUT", url, content=content, content_type=content_type, insecure=insecure)
+def http_put(url, content, content_type=None, insecure=False, user=None, password=None):
+    _run_curl("PUT", url, content=content, content_type=content_type, insecure=insecure, user=user, password=password)
 
-def http_put_file(url, content_file, content_type=None, insecure=False):
-    _run_curl("PUT", url, content_file=content_file, content_type=content_type, insecure=insecure)
+def http_put_file(url, content_file, content_type=None, insecure=False, user=None, password=None):
+    _run_curl("PUT", url, content_file=content_file, content_type=content_type, insecure=insecure, user=user,
+              password=password)
 
-def http_put_json(url, data, insecure=False):
-    http_put(url, emit_json(data), content_type="application/json", insecure=insecure)
+def http_put_json(url, data, insecure=False, user=None, password=None):
+    http_put(url, emit_json(data), content_type="application/json", insecure=insecure, user=user, password=password)
 
-def http_post(url, content, content_type=None, output_file=None, insecure=False):
-    return _run_curl("POST", url, content=content, content_type=content_type, output_file=output_file, insecure=insecure)
+def http_post(url, content, content_type=None, output_file=None, insecure=False, user=None, password=None):
+    return _run_curl("POST", url, content=content, content_type=content_type, output_file=output_file,
+                     insecure=insecure, user=user, password=password)
 
-def http_post_file(url, content_file, content_type=None, output_file=None, insecure=False):
-    return _run_curl("POST", url, content_file=content_file, content_type=content_type, output_file=output_file, insecure=insecure)
+def http_post_file(url, content_file, content_type=None, output_file=None, insecure=False, user=None, password=None):
+    return _run_curl("POST", url, content_file=content_file, content_type=content_type, output_file=output_file,
+                     insecure=insecure, user=user, password=password)
 
-def http_post_json(url, data, insecure=False):
-    return parse_json(http_post(url, emit_json(data), content_type="application/json", insecure=insecure))
+def http_post_json(url, data, insecure=False, user=None, password=None):
+    return parse_json(http_post(url, emit_json(data), content_type="application/json", insecure=insecure, user=user,
+                                password=password))
 
 ## Link operations
 
@@ -1427,6 +1434,9 @@ def url_encode(string):
 
 def url_decode(string):
     return _urllib.parse.unquote_plus(string)
+
+def parse_url(url):
+    return _urllib.parse.urlparse(url)
 
 ## Temp operations
 
