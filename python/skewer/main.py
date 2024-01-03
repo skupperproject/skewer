@@ -84,6 +84,8 @@ def await_resource(group, name, timeout=240):
 
         sleep(5, quiet=True)
 
+        notice(f"Waiting for {group}/{name} to become available")
+
     if group == "deployment":
         try:
             run(f"kubectl wait --for condition=available --timeout {timeout}s {group}/{name}", quiet=True, stash=True)
@@ -107,15 +109,9 @@ def await_external_ip(group, name, timeout=240):
 
         sleep(5, quiet=True)
 
+        notice(f"Waiting for external IP from {group}/{name} to become available")
+
     return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
-
-# def parse_url(url):
-#     from urllib.parse import urlparse
-#     return urlparse(url)
-
-# def emit_url(url_object):
-#     from urllib.parse import urlparse
-#     return urlparse(url)
 
 def await_http_ok(service_name, url_template, user=None, password=None, timeout=240):
     start_time = get_time()
@@ -124,68 +120,24 @@ def await_http_ok(service_name, url_template, user=None, password=None, timeout=
     url = url_template.format(ip)
     insecure = url.startswith("https")
 
-    debug(f"Waiting for an HTTP OK response to HTTP GET {url}")
+    debug(f"Waiting for HTTP OK from {url}")
 
     while True:
         try:
             http_get(url, insecure=insecure, user=user, password=password)
-        except:
+        except PlanoError:
             if get_time() - start_time > timeout:
-                fail(f"Timed out waiting for {url}")
+                fail(f"Timed out waiting for HTTP OK from {url}")
 
             sleep(5, quiet=True)
+
+            notice(f"Waiting for HTTP OK from {url}")
         else:
             break
 
 def await_console_ok():
     password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d", shell=True)
     await_http_ok("skupper", "https://{}:8010/", user="admin", password=password)
-
-def _run_curl(method, url, content=None, content_file=None, content_type=None, output_file=None, insecure=False,
-              user=None, password=None):
-    check_program("curl")
-
-    # XXX args
-
-    options = ["-sf"]
-
-    if method != "GET":
-        options.extend(("-X", method))
-
-    if content is not None:
-        assert content_file is None
-        options.extend(("-H", "Expect:"))
-        options.extend(("-d", "@-"))
-
-    if content_file is not None:
-        assert content is None, content
-        options.extend(("-H", "Expect:"))
-        options.extend(("-d", f"@{content_file}"))
-
-    if content_type is not None:
-        options.extend(("-H", f"'Content-Type: {content_type}'"))
-
-    if output_file is not None:
-        options.extend(("-o", output_file))
-
-    if insecure:
-        options.append("--insecure")
-
-    if user is not None:
-        assert password is not None
-        options.extend(("--user", f"{user}:{password}"))
-
-    options = " ".join(options)
-    command = "curl {} {}".format(options, url)
-
-    if output_file is None:
-        return call(command, input=content)
-    else:
-        make_parent_dir(output_file, quiet=True)
-        run(command, input=content)
-
-def http_get(url, output_file=None, insecure=False, user=None, password=None):
-    return _run_curl("GET", url, output_file=output_file, insecure=insecure, user=user, password=password)
 
 def run_steps_minikube(skewer_file, debug=False):
     work_dir = make_temp_dir()
