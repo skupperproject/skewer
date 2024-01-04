@@ -1247,7 +1247,7 @@ def wait(proc, timeout=None, check=False, quiet=False):
     elif proc.exit_code < 0:
         debug("{} was terminated by signal {}", proc, abs(proc.exit_code))
     else:
-        debug("{} exited with code {}", proc, proc.exit_code)
+        error("{} exited with code {}", proc, proc.exit_code)
 
     if proc.stash_file is not None:
         if proc.exit_code > 0:
