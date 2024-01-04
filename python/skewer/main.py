@@ -78,15 +78,15 @@ def await_resource(resource, timeout=240):
     debug(f"Waiting for {resource} to become available")
 
     while True:
-        if run(f"kubectl get {resource}", check=False, quiet=True, stdout=DEVNULL).exit_code == 0:
+        if run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0:
             break
 
         if get_time() - start_time > timeout:
             fail(f"Timed out waiting for {resource}")
 
-        sleep(5, quiet=True)
-
         notice(f"Waiting for {resource} to become available")
+
+        sleep(5, quiet=True)
 
     if resource.startswith("deployment/"):
         try:
@@ -111,9 +111,9 @@ def await_external_ip(service, timeout=240):
         if get_time() - start_time > timeout:
             fail(f"Timed out waiting for external IP for {service}")
 
-        sleep(5, quiet=True)
-
         notice(f"Waiting for external IP from {service} to become available")
+
+        sleep(5, quiet=True)
 
     return call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
 
@@ -135,14 +135,16 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
             if get_time() - start_time > timeout:
                 fail(f"Timed out waiting for HTTP OK from {url}")
 
-            sleep(5, quiet=True)
-
             notice(f"Waiting for HTTP OK from {url}")
+
+            sleep(5, quiet=True)
         else:
             break
 
 def await_console_ok():
-    password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d", shell=True)
+    password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin}", quiet=True)
+    password = base64_decode(password)
+
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
 
 def run_steps_minikube(skewer_file, debug=False):
@@ -156,6 +158,9 @@ def run_steps_minikube(skewer_file, debug=False):
     check_program("minikube")
 
     skewer_data = read_yaml(skewer_file)
+
+    for site_name, site in skewer_data["sites"].items():
+        _Site(site_name, site)
 
     for site in skewer_data["sites"].values():
         for name, value in site["env"].items():
@@ -540,3 +545,22 @@ def _resolve_commands(commands, site):
         resolved_commands.append(resolved_command)
 
     return resolved_commands
+
+class _Site:
+    def __init__(self, name, data):
+        self.name = name
+        self.title = data.get("title")
+        self.platform = data["platform"]
+        self.namespace = None
+        self.env = data["env"]
+
+        self._logging_context = logging_context(self.name)
+        self._working_env = working_env(**self.env)
+
+    def __enter__(self):
+        self._logging_context.__enter__()
+        self._working_env.__enter__()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._working_env.__exit__(exc_type, exc_value, traceback)
+        self._logging_context.__exit__(exc_type, exc_value, traceback)

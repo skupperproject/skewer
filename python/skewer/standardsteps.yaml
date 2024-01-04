@@ -207,7 +207,6 @@ accessing_the_web_console:
           The site console url is: <console-url>
           The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
       - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
-        apply: readme
         output: <password>
       - await_console_ok:
   postamble: |
