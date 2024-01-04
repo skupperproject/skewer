@@ -745,11 +745,17 @@ def _run_curl(method, url, content=None, content_file=None, content_type=None, o
 
     args.append(url)
 
-    if output_file is None:
-        return call(args, input=content)
-    else:
+    if output_file is not None:
         make_parent_dir(output_file, quiet=True)
-        run(args, input=content)
+
+    proc = run(args, stdin=_subprocess.PIPE, stdout=_subprocess.PIPE, stderr=_subprocess.PIPE,
+               input=content, check=False, quiet=True)
+
+    if proc.exit_code > 0:
+        raise PlanoProcessError(proc)
+
+    if output_file is None:
+        return proc.stdout_result
 
 def http_get(url, output_file=None, insecure=False, user=None, password=None):
     return _run_curl("GET", url, output_file=output_file, insecure=insecure, user=user, password=password)
@@ -1240,6 +1246,7 @@ def wait(proc, timeout=None, check=False, quiet=False):
     try:
         proc.wait(timeout=timeout)
     except _subprocess.TimeoutExpired:
+        # XXX warning or error
         raise PlanoTimeout()
 
     if proc.exit_code == 0:
@@ -1247,7 +1254,10 @@ def wait(proc, timeout=None, check=False, quiet=False):
     elif proc.exit_code < 0:
         debug("{} was terminated by signal {}", proc, abs(proc.exit_code))
     else:
-        error("{} exited with code {}", proc, proc.exit_code)
+        if check:
+            error("{} exited with code {}", proc, proc.exit_code)
+        else:
+            debug("{} exited with code {}", proc, proc.exit_code)
 
     if proc.stash_file is not None:
         if proc.exit_code > 0:
