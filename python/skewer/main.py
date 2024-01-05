@@ -19,10 +19,10 @@
 
 from plano import *
 
-_standard_steps_yaml = read(join(get_parent_dir(__file__), "standardsteps.yaml"))
-_standard_steps = parse_yaml(_standard_steps_yaml)
+standard_steps_yaml = read(join(get_parent_dir(__file__), "standardsteps.yaml"))
+standard_steps = parse_yaml(standard_steps_yaml)
 
-_example_suite_para = """
+example_suite_para = """
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
 across cloud providers, data centers, and edge sites.
@@ -31,7 +31,7 @@ across cloud providers, data centers, and edge sites.
 [examples]: https://skupper.io/examples/index.html
 """.strip()
 
-_standard_prerequisites = """
+standard_prerequisites = """
 * The `kubectl` command-line tool, version 1.15 or later
   ([installation guide][install-kubectl])
 
@@ -42,11 +42,11 @@ _standard_prerequisites = """
 [kube-providers]: https://skupper.io/start/kubernetes.html
 """.strip()
 
-_standard_next_steps = """
+standard_next_steps = """
 Check out the other [examples][examples] on the Skupper website.
 """.strip()
 
-_about_this_example = """
+about_this_example = """
 This example was produced using [Skewer][skewer], a library for
 documenting and testing Skupper examples.
 
@@ -160,7 +160,7 @@ def run_steps_minikube(skewer_file, debug=False):
             for name, value in site_data["env"].items():
                 site_data["env"][name] = value.replace("~", work_dir)
 
-            site = _Site(site_name, site_data)
+            site = Site(site_name, site_data)
             site.check()
 
             with site:
@@ -176,24 +176,24 @@ def run_steps_minikube(skewer_file, debug=False):
 def run_steps(work_dir, skewer_data, debug=False):
     check_environment()
 
-    _apply_standard_steps(skewer_data)
+    apply_standard_steps(skewer_data)
 
     try:
         for step in skewer_data["steps"]:
             if step.get("id") == "cleaning_up":
                 continue
 
-            _run_step(work_dir, skewer_data, step)
+            run_step(work_dir, skewer_data, step)
 
         if "SKEWER_DEMO" in ENV:
-            _pause_for_demo(work_dir, skewer_data)
+            pause_for_demo(work_dir, skewer_data)
     except:
         if debug:
             print("TROUBLE!")
             print("-- Start of debug output")
 
             for site_name, site_data in skewer_data["sites"].items():
-                site = _Site(site_name, site_data)
+                site = Site(site_name, site_data)
 
                 print(f"---- Debug output for site '{site.name}'")
 
@@ -222,15 +222,51 @@ def run_steps(work_dir, skewer_data, debug=False):
     finally:
         for step in skewer_data["steps"]:
             if step.get("id") == "cleaning_up":
-                _run_step(work_dir, skewer_data, step, check=False)
+                run_step(work_dir, skewer_data, step, check=False)
                 break
 
-def _pause_for_demo(work_dir, skewer_data):
+def run_step(work_dir, skewer_data, step_data, check=True):
+    if "commands" not in step_data:
+        return
+
+    if "title" in step_data:
+        notice("Running step '{}'", step_data["title"])
+
+    for site_name, commands in step_data["commands"].items():
+        site_data = skewer_data["sites"][site_name]
+
+        with Site(site_name, site_data) as site:
+            if site.platform == "kubernetes":
+                run(f"kubectl config set-context --current --namespace {site.namespace}", stdout=DEVNULL, quiet=True)
+
+            for command in commands:
+                if command.get("apply") == "readme":
+                    continue
+
+                if "run" in command:
+                    run(command["run"].replace("~", work_dir), shell=True, check=check)
+
+                if "await_resource" in command:
+                    resource = command["await_resource"]
+                    await_resource(resource)
+
+                if "await_external_ip" in command:
+                    service = command["await_external_ip"]
+                    await_external_ip(service)
+
+                if "await_http_ok" in command:
+                    service, url_template = command["await_http_ok"]
+                    await_http_ok(service, url_template)
+
+                if "await_console_ok" in command:
+                    await_console_ok()
+
+def pause_for_demo(work_dir, skewer_data):
     sites = list()
     frontend_url = None
 
     for site_name, site_data in skewer_data["sites"].items():
-        site = _Site(site_name, site_data)
+        site = Site(site_name, site_data)
         sites.append(site)
 
     if sites[0].platform == "kubernetes":
@@ -269,42 +305,6 @@ def _pause_for_demo(work_dir, skewer_data):
         while input("Are you done (yes)? ") != "yes": # pragma: nocover
             pass
 
-def _run_step(work_dir, skewer_data, step_data, check=True):
-    if "commands" not in step_data:
-        return
-
-    if "title" in step_data:
-        notice("Running step '{}'", step_data["title"])
-
-    for site_name, commands in step_data["commands"].items():
-        site_data = skewer_data["sites"][site_name]
-
-        with _Site(site_name, site_data) as site:
-            if site.platform == "kubernetes":
-                run(f"kubectl config set-context --current --namespace {site.namespace}", stdout=DEVNULL, quiet=True)
-
-            for command in commands:
-                if command.get("apply") == "readme":
-                    continue
-
-                if "run" in command:
-                    run(command["run"].replace("~", work_dir), shell=True, check=check)
-
-                if "await_resource" in command:
-                    resource = command["await_resource"]
-                    await_resource(resource)
-
-                if "await_external_ip" in command:
-                    service = command["await_external_ip"]
-                    await_external_ip(service)
-
-                if "await_http_ok" in command:
-                    service, url_template = command["await_http_ok"]
-                    await_http_ok(service, url_template)
-
-                if "await_console_ok" in command:
-                    await_console_ok()
-
 def generate_readme(skewer_file, output_file):
     notice("Generating the readme")
     notice("  Skewer file: " + get_absolute_path(skewer_file))
@@ -325,7 +325,7 @@ def generate_readme(skewer_file, output_file):
         out.append(f"#### {skewer_data['subtitle']}")
         out.append("")
 
-    out.append(_example_suite_para)
+    out.append(example_suite_para)
     out.append("")
     out.append("#### Contents")
     out.append("")
@@ -335,7 +335,7 @@ def generate_readme(skewer_file, output_file):
 
     out.append("* [Prerequisites](#prerequisites)")
 
-    _apply_standard_steps(skewer_data)
+    apply_standard_steps(skewer_data)
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
         if step_data.get("numbered", True):
@@ -365,7 +365,7 @@ def generate_readme(skewer_file, output_file):
         out.append(skewer_data["overview"].strip())
         out.append("")
 
-    prerequisites = _standard_prerequisites
+    prerequisites = standard_prerequisites
 
     if "prerequisites" in skewer_data:
         prerequisites = skewer_data["prerequisites"].strip()
@@ -385,7 +385,7 @@ def generate_readme(skewer_file, output_file):
 
         out.append(f"## {title}")
         out.append("")
-        out.append(_generate_readme_step(skewer_data, step_data))
+        out.append(generate_readme_step(skewer_data, step_data))
         out.append("")
 
     if "summary" in skewer_data:
@@ -394,7 +394,7 @@ def generate_readme(skewer_file, output_file):
         out.append(skewer_data["summary"].strip())
         out.append("")
 
-    next_steps = _standard_next_steps
+    next_steps = standard_next_steps
 
     if "next_steps" in skewer_data:
         next_steps = skewer_data["next_steps"].strip()
@@ -406,12 +406,12 @@ def generate_readme(skewer_file, output_file):
 
     out.append("## About this example")
     out.append("")
-    out.append(_about_this_example)
+    out.append(about_this_example)
     out.append("")
 
     write(output_file, "\n".join(out).strip() + "\n")
 
-def _generate_readme_step(skewer_data, step_data):
+def generate_readme_step(skewer_data, step_data):
     out = list()
 
     if "preamble" in step_data:
@@ -463,14 +463,14 @@ def _generate_readme_step(skewer_data, step_data):
 
     return "\n".join(out).strip()
 
-def _apply_standard_steps(skewer_data):
+def apply_standard_steps(skewer_data):
     notice("Applying standard steps")
 
     for step_data in skewer_data["steps"]:
         if "standard" not in step_data:
             continue
 
-        standard_step_data = _standard_steps[step_data["standard"]]
+        standard_step_data = standard_steps[step_data["standard"]]
 
         if "id" not in step_data:
             step_data["id"] = standard_step_data.get("id")
@@ -499,16 +499,16 @@ def _apply_standard_steps(skewer_data):
                     if str(i) in standard_step_data["commands"]:
                         # Is a specific index in the standard commands?
                         commands = standard_step_data["commands"][str(i)]
-                        step_data["commands"][site_name] = _resolve_commands(commands, site)
+                        step_data["commands"][site_name] = resolve_commands(commands, site)
                     elif "*" in standard_step_data["commands"]:
                         # Is "*" in the standard commands?
                         commands = standard_step_data["commands"]["*"]
-                        step_data["commands"][site_name] = _resolve_commands(commands, site)
+                        step_data["commands"][site_name] = resolve_commands(commands, site)
                     else:
                         # Otherwise, omit commands for this site
                         continue
 
-def _resolve_commands(commands, site):
+def resolve_commands(commands, site):
     resolved_commands = list()
 
     for command in commands:
@@ -532,12 +532,12 @@ def _resolve_commands(commands, site):
 
     return resolved_commands
 
-class _Site:
+class Site:
     def __init__(self, name, data):
         assert name is not None
 
         self.name = name
-        self.title = data.get("title")
+        self.title = data.get("title", capitalize(self.name))
         self.platform = data["platform"]
         self.namespace = data.get("namespace")
         self.env = data["env"]

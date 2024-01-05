@@ -23,11 +23,13 @@ prerequisites: |
   Custom prerequisites
 sites:
   west:
+    title: West
     platform: kubernetes
     namespace: west
     env:
       KUBECONFIG: ~/.kube/config-west
   east:
+    title: East
     platform: kubernetes
     namespace: east
     env:

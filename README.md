@@ -127,23 +127,34 @@ A **site**:
 
 ~~~ yaml
 <site-name>:
-  kubeconfig: <kubeconfig-file>  # (required)
-  namespace: <namespace-name>    # (required)
+  title:            # The site title (optional)
+  platform:         # "kubernetes" or "podman" (required)
+  namespace:        # The Kubernetes namespace (required for Kubernetes sites)
+  env:              # A map of named environment variables
 ~~~
 
 A tilde (~) in the kubeconfig file path is replaced with a temporary
 working directory during testing.
+
+Kubernetes sites must have a `KUBECONFIG` environment variable with a
+path to a kubeconfig file.  Podman sites must have a
+`SKUPPER_PLATFORM` variable with the value `podman`.
 
 Example sites:
 
 ~~~ yaml
 sites:
   east:
-    kubeconfig: ~/.kube/config-east
+    title: East
+    platform: kubernetes
     namespace: east
+    env:
+      KUBECONFIG: ~/.kube/config-east
   west:
-    kubeconfig: ~/.kube/config-west
-    namespace: west
+    title: West
+    platform: podman
+    env:
+      SKUPPER_PLATFORM: podman
 ~~~
 
 A **step**:
