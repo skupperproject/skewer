@@ -75,16 +75,14 @@ def await_resource(resource, timeout=240):
 
     start_time = get_time()
 
-    debug(f"Waiting for {resource} to become available")
-
     while True:
+        notice(f"Waiting for {resource} to become available")
+
         if run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0:
             break
 
         if get_time() - start_time > timeout:
             fail(f"Timed out waiting for {resource}")
-
-        notice(f"Waiting for {resource} to become available")
 
         sleep(5, quiet=True)
 
@@ -100,18 +98,16 @@ def await_external_ip(service, timeout=240):
 
     start_time = get_time()
 
-    debug(f"Waiting for external IP from {service} to become available")
-
     await_resource(service, timeout=timeout)
 
     while True:
+        notice(f"Waiting for external IP from {service} to become available")
+
         if call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress}}'", quiet=True) != "":
             break
 
         if get_time() - start_time > timeout:
             fail(f"Timed out waiting for external IP for {service}")
-
-        notice(f"Waiting for external IP from {service} to become available")
 
         sleep(5, quiet=True)
 
@@ -126,16 +122,14 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
     url = url_template.format(ip)
     insecure = url.startswith("https")
 
-    debug(f"Waiting for HTTP OK from {url}")
-
     while True:
+        notice(f"Waiting for HTTP OK from {url}")
+
         try:
             http_get(url, insecure=insecure, user=user, password=password)
         except PlanoError:
             if get_time() - start_time > timeout:
                 fail(f"Timed out waiting for HTTP OK from {url}")
-
-            notice(f"Waiting for HTTP OK from {url}")
 
             sleep(5, quiet=True)
         else:
