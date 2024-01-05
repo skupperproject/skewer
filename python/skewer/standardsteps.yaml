@@ -182,7 +182,8 @@ test_the_application:
           frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
       - run: curl http://<external-ip>:8080/api/health
         apply: readme
-        output: OK
+        output: |
+          OK
       - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
   postamble: |
     If everything is in order, you can now access the web interface by

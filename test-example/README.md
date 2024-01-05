@@ -169,6 +169,7 @@ _Sample output:_
 ~~~ console
 $ skupper init
 Waiting for LoadBalancer IP or hostname...
+Waiting for status...
 Skupper is now installed in namespace '<namespace>'.  Use 'skupper status' to get more information.
 ~~~
 
@@ -247,8 +248,8 @@ Check the status of the link using 'skupper link status'.
 ~~~
 
 If your console sessions are on different machines, you may need
-to use `sftp` or a similar tool to transfer the token securely.
-By default, tokens expire after a single use or 15 minutes after
+to use `scp` or a similar tool to transfer the token securely.  By
+default, tokens expire after a single use or 15 minutes after
 creation.
 
 ## Step 8: Fail on demand
