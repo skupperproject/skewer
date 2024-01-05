@@ -1,1 +1,1 @@
-subrepos/skewer/config/.plano.py
+external/skewer-main/config/.plano.py

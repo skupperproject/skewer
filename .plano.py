@@ -57,3 +57,13 @@ def clean():
     remove("README.html")
     remove("htmlcov")
     remove(".coverage")
+
+@command
+def update_plano():
+    """
+    Update the embedded Plano repo
+    """
+
+    make_dir("external")
+    remove("external/plano-main")
+    run("curl -sfL https://github.com/ssorj/plano/archive/main.tar.gz | tar -C external -xz", shell=True)

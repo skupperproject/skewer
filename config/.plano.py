@@ -117,8 +117,16 @@ def update_workflow():
     """
     Update the GitHub Actions workflow file
     """
+    copy("external/skewer-main/config/.github/workflows/main.yaml", ".github/workflows/main.yaml")
 
-    from_file = join("subrepos", "skewer", "config", ".github", "workflows", "main.yaml")
-    to_file = join(".github", "workflows", "main.yaml")
+@command
+def update_skewer():
+    """
+    Update the embedded Skewer repo
+    """
+    check_program("curl")
 
-    copy(from_file, to_file)
+    make_dir("external")
+    remove("external/skewer-main")
+
+    run("curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz", shell=True)

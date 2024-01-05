@@ -21,32 +21,29 @@ use the [Skupper example template][template] as a starting point.
 
 [template]: https://github.com/skupperproject/skupper-example-template
 
-Make sure you have git-subrepo installed:
+Add the Skewer code as a subdirectory in your example project:
 
-    dnf install git-subrepo
-
-Add the Skewer code as a subrepo in your example project:
-
-    cd project-dir/
-    git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
+    cd <project-dir>/
+    mkdir external
+    curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
 
 Symlink the Skewer library into your `python` directory:
 
     mkdir -p python
-    ln -s ../subrepos/skewer/python/skewer python/skewer
+    ln -s ../external/skewer-main/python/skewer python/skewer
 
 Symlink the `plano` command into the root of your project.  Symlink
 the standard `config/.plano.py` as `.plano.py` in the root as well:
 
-    ln -s subrepos/skewer/plano
-    ln -s subrepos/skewer/config/.plano.py
+    ln -s external/skewer-main/plano
+    ln -s external/skewer-main/config/.plano.py
 
 <!-- This sucks.  GitHub Actions doesn't support workflow files as symlinks. -->
 
 <!-- Symlink the standard GitHub Actions workflow file: -->
 
 <!--     mkdir -p .github/workflows -->
-<!--     ln -s ../../subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml -->
+<!--     ln -s ../../external/skewer-main/config/.github/workflows/main.yaml .github/workflows/main.yaml -->
 
 <!-- So I have a convenience for copying the latest version into place. -->
 
@@ -82,7 +79,7 @@ options:
   -f FILE, --file FILE  Load commands from FILE (default '.plano.py')
 
 commands:
-  {generate,render,run,run-external,demo,test,update-workflow}
+  {generate,render,run,run-external,demo,test,update-workflow,update-skewer}
     generate            Generate README.md from the data in skewer.yaml
     render              Render README.html from the data in skewer.yaml
     run                 Run the example steps using Minikube
@@ -90,6 +87,7 @@ commands:
     demo                Run the example steps and pause before cleaning up
     test                Test README generation and run the steps on Minikube
     update-workflow     Update the GitHub Actions workflow file
+    update-skewer       Update the embedded Skewer repo
 ~~~
 
 ## Updating a Skewer subrepo inside your example project
@@ -97,15 +95,6 @@ commands:
 Use `git subrepo pull`:
 
     git subrepo pull --force subrepos/skewer
-
-Some older versions of git-subrepo won't complete a force pull.  If
-that happens, you can simply blow away your changes and get the latest
-Skewer, using these commands:
-
-    git subrepo clean subrepos/skewer
-    git rm -rf subrepos/skewer/
-    git commit -am "Temporarily remove the previous version of Skewer"
-    git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
 
 ## Skewer YAML
 

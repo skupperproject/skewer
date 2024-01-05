@@ -718,7 +718,7 @@ def _run_curl(method, url, content=None, content_file=None, content_type=None, o
               user=None, password=None):
     check_program("curl")
 
-    args = ["curl", "-sf"]
+    args = ["curl", "-sfL"]
 
     if method != "GET":
         args.extend(["-X", method])
