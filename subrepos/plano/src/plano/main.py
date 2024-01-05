@@ -70,6 +70,7 @@ LINUX = _sys.platform == "linux"
 WINDOWS = _sys.platform in ("win32", "cygwin")
 
 PLANO_DEBUG = "PLANO_DEBUG" in ENV
+PLANO_COLOR = "PLANO_COLOR" in ENV
 
 ## Archive operations
 
@@ -171,7 +172,7 @@ def _get_color_code(color, bright):
     return "".join(elems)
 
 def _is_color_enabled(file):
-    return hasattr(file, "isatty") and file.isatty()
+    return PLANO_COLOR or hasattr(file, "isatty") and file.isatty()
 
 class console_color:
     def __init__(self, color=None, bright=False, file=_sys.stdout):
