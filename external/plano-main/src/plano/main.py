@@ -910,7 +910,7 @@ def _print_message(level, message, args):
 
     line.append(cformat(program_text, color="gray"))
 
-    level_text = "{}:".format(_logging_levels[level]).ljust(8)
+    level_text = "{}:".format(_logging_levels[level])
     level_color = ("white", "cyan", "yellow", "red", None)[level]
     level_bright = (False, False, False, True, False)[level]
 
@@ -1247,7 +1247,7 @@ def wait(proc, timeout=None, check=False, quiet=False):
     try:
         proc.wait(timeout=timeout)
     except _subprocess.TimeoutExpired:
-        # XXX warning or error
+        error("{} timed out after {} seconds", proc, timeout)
         raise PlanoTimeout()
 
     if proc.exit_code == 0:

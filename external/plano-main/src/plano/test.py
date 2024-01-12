@@ -29,7 +29,7 @@ import traceback as _traceback
 
 class PlanoTestCommand(BaseCommand):
     def __init__(self, test_modules=[]):
-        super(PlanoTestCommand, self).__init__()
+        super().__init__()
 
         self.test_modules = test_modules
 
@@ -55,6 +55,12 @@ class PlanoTestCommand(BaseCommand):
                                  help="Exit on the first failure encountered in a test run")
         self.parser.add_argument("--iterations", metavar="COUNT", type=int, default=1,
                                  help="Run the tests COUNT times (default 1)")
+        self.parser.add_argument("--verbose", action="store_true",
+                                 help="Print detailed logging to the console")
+        self.parser.add_argument("--quiet", action="store_true",
+                                 help="Print no logging to the console")
+        self.parser.add_argument("--init-only", action="store_true",
+                                 help=_argparse.SUPPRESS)
 
     def parse_args(self, args):
         return self.parser.parse_args(args)

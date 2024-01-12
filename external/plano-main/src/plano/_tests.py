@@ -66,9 +66,14 @@ def archive_operations():
 def command_operations():
     class SomeCommand(BaseCommand):
         def __init__(self):
+            super().__init__()
+
             self.parser = BaseArgumentParser()
             self.parser.add_argument("--interrupt", action="store_true")
             self.parser.add_argument("--explode", action="store_true")
+            self.parser.add_argument("--verbose", action="store_true")
+            self.parser.add_argument("--quiet", action="store_true")
+            self.parser.add_argument("--init-only", action="store_true")
 
         def parse_args(self, args):
             return self.parser.parse_args(args)
@@ -90,10 +95,9 @@ def command_operations():
 
     SomeCommand().main([])
     SomeCommand().main(["--interrupt"])
-    SomeCommand().main(["--debug"])
 
     with expect_system_exit():
-        SomeCommand().main(["--verbose", "--debug", "--explode"])
+        SomeCommand().main(["--verbose", "--explode"])
 
 @test
 def console_operations():

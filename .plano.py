@@ -36,6 +36,10 @@ def test(verbose=False, quiet=False, passthrough_args=[]):
 
 @command
 def coverage():
+    """
+    Run the tests and measure code coverage
+    """
+
     check_program("coverage")
 
     with working_env(PYTHONPATH="python"):
