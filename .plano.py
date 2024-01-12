@@ -20,24 +20,31 @@
 from skewer import *
 
 @command(passthrough=True)
-def test(coverage=False, passthrough_args=[]):
+def test(verbose=False, quiet=False, passthrough_args=[]):
     clean()
+
+    if verbose:
+        passthrough_args.append("--verbose")
+
+    if quiet:
+        passthrough_args.append("--quiet")
 
     args = " ".join(passthrough_args)
 
-    if coverage:
-        check_program("coverage")
+    import skewer.tests
+    PlanoTestCommand(skewer.tests).main(passthrough_args)
 
-        with working_env(PYTHONPATH="python"):
-            run(f"coverage run --source skewer -m skewer.tests {args}")
+@command
+def coverage():
+    check_program("coverage")
 
-        run("coverage report")
-        run("coverage html")
+    with working_env(PYTHONPATH="python"):
+        run("coverage run --source skewer -m skewer.tests")
 
-        print(f"file:{get_current_dir()}/htmlcov/index.html")
-    else:
-        with working_env(PYTHONPATH="python"):
-            run(f"python -m skewer.tests {args}")
+    run("coverage report")
+    run("coverage html")
+
+    print(f"file:{get_current_dir()}/htmlcov/index.html")
 
 @command
 def render():
@@ -63,7 +70,6 @@ def update_plano():
     """
     Update the embedded Plano repo
     """
-
     make_dir("external")
     remove("external/plano-main")
     run("curl -sfL https://github.com/ssorj/plano/archive/main.tar.gz | tar -C external -xz", shell=True)

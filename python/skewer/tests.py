@@ -67,5 +67,4 @@ def run_steps_debug():
 
 if __name__ == "__main__":
     import sys
-
-    PlanoTestCommand(sys.modules[__name__]).main()
+    run_tests(sys.modules[__name__])

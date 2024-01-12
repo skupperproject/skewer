@@ -67,7 +67,7 @@ Run the `./plano` command to see the available commands:
 
 ~~~ console
 $ ./plano
-usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {generate,render,run,run-external,demo,test,update-workflow} ...
+usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] [-m MODULE] {command} ...
 
 Run commands defined as Python functions
 
@@ -77,24 +77,21 @@ options:
   --debug               Print debugging output to the console
   -h, --help            Show this help message and exit
   -f FILE, --file FILE  Load commands from FILE (default '.plano.py')
+  -m MODULE, --module MODULE
+                        Load commands from MODULE
 
 commands:
-  {generate,render,run,run-external,demo,test,update-workflow,update-skewer}
+  {command}
     generate            Generate README.md from the data in skewer.yaml
     render              Render README.html from the data in skewer.yaml
+    clean               Clean up the source tree
     run                 Run the example steps using Minikube
-    run-external        Run the example steps against external clusters
+    run-external        Run the example steps with user-provided kubeconfigs
     demo                Run the example steps and pause before cleaning up
     test                Test README generation and run the steps on Minikube
     update-workflow     Update the GitHub Actions workflow file
     update-skewer       Update the embedded Skewer repo
 ~~~
-
-## Updating a Skewer subrepo inside your example project
-
-Use `git subrepo pull`:
-
-    git subrepo pull --force subrepos/skewer
 
 ## Skewer YAML
 
