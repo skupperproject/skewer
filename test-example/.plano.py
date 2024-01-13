@@ -1,1 +1,1 @@
-external/skewer-main/config/.plano.py
+../config/.plano.py

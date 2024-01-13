@@ -24,7 +24,7 @@ use the [Skupper example template][template] as a starting point.
 Add the Skewer code as a subdirectory in your example project:
 
     cd <project-dir>/
-    mkdir external
+    mkdir -p external
     curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
 
 Symlink the Skewer library into your `python` directory:
@@ -33,19 +33,23 @@ Symlink the Skewer library into your `python` directory:
     ln -s ../external/skewer-main/python/skewer python/skewer
 
 Symlink the `plano` command into the root of your project.  Symlink
-the standard `config/.plano.py` as `.plano.py` in the root as well:
+the standard `.plano.py` and `.gitignore` files as well.
 
     ln -s external/skewer-main/plano
     ln -s external/skewer-main/config/.plano.py
 
-<!-- This sucks.  GitHub Actions doesn't support workflow files as symlinks. -->
+Copy the standard `.gitignore` and GitHub Actions workflow file into
+your project:
 
-<!-- Symlink the standard GitHub Actions workflow file: -->
+    cp external/skewer-main/config/.gitignore .gitignore
 
-<!--     mkdir -p .github/workflows -->
-<!--     ln -s ../../external/skewer-main/config/.github/workflows/main.yaml .github/workflows/main.yaml -->
+    mkdir -p .github/workflows
+    cp external/skewer-main/config/.github/workflows/main.yaml .github/workflows/main.yaml
 
-<!-- So I have a convenience for copying the latest version into place. -->
+Use your editor to create a `skewer.yaml` file in the root of your
+project:
+
+    emacs skewer.yaml
 
 To use the `./plano` command, you must have the Python `pyyaml`
 package installed.  Use `pip` (or `pip3` on some systems) to install
@@ -53,28 +57,15 @@ it:
 
     pip install pyyaml
 
-Use the `plano update-workflow` command to copy the latest GitHub
-Actions workflow file into your project:
-
-    ./plano update-workflow
-
-Use your editor to create a `skewer.yaml` file in the root of your
-project:
-
-    emacs skewer.yaml
-
 Run the `./plano` command to see the available commands:
 
 ~~~ console
 $ ./plano
-usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] [-m MODULE] {command} ...
+usage: plano [-h] [-f FILE] [-m MODULE] {command} ...
 
 Run commands defined as Python functions
 
 options:
-  --verbose             Print detailed logging to the console
-  --quiet               Print no logging to the console
-  --debug               Print debugging output to the console
   -h, --help            Show this help message and exit
   -f FILE, --file FILE  Load commands from FILE (default '.plano.py')
   -m MODULE, --module MODULE
@@ -89,8 +80,7 @@ commands:
     run-external        Run the example steps with user-provided kubeconfigs
     demo                Run the example steps and pause before cleaning up
     test                Test README generation and run the steps on Minikube
-    update-workflow     Update the GitHub Actions workflow file
-    update-skewer       Update the embedded Skewer repo
+    update-skewer       Update the embedded Skewer repo and GitHub workflow
 ~~~
 
 ## Skewer YAML
@@ -243,10 +233,12 @@ for a condition you require before going to the next step.  They are
 used only for testing and do not impact the README.
 
 ~~~ yaml
-- await_resource:     # A resource (as in, deployment/frontend) for which to await readiness (optional)
-- await_external_ip:  # A service (as in, service/frontend) for which to await an external IP (optional)
-- await_http_ok:      # A service and URL template (as in, service/frontend and "http://{}:8080/api/hello")
-                      # for which to await an HTTP OK response (optional)
+- await_resource:     # A resource for which to await readiness (optional)
+                      # Example: await_resource: deployment/frontend
+- await_external_ip:  # A service for which to await an external IP (optional)
+                      # Example: await_service: service/frontend
+- await_http_ok:      # A service and URL template for which to await an HTTP OK response (optional)
+                      # Example: await_http_ok: [service/frontend, "http://{}:8080/api/hello"]
 ~~~
 
 Example commands:
