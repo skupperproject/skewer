@@ -109,12 +109,12 @@ A **site**:
   env:              # A map of named environment variables
 ~~~
 
-A tilde (~) in the kubeconfig file path is replaced with a temporary
-working directory during testing.
-
 Kubernetes sites must have a `KUBECONFIG` environment variable with a
-path to a kubeconfig file.  Podman sites must have a
-`SKUPPER_PLATFORM` variable with the value `podman`.
+path to a kubeconfig file.  A tilde (~) in the kubeconfig file path is
+replaced with a temporary working directory during testing.
+
+Podman sites must have a `SKUPPER_PLATFORM` variable with the value
+`podman`.
 
 Example sites:
 
@@ -168,11 +168,12 @@ Or you can use a named step from the library of standard steps:
 ~~~
 
 The standard steps are defined in
-[python/standardsteps.yaml](python/standardsteps.yaml).  Note that you
-should not edit this file.  Instead, in your `skewer.yaml` file, you
-can create custom steps based on the standard steps.  You can override
-the `title`, `preamble`, `commands`, or `postamble` field of a
-standard step by adding the field in addition to `standard`:
+[python/skewer/standardsteps.yaml](python/skewer/standardsteps.yaml).
+Note that you should not edit this file.  Instead, in your
+`skewer.yaml` file, you can create custom steps based on the standard
+steps.  You can override the `title`, `preamble`, `commands`, or
+`postamble` field of a standard step by adding the field in addition
+to `standard`:
 
 ~~~ yaml
 - standard: cleaning_up
