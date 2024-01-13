@@ -21,26 +21,28 @@ use the [Skupper example template][template] as a starting point.
 
 [template]: https://github.com/skupperproject/skupper-example-template
 
-Add the Skewer code as a subdirectory in your example project:
+Change directory to the root of your example project:
 
     cd <project-dir>/
+
+Add the Skewer code as a subdirectory in your example project:
+
     mkdir -p external
     curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
 
-Symlink the Skewer library into your `python` directory:
+Symlink the Skewer and Plano libraries into your `python` directory:
 
     mkdir -p python
     ln -s ../external/skewer-main/python/skewer python/skewer
+    ln -s ../external/skewer-main/python/plano python/plano
 
-Symlink the `plano` command into the root of your project.  Symlink
-the standard `.plano.py` and `.gitignore` files as well.
+Copy the `plano` command into the root of your project:
 
-    ln -s external/skewer-main/plano
-    ln -s external/skewer-main/config/.plano.py
+    cp external/skewer-main/plano plano
 
-Copy the standard `.gitignore` and GitHub Actions workflow file into
-your project:
+Copy the standard config files and workflow file into your project:
 
+    cp external/skewer-main/config/.plano.py .plano.py
     cp external/skewer-main/config/.gitignore .gitignore
 
     mkdir -p .github/workflows

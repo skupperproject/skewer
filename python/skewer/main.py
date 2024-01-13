@@ -275,6 +275,8 @@ def run_step(skewer_data, step_data, check=True):
                     await_console_ok()
 
 def pause_for_demo(skewer_data):
+    notice("Pausing for demo time")
+
     sites = list(get_sites(skewer_data))
     frontend_url = None
 
