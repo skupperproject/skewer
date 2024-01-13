@@ -73,25 +73,25 @@ def command_operations():
             self.parser.add_argument("--explode", action="store_true")
             self.parser.add_argument("--verbose", action="store_true")
             self.parser.add_argument("--quiet", action="store_true")
-            self.parser.add_argument("--init-only", action="store_true")
 
         def parse_args(self, args):
             return self.parser.parse_args(args)
 
         def init(self, args):
-            self.verbose = args.verbose
             self.interrupt = args.interrupt
             self.explode = args.explode
+            self.verbose = args.verbose
+            self.quiet = args.quiet
 
         def run(self):
-            if self.verbose:
-                print("Hello")
-
             if self.interrupt:
                 raise KeyboardInterrupt()
 
             if self.explode:
                 raise PlanoError("Exploded")
+
+            if self.verbose:
+                print("Hello")
 
     SomeCommand().main([])
     SomeCommand().main(["--interrupt"])
@@ -1186,7 +1186,6 @@ def plano_command():
         run_command()
         run_command("--help")
         run_command("--quiet")
-        run_command("--init-only")
 
         with expect_system_exit():
             run_command("no-such-command")

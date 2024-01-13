@@ -29,8 +29,6 @@ import traceback as _traceback
 
 class PlanoTestCommand(BaseCommand):
     def __init__(self, test_modules=[]):
-        super().__init__()
-
         self.test_modules = test_modules
 
         if _inspect.ismodule(self.test_modules):
@@ -59,8 +57,6 @@ class PlanoTestCommand(BaseCommand):
                                  help="Print detailed logging to the console")
         self.parser.add_argument("--quiet", action="store_true",
                                  help="Print no logging to the console")
-        self.parser.add_argument("--init-only", action="store_true",
-                                 help=_argparse.SUPPRESS)
 
     def parse_args(self, args):
         return self.parser.parse_args(args)
@@ -74,6 +70,8 @@ class PlanoTestCommand(BaseCommand):
         self.timeout = args.timeout
         self.fail_fast = args.fail_fast
         self.iterations = args.iterations
+        self.verbose = args.verbose
+        self.quiet = args.quiet
 
         try:
             for name in args.module:

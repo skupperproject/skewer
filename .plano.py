@@ -17,6 +17,8 @@
 # under the License.
 #
 
+import skewer.tests
+
 from skewer import *
 
 @command(passthrough=True)
@@ -29,17 +31,14 @@ def test(verbose=False, quiet=False, passthrough_args=[]):
     if quiet:
         passthrough_args.append("--quiet")
 
-    args = " ".join(passthrough_args)
-
-    import skewer.tests
-    PlanoTestCommand(skewer.tests).main(passthrough_args)
+    with working_env(PYTHONPATH="python"):
+        run(["plano-test", "-m", "skewer.tests"] + passthrough_args)
 
 @command
-def coverage():
+def coverage(verbose=False, quiet=False):
     """
     Run the tests and measure code coverage
     """
-
     check_program("coverage")
 
     with working_env(PYTHONPATH="python"):
@@ -48,10 +47,11 @@ def coverage():
     run("coverage report")
     run("coverage html")
 
-    print(f"file:{get_current_dir()}/htmlcov/index.html")
+    if not quiet:
+        print(f"file:{get_current_dir()}/htmlcov/index.html")
 
 @command
-def render():
+def render(verbose=False, quiet=False):
     """
     Render README.html from README.md
     """
@@ -59,12 +59,12 @@ def render():
 
     run(f"pandoc -o README.html README.md")
 
-    print(f"file:{get_real_path('README.html')}")
+    if not quiet:
+        print(f"file:{get_real_path('README.html')}")
 
 @command
 def clean():
-    remove(join("python", "__pycache__"))
-    remove(join("test-example", "python", "__pycache__"))
+    remove(find(".", "__pycache__"))
     remove("README.html")
     remove("htmlcov")
     remove(".coverage")

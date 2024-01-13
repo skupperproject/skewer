@@ -27,20 +27,14 @@ import sys as _sys
 import traceback as _traceback
 
 class BaseCommand:
-    default_logging_level = "warning"
-    verbose_logging_level = "notice"
-    quiet_logging_level = "error"
-
-    def __init__(self):
-        self.verbose = False
-        self.quiet = False
-        self.init_only = False
-
     def parse_args(self, args): # pragma: nocover
         raise NotImplementedError()
 
-    def init(self, args): # pragma: nocover
-        pass
+    def configure_logging(self, args):
+        return "warning", None
+
+    def init(self, args):
+        raise NotImplementedError()
 
     def run(self): # pragma: nocover
         raise NotImplementedError()
@@ -53,21 +47,11 @@ class BaseCommand:
 
         assert isinstance(args, _argparse.Namespace), args
 
-        level = self.default_logging_level
+        level, output = self.configure_logging(args)
 
-        if self.verbose:
-            level = self.verbose_logging_level
-
-        if self.quiet:
-            level = self.quiet_logging_level
-
-        with logging_enabled(level=level):
+        with logging_enabled(level=level, output=output):
             try:
                 self.init(args)
-
-                if self.init_only:
-                    return
-
                 self.run()
             except KeyboardInterrupt:
                 pass
@@ -90,13 +74,7 @@ class BaseArgumentParser(_argparse.ArgumentParser):
 _plano_command = None
 
 class PlanoCommand(BaseCommand):
-    default_logging_level = "notice"
-    verbose_logging_level = "debug"
-    quiet_logging_level = "error"
-
     def __init__(self, module=None, description="Run commands defined as Python functions", epilog=None):
-        super().__init__()
-
         self.module = module
         self.bound_commands = dict()
         self.running_commands = list()
@@ -155,6 +133,16 @@ class PlanoCommand(BaseCommand):
 
         return args
 
+    def configure_logging(self, args):
+        if args.command is not None:
+            if args.verbose:
+                return "debug", None
+
+            if args.quiet:
+                return "warning", None
+
+        return "notice", None
+
     def init(self, args):
         self.help = args.help
 
@@ -163,10 +151,8 @@ class PlanoCommand(BaseCommand):
         self.command_kwargs = dict()
 
         if args.command is not None:
-            # These args are taken from the subcommand
             self.verbose = args.verbose
             self.quiet = args.quiet
-            self.init_only = args.init_only
 
             for command in self.preceding_commands:
                 command()
@@ -199,8 +185,9 @@ class PlanoCommand(BaseCommand):
         with Timer() as timer:
             self.selected_command(*self.command_args, **self.command_kwargs)
 
-        cprint("OK", color="green", file=_sys.stderr, end="")
-        cprint(" ({})".format(format_duration(timer.elapsed_time)), color="magenta", file=_sys.stderr)
+        if not self.quiet:
+            cprint("OK", color="green", file=_sys.stderr, end="")
+            cprint(" ({})".format(format_duration(timer.elapsed_time)), color="magenta", file=_sys.stderr)
 
     def _load_module(self, name):
         try:
@@ -269,11 +256,9 @@ class PlanoCommand(BaseCommand):
                                    help="Print detailed logging to the console")
             subparser.add_argument("--quiet", action="store_true",
                                    help="Print no logging to the console")
-            subparser.add_argument("--init-only", action="store_true",
-                                   help=_argparse.SUPPRESS)
 
             for param in command.parameters.values():
-                if param.name in ("verbose", "quiet", "init_only"):
+                if param.name in ("verbose", "quiet"):
                     continue
 
                 if param.positional:
@@ -431,20 +416,22 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
 
             app.running_commands.append(self)
 
-            dashes = "--- " * (len(app.running_commands) - 1)
-            display_args = list(self._get_display_args(args, kwargs))
+            if not app.quiet:
+                dashes = "--- " * (len(app.running_commands) - 1)
+                display_args = list(self._get_display_args(args, kwargs))
 
-            with console_color("magenta", file=_sys.stderr):
-                eprint("{}--> {}".format(dashes, self.name), end="")
+                with console_color("magenta", file=_sys.stderr):
+                    eprint("{}--> {}".format(dashes, self.name), end="")
 
-                if display_args:
-                    eprint(" ({})".format(", ".join(display_args)), end="")
+                    if display_args:
+                        eprint(" ({})".format(", ".join(display_args)), end="")
 
-                eprint()
+                    eprint()
 
             self.function(*args, **kwargs)
 
-            cprint("{}<-- {}".format(dashes, self.name), color="magenta", file=_sys.stderr)
+            if not app.quiet:
+                cprint("{}<-- {}".format(dashes, self.name), color="magenta", file=_sys.stderr)
 
             app.running_commands.pop()
 

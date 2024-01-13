@@ -21,3 +21,5 @@ jobs:
       - run: curl https://skupper.io/install.sh | sh
       - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - run: ./plano test
+        env:
+          PLANO_COLOR: 1
