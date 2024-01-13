@@ -23,16 +23,17 @@ from skewer import *
 
 @command(passthrough=True)
 def test(verbose=False, quiet=False, passthrough_args=[]):
-    clean()
+    args = ["-m", "skewer.tests"]
 
     if verbose:
-        passthrough_args.append("--verbose")
+        args.append("--verbose")
 
     if quiet:
-        passthrough_args.append("--quiet")
+        args.append("--quiet")
 
-    with working_env(PYTHONPATH="python"):
-        run(["plano-test", "-m", "skewer.tests"] + passthrough_args)
+    args += passthrough_args
+
+    PlanoTestCommand().main(args=args)
 
 @command
 def coverage(verbose=False, quiet=False):
