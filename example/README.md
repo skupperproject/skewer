@@ -23,10 +23,9 @@ across cloud providers, data centers, and edge sites.
 * [Step 6: Check the status of your namespaces](#step-6-check-the-status-of-your-namespaces)
 * [Step 7: Link your namespaces](#step-7-link-your-namespaces)
 * [Step 8: Fail on demand](#step-8-fail-on-demand)
-* [Step 9: Deploy the frontend and backend services](#step-9-deploy-the-frontend-and-backend-services)
-* [Step 10: Expose the backend service](#step-10-expose-the-backend-service)
-* [Step 11: Expose the frontend service](#step-11-expose-the-frontend-service)
-* [Step 12: Test the application](#step-12-test-the-application)
+* [Step 9: Deploy and expose the frontend](#step-9-deploy-and-expose-the-frontend)
+* [Step 10: Deploy and expose the backend](#step-10-deploy-and-expose-the-backend)
+* [Step 11: Test the application](#step-11-test-the-application)
 * [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
@@ -35,27 +34,11 @@ across cloud providers, data centers, and edge sites.
 
 ## Overview
 
-This example is a very simple multi-service HTTP application that can
-be deployed across multiple Kubernetes clusters using Skupper.
-
-It contains two services:
-
-* A backend service that exposes an `/api/hello` endpoint.  It
-  returns greetings of the form `Hi, <your-name>.  I am <my-name>
-  (<pod-name>)`.
-
-* A frontend service that sends greetings to the backend and
-  fetches new greetings in response.
-
-With Skupper, you can place the backend in one cluster and the
-frontend in another and maintain connectivity between the two
-services without exposing the backend to the public internet.
-
-<img src="images/entities.svg" width="640"/>
+An overview
 
 ## Prerequisites
 
-Custom prerequisites
+Some prerequisites
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -193,6 +176,7 @@ skupper status
 _Sample output:_
 
 ~~~ console
+$ skupper status
 Skupper is enabled for namespace "<namespace>" in interior mode. It is connected to 1 other site. It has 1 exposed service.
 The site console url is: <console-url>
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
@@ -261,15 +245,22 @@ if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
 
 ~~~
 
-## Step 9: Deploy the frontend and backend services
+## Step 9: Deploy and expose the frontend
 
-Use `kubectl create deployment` to deploy the frontend service
-in `west` and the backend service in `east`.
+We have established connectivity between the two namespaces and
+made the backend in `east` available to the frontend in `west`.
+Before we can test the application, we need external access to the
+frontend.
+
+Use `kubectl create deployment` to deploy the frontend service in
+West.  Use `kubectl expose` with `--type LoadBalancer` to open
+network access to the frontend service.
 
 _**Console for West:**_
 
 ~~~ shell
 kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 ~~~
 
 _Sample output:_
@@ -277,12 +268,27 @@ _Sample output:_
 ~~~ console
 $ kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 deployment.apps/frontend created
+
+$ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+service/frontend exposed
 ~~~
+
+## Step 10: Deploy and expose the backend
+
+We now have two namespaces linked to form a Skupper network, but
+no services are exposed on it.  Skupper uses the `skupper
+expose` command to select a service from one namespace for
+exposure on all the linked namespaces.
+
+Use `kubectl create deployment` to deploy the backend service in
+East.  Use `skupper expose` to expose the backend service to the
+frontend service.
 
 _**Console for East:**_
 
 ~~~ shell
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+skupper expose deployment/backend --port 8080
 ~~~
 
 _Sample output:_
@@ -290,55 +296,12 @@ _Sample output:_
 ~~~ console
 $ kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 deployment.apps/backend created
-~~~
 
-## Step 10: Expose the backend service
-
-We now have two namespaces linked to form a Skupper network, but
-no services are exposed on it.  Skupper uses the `skupper
-expose` command to select a service from one namespace for
-exposure on all the linked namespaces.
-
-Use `skupper expose` to expose the backend service to the
-frontend service.
-
-_**Console for East:**_
-
-~~~ shell
-skupper expose deployment/backend --port 8080
-~~~
-
-_Sample output:_
-
-~~~ console
 $ skupper expose deployment/backend --port 8080
 deployment backend exposed as backend
 ~~~
 
-## Step 11: Expose the frontend service
-
-We have established connectivity between the two namespaces and
-made the backend in `east` available to the frontend in `west`.
-Before we can test the application, we need external access to
-the frontend.
-
-Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.
-
-_**Console for West:**_
-
-~~~ shell
-kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-~~~
-
-_Sample output:_
-
-~~~ console
-$ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-service/frontend exposed
-~~~
-
-## Step 12: Test the application
+## Step 11: Test the application
 
 Now we're ready to try it out.  Use `kubectl get service/frontend`
 to look up the external IP of the frontend service.  Then use
@@ -425,27 +388,11 @@ kubectl delete deployment/backend
 
 ## Summary
 
-This example locates the frontend and backend services in different
-namespaces, on different clusters.  Ordinarily, this means that they
-have no way to communicate unless they are exposed to the public
-internet.
-
-Introducing Skupper into each namespace allows us to create a virtual
-application network that can connect services in different clusters.
-Any service exposed on the application network is represented as a
-local service in all of the linked namespaces.
-
-The backend service is located in `east`, but the frontend service
-in `west` can "see" it as if it were local.  When the frontend
-sends a request to the backend, Skupper forwards the request to the
-namespace where the backend is running and routes the response back to
-the frontend.
-
-<img src="images/sequence.svg" width="640"/>
+A summary
 
 ## Next steps
 
-Custom next steps
+Some next steps
 
 ## About this example
 

@@ -25,7 +25,7 @@ def check_environment_():
 
 @test
 def plano_():
-    with working_dir("test-example"):
+    with working_dir("example"):
         run("./plano")
         run("./plano generate")
 
@@ -35,7 +35,7 @@ def workflow():
 
 @test
 def generate_readme_():
-    with working_dir("test-example"):
+    with working_dir("example"):
         generate_readme("skewer.yaml", "README.md")
         check_file("README.md")
 
@@ -54,13 +54,13 @@ def await_operations():
 
 @test
 def run_steps_demo():
-    with working_dir("test-example"):
+    with working_dir("example"):
         with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
             run_steps_minikube("skewer.yaml", debug=True)
 
 @test
 def run_steps_debug():
-    with working_dir("test-example"):
+    with working_dir("example"):
         with expect_error():
             with working_env(SKEWER_FAIL=1):
                 run_steps_minikube("skewer.yaml", debug=True)

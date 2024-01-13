@@ -10,9 +10,9 @@ and produces two outputs: a `README.md` file and a test routine.
 
 ## An example example
 
-[Example `skewer.yaml` file](test-example/skewer.yaml)
+[Example `skewer.yaml` file](example/skewer.yaml)
 
-[Example `README.md` output](test-example/README.md)
+[Example `README.md` output](example/README.md)
 
 ## Setting up Skewer for your own example
 

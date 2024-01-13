@@ -177,7 +177,7 @@ def run_steps_minikube(skewer_file, debug=False):
         run("minikube -p skewer delete")
 
 def run_steps(skewer_file, kubeconfigs=None, debug=False):
-    notice(f"Running steps (skewer_file='{get_absolute_path(skewer_file)}')")
+    notice(f"Running steps (skewer_file='{skewer_file}')")
 
     check_environment()
 
@@ -317,11 +317,13 @@ def pause_for_demo(skewer_data):
             pass
 
 def generate_readme(skewer_file, output_file):
-    notice("Generating the readme")
-    notice("  Skewer file: " + get_absolute_path(skewer_file))
-    notice("  Output file: " + get_absolute_path(output_file))
+    notice(f"Generating the readme (skewer_file='{skewer_file}', output_file='{output_file}')")
 
     skewer_data = read_yaml(skewer_file)
+
+    for site in get_sites(skewer_data):
+        site.check()
+
     out = list()
 
     out.append(f"# {skewer_data['title']}")
@@ -568,9 +570,9 @@ class Site:
 
         self.name = name
         self.title = data.get("title", capitalize(self.name))
-        self.platform = data["platform"]
+        self.platform = data.get("platform")
         self.namespace = data.get("namespace")
-        self.env = data["env"]
+        self.env = data.get("env")
 
     def __enter__(self):
         self._logging_context = logging_context(self.name)
@@ -586,15 +588,30 @@ class Site:
         self._logging_context.__exit__(exc_type, exc_value, traceback)
 
     def check(self):
-        assert self.platform in ("kubernetes", "podman"), self.platform
+        if self.platform is None:
+            fail(f"{self} has no 'platform' attribute")
+
+        if self.platform not in ("kubernetes", "podman"):
+            fail(f"{self} attribute 'platform' has an illegal value: {self.platform}")
 
         if self.platform == "kubernetes":
-            assert self.namespace is not None
-            assert "KUBECONFIG" in self.env
+            if self.namespace is None:
+                fail(f"Kubernetes {self} has no 'namespace' attribute")
+
+            if "KUBECONFIG" not in self.env:
+                fail(f"Kubernetes {self} has no KUBECONFIG environment variable")
 
         if self.platform == "podman":
-            assert "SKUPPER_PLATFORM" in self.env
-            assert self.env["SKUPPER_PLATFORM"] == "podman"
+            if "SKUPPER_PLATFORM" not in self.env:
+                fail(f"Podman {self} has no SKUPPER_PLATFORM environment variable")
+
+            platform = self.env["SKUPPER_PLATFORM"]
+
+            if platform != "podman":
+                fail(f"Podman {self} environment variable SKUPPER_PLATFORM has an illegal value: {platform}")
+
+    def __repr__(self):
+        return f"site '{self.name}'"
 
 def get_steps(skewer_data):
     for step_data in skewer_data["steps"]:
