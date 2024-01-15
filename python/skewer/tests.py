@@ -17,20 +17,23 @@
 # under the License.
 #
 
+from plano import *
 from skewer import *
 
 @test
-def check_environment_():
-    check_environment()
-
-@test
-def plano_():
+def plano_commands():
     with working_dir("example"):
         run("./plano")
         run("./plano generate")
+        run("./plano render")
+        run("./plano clean")
 
 @test
-def workflow():
+def config_files():
+    check_file("config/.github/workflows/main.yaml")
+    check_file("config/.gitignore")
+    check_file("config/.plano.py")
+
     parse_yaml(read("config/.github/workflows/main.yaml"))
 
 @test
@@ -40,17 +43,9 @@ def generate_readme_():
         check_file("README.md")
 
 @test
-def await_operations():
-    try:
-        run("minikube -p skewer start")
-
-        with expect_error():
-            await_resource("deployment/not-there", timeout=1)
-
-        with expect_error():
-            await_external_ip("service/not-there", timeout=1)
-    finally:
-        run("minikube -p skewer delete")
+def run_steps():
+    with working_dir("example"):
+        run_steps_minikube("skewer.yaml", debug=True)
 
 @test
 def run_steps_demo():

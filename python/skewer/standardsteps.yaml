@@ -190,7 +190,7 @@ accessing_the_web_console:
     Navigate to `<console-url>` in your browser.  When prompted, log
     in as user `admin` and enter the password.
 cleaning_up:
-  id: cleaning_up
+  name: cleaning_up
   title: Cleaning up
   numbered: false
   preamble: |
@@ -261,7 +261,7 @@ hello_world/test_the_application:
     If everything is in order, you can now access the web interface by
     navigating to `http://<external-ip>:8080/` in your browser.
 hello_world/cleaning_up:
-  id: cleaning_up
+  name: cleaning_up
   title: Cleaning up
   numbered: false
   preamble: |
