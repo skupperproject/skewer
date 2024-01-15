@@ -447,24 +447,15 @@ def apply_standard_steps(model):
 
         standard_step_data = standard_steps[step.data["standard"]]
 
-        # def apply_attribute( #  XXXX
+        def apply_attribute(name, default=None):
+            if name not in step.data:
+                step.data[name] = standard_step_data.get(name, default)
 
-        if "name" not in step.data:
-            step.data["name"] = standard_step_data.get("name")
-
-        if "title" not in step.data:
-            step.data["title"] = standard_step_data["title"]
-
-        if "numbered" not in step.data:
-            step.data["numbered"] = standard_step_data.get("numbered", True)
-
-        if "preamble" not in step.data:
-            if "preamble" in standard_step_data:
-                step.data["preamble"] = standard_step_data["preamble"]
-
-        if "postamble" not in step.data:
-            if "postamble" in standard_step_data:
-                step.data["postamble"] = standard_step_data["postamble"]
+        apply_attribute("name")
+        apply_attribute("title")
+        apply_attribute("numbered", True)
+        apply_attribute("preamble")
+        apply_attribute("postamble")
 
         if "commands" not in step.data:
             if "commands" in standard_step_data:
