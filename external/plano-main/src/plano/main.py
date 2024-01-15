@@ -46,9 +46,7 @@ _max = max
 ## Exceptions
 
 class PlanoException(Exception):
-    def __init__(self, message=None):
-        super().__init__(message)
-        self.message = message
+    pass
 
 class PlanoError(PlanoException):
     pass
@@ -490,6 +488,9 @@ def print_env(file=None):
 
     print_properties(props, file=file)
 
+def print_stack(file=None):
+    _traceback.print_stack(file=file)
+
 ## File operations
 
 def touch(file, quiet=False):
@@ -876,9 +877,10 @@ class logging_context:
         _logging_contexts.pop()
 
 def fail(message, *args):
-    error(message, *args)
-
     if isinstance(message, BaseException):
+        if not isinstance(message, PlanoError):
+            error(message, *args)
+
         raise message
 
     raise PlanoError(message.format(*args))
@@ -922,7 +924,6 @@ def _print_message(level, message, args):
     if isinstance(message, BaseException):
         exception = message
 
-        line.append(type(exception).__name__)
         line.append(str(exception))
 
         print(" ".join(line), file=out)
