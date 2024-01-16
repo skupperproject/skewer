@@ -17,6 +17,8 @@
 # under the License.
 #
 
+import inspect
+
 from plano import *
 
 __all__ = [
@@ -154,7 +156,7 @@ def run_steps_minikube(skewer_file, debug=False):
     model = Model(skewer_file)
     model.check()
 
-    kube_sites = [x for x in model.sites if x.platform == "kubernetes"]
+    kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
     kubeconfigs = list()
 
     make_dir("/tmp/skewer", quiet=True)
@@ -206,38 +208,35 @@ def run_step(model, step, check=True):
 
     notice(f"Running {step}")
 
-    for site_name, commands in step.commands.items():
-        with model.site(site_name) as site:
+    for site_name, commands in step.commands:
+        with dict(model.sites)[site_name] as site:
             if site.platform == "kubernetes":
                 run(f"kubectl config set-context --current --namespace {site.namespace}", stdout=DEVNULL, quiet=True)
 
             for command in commands:
-                if command.get("apply") == "readme":
+                if command.apply == "readme":
                     continue
 
-                if "run" in command:
-                    make_dir("/tmp/skewer", quiet=True)
-                    run(command["run"].replace("~", "/tmp/skewer"), shell=True, check=check)
+                if command.await_resource:
+                    await_resource(command.await_resource)
 
-                if "await_resource" in command:
-                    resource = command["await_resource"]
-                    await_resource(resource)
+                if command.await_external_ip:
+                    await_external_ip(command.await_external_ip)
 
-                if "await_external_ip" in command:
-                    service = command["await_external_ip"]
-                    await_external_ip(service)
+                if command.await_http_ok:
+                    await_http_ok(*command.await_http_ok)
 
-                if "await_http_ok" in command:
-                    service, url_template = command["await_http_ok"]
-                    await_http_ok(service, url_template)
-
-                if "await_console_ok" in command:
+                if command.await_console_ok:
                     await_console_ok()
+
+                if command.run:
+                    make_dir("/tmp/skewer", quiet=True)
+                    run(command.run.replace("~", "/tmp/skewer"), shell=True, check=check)
 
 def pause_for_demo(model):
     notice("Pausing for demo time")
 
-    first_site = list(model.sites)[0]
+    first_site = list([x for _, x in model.sites])[0]
     frontend_url = None
 
     if first_site.platform == "kubernetes":
@@ -260,7 +259,7 @@ def pause_for_demo(model):
     print()
     print("Sites:")
 
-    for site in model.sites:
+    for _, site in model.sites:
         if site.platform == "kubernetes":
             kubeconfig = site.env["KUBECONFIG"]
             print(f"  {site.name}: export KUBECONFIG={kubeconfig}")
@@ -283,7 +282,7 @@ def print_debug_output(model):
     print("TROUBLE!")
     print("-- Start of debug output")
 
-    for site in model.sites:
+    for _, site in model.sites:
         print(f"---- Debug output for site '{site.name}'")
 
         with site:
@@ -423,37 +422,36 @@ def generate_readme_step(model, step):
         out.append(step.preamble.strip())
         out.append("")
 
-    if step.commands:
-        for site_name, commands in step.commands.items():
-            site = model.site(site_name)
-            outputs = list()
+    for site_name, commands in step.commands:
+        site = dict(model.sites)[site_name]
+        outputs = list()
 
-            out.append(f"_**Console for {site.title}:**_")
+        out.append(f"_**Console for {site.title}:**_")
+        out.append("")
+        out.append("~~~ shell")
+
+        for command in commands:
+            if command.apply == "test":
+                continue
+
+            if command.run:
+                out.append(command.run)
+
+            if command.output:
+                assert command.run
+
+                outputs.append((command.run, command.output))
+
+        out.append("~~~")
+        out.append("")
+
+        if outputs:
+            out.append("_Sample output:_")
             out.append("")
-            out.append("~~~ shell")
-
-            for command in commands:
-                if command.get("apply") == "test":
-                    continue
-
-                if "run" in command:
-                    out.append(command["run"])
-
-                if "output" in command:
-                    assert "run" in command, command
-
-                    outputs.append((command["run"], command["output"]))
-
+            out.append("~~~ console")
+            out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
             out.append("~~~")
             out.append("")
-
-            if outputs:
-                out.append("_Sample output:_")
-                out.append("")
-                out.append("~~~ console")
-                out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
-                out.append("~~~")
-                out.append("")
 
     if step.postamble:
         out.append(step.postamble.strip())
@@ -461,7 +459,7 @@ def generate_readme_step(model, step):
     return "\n".join(out).strip()
 
 def apply_kubeconfigs(model, kubeconfigs):
-    kube_sites = [x for x in model.sites if x.platform == "kubernetes"]
+    kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
 
     if kubeconfigs and len(kubeconfigs) < len(kube_sites):
         fail("The provided kubeconfigs are fewer than the number of Kubernetes sites")
@@ -507,6 +505,8 @@ def apply_standard_steps(model):
                         # Otherwise, omit commands for this site
                         continue
 
+        del step.data["standard"]
+
 def resolve_commands(commands, site):
     resolved_commands = list()
 
@@ -537,17 +537,17 @@ def object_property(name, default=None):
 
     return property(get)
 
-def check_attribute(obj, name):
-    if name not in obj.data:
-        fail(f"{obj} has no '{name}' attribute")
+def check_required_attributes(obj, *names):
+    for name in names:
+        if name not in obj.data:
+            fail(f"{obj} is missing required attribute '{name}'")
 
-# XXX
-# def check_unknown_fields(obj):
-#     known_fields = obj.__class__.xxxx
+def check_unknown_attributes(obj):
+    known_attributes = dict(inspect.getmembers(obj.__class__, lambda x: isinstance(x, property)))
 
-known_command_fields = [
-    "run", "apply", "output", "await_resource", "await_external_ip", "await_http_ok", "await_console_ok",
-]
+    for name in obj.data:
+        if name not in known_attributes:
+            fail(f"{obj} has unknown attribute '{name}'")
 
 class Model:
     title = object_property("title")
@@ -569,12 +569,10 @@ class Model:
         return f"model '{self.skewer_file}'"
 
     def check(self):
-        check_attribute(self, "title")
-        check_attribute(self, "subtitle")
-        check_attribute(self, "sites")
-        check_attribute(self, "steps")
+        check_required_attributes(self, "title", "subtitle", "sites", "steps")
+        check_unknown_attributes(self)
 
-        for site in self.sites:
+        for _, site in self.sites:
             site.check()
 
         for step in self.steps:
@@ -583,16 +581,12 @@ class Model:
     @property
     def sites(self):
         for name, data in self.data["sites"].items():
-            yield Site(self, data, name)
+            yield name, Site(self, data, name)
 
     @property
     def steps(self):
         for data in self.data["steps"]:
             yield Step(self, data)
-
-    def site(self, name):
-        data = self.data["sites"][name]
-        return Site(self, data, name)
 
 class Site:
     platform = object_property("platform")
@@ -623,13 +617,14 @@ class Site:
         self._logging_context.__exit__(exc_type, exc_value, traceback)
 
     def check(self):
-        check_attribute(self, "platform")
+        check_required_attributes(self, "platform")
+        check_unknown_attributes(self)
 
         if self.platform not in ("kubernetes", "podman"):
             fail(f"{self} attribute 'platform' has an illegal value: {self.platform}")
 
         if self.platform == "kubernetes":
-            check_attribute(self, "namespace")
+            check_required_attributes(self, "namespace")
 
             if "KUBECONFIG" not in self.env:
                 fail(f"Kubernetes {self} has no KUBECONFIG environment variable")
@@ -652,7 +647,6 @@ class Step:
     name = object_property("name")
     title = object_property("title")
     preamble = object_property("preamble")
-    commands = object_property("commands", dict())
     postamble = object_property("postamble")
 
     def __init__(self, model, data):
@@ -663,22 +657,48 @@ class Step:
         return f"step {self.number} '{self.title}'"
 
     def check(self):
-        check_attribute(self, "title")
+        check_required_attributes(self, "title")
+        check_unknown_attributes(self)
 
-        site_names = [x.name for x in self.model.sites]
+        site_names = [x.name for _, x in self.model.sites]
 
-        for site_name, commands in self.commands.items():
+        for site_name, commands in self.commands:
             if site_name not in site_names:
                 fail(f"Unknown site name '{site_name}' in commands for {self}")
 
             for command in commands:
-                for field in command:
-                    if field not in known_command_fields:
-                        fail(f"Unknown field '{field}' in command for {self}")
+                command.check()
 
     @property
     def number(self):
         return self.model.data["steps"].index(self.data) + 1
+
+    @property
+    def commands(self):
+        for site_name, commands in self.data.get("commands", dict()).items():
+            yield site_name, [Command(self.model, data) for data in commands]
+
+class Command:
+    run = object_property("run")
+    apply = object_property("apply")
+    output = object_property("output")
+    await_resource = object_property("await_resource")
+    await_external_ip = object_property("await_external_ip")
+    await_http_ok = object_property("await_http_ok")
+    await_console_ok = object_property("await_console_ok")
+
+    def __init__(self, model, data):
+        self.model = model
+        self.data = data
+
+    def __repr__(self):
+        if self.run:
+            return f"command '{self.run.splitlines()[0]}'"
+
+        return "command"
+
+    def check(self):
+        check_unknown_attributes(self)
 
 class Minikube:
     def __enter__(self):

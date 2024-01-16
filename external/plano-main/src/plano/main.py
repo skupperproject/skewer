@@ -880,11 +880,14 @@ class logging_context:
 def fail(message, *args):
     if isinstance(message, BaseException):
         if not isinstance(message, PlanoError):
-            error(message, *args)
+            error(message)
 
         raise message
 
-    raise PlanoError(message.format(*args))
+    if args:
+        message = message.format(*args)
+
+    raise PlanoError(message)
 
 def error(message, *args):
     log(_ERROR, message, *args)
