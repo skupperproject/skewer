@@ -20,13 +20,6 @@
 from plano import *
 from skewer import *
 
-@command
-def generate():
-    """
-    Generate README.md from the data in skewer.yaml
-    """
-    generate_readme("skewer.yaml", "README.md")
-
 render_template = """
 <html>
   <head>
@@ -60,6 +53,13 @@ render_template = """
 """.strip()
 
 @command
+def generate():
+    """
+    Generate README.md from the data in skewer.yaml
+    """
+    generate_readme("skewer.yaml", "README.md")
+
+@command
 def render(verbose=False, quiet=False):
     """
     Render README.html from the data in skewer.yaml
@@ -83,31 +83,30 @@ def clean():
     remove("README.html")
 
 @command
-def run_(debug=False):
+def run_(*kubeconfigs, debug=False):
     """
-    Run the example steps using Minikube
+    Run the example steps
     """
-    run_steps_minikube("skewer.yaml", debug=debug)
+    if not kubeconfigs:
+        run_steps_minikube("skewer.yaml", debug=debug)
+    else:
+        run_steps("skewer.yaml", kubeconfigs, debug=debug)
 
 @command
-def run_external(*kubeconfigs, debug=False):
+def demo(*kubeconfigs, debug=False):
     """
-    Run the example steps with user-provided kubeconfigs
-    """
-    run_steps("skewer.yaml", kubeconfigs, debug=debug)
-
-@command
-def demo(debug=False):
-    """
-    Run the example steps and pause before cleaning up
+    Run the example steps and pause for a demo before cleaning up
     """
     with working_env(SKEWER_DEMO=1):
-        run_steps_minikube("skewer.yaml", debug=debug)
+        if not kubeconfigs:
+            run_steps_minikube("skewer.yaml", debug=debug)
+        else:
+            run_steps("skewer.yaml", kubeconfigs, debug=debug)
 
 @command
 def test_(debug=False):
     """
-    Test README generation and run the steps on Minikube
+    Test README generation and run the steps
     """
     generate_readme("skewer.yaml", make_temp_file())
     run_steps_minikube("skewer.yaml", debug=debug)

@@ -173,7 +173,7 @@ def run_steps_minikube(skewer_file, debug=False):
         run_steps(skewer_file, kubeconfigs=kubeconfigs, debug=debug)
 
 def run_steps(skewer_file, kubeconfigs=[], debug=False):
-    notice(f"Running steps (skewer_file='{skewer_file}')")
+    notice(f"Running steps (skewer_file='{skewer_file}', kubeconfigs={kubeconfigs})")
 
     check_environment()
 
@@ -344,8 +344,9 @@ def generate_readme(skewer_file, output_file):
     out.append(f"# {model.title}")
     out.append("")
 
-    if model.github_actions_url:
-        out.append(f"[![main]({model.github_actions_url}/badge.svg)]({model.github_actions_url})")
+    if model.workflow:
+        url = get_workflow_url(model.workflow)
+        out.append(f"[![main]({url}/badge.svg)]({url})")
         out.append("")
 
     if model.subtitle:
@@ -385,6 +386,35 @@ def generate_readme(skewer_file, output_file):
     append_section("About this example", about_this_example)
 
     write(output_file, "\n".join(out).strip() + "\n")
+
+def get_workflow_url(workflow):
+    result = parse_url(workflow)
+
+    if result.scheme:
+        return workflow
+
+    owner, repo = get_github_owner_repo()
+
+    return f"https://github.com/{owner}/{repo}/actions/workflows/{workflow}"
+
+def get_github_owner_repo():
+    check_program("git")
+
+    url = call("git remote get-url origin", quiet=True)
+    result = parse_url(url)
+
+    if result.scheme == "" and result.path.startswith("git@github.com:"):
+        path = remove_prefix(result.path, "git@github.com:")
+        path = remove_suffix(path, ".git")
+
+        return path.split("/", 1)
+
+    if result.scheme in ("http", "https") and result.netloc == "github.com":
+        path = remove_prefix(result.path, "/", result.path)
+
+        return path.split("/", 1)
+
+    fail("Unknown origin URL format")
 
 def generate_readme_step(model, step):
     out = list()
@@ -433,10 +463,11 @@ def generate_readme_step(model, step):
 def apply_kubeconfigs(model, kubeconfigs):
     kube_sites = [x for x in model.sites if x.platform == "kubernetes"]
 
+    if kubeconfigs and len(kubeconfigs) < len(kube_sites):
+        fail("The provided kubeconfigs are fewer than the number of Kubernetes sites")
+
     for site, kubeconfig in zip(kube_sites, kubeconfigs):
         site.env["KUBECONFIG"] = kubeconfig
-
-    notice(f"Applied kubeconfigs to {len(kubeconfigs)} of {len(kube_sites)} Kubernetes sites")
 
 def apply_standard_steps(model):
     notice("Applying standard steps")
@@ -510,14 +541,18 @@ def check_attribute(obj, name):
     if name not in obj.data:
         fail(f"{obj} has no '{name}' attribute")
 
-known_command_fields = (
-    "run", "apply", "output", "await_resource", "await_external_ip", "await_http_ok", "await_console_ok"
-)
+# XXX
+# def check_unknown_fields(obj):
+#     known_fields = obj.__class__.xxxx
+
+known_command_fields = [
+    "run", "apply", "output", "await_resource", "await_external_ip", "await_http_ok", "await_console_ok",
+]
 
 class Model:
     title = object_property("title")
     subtitle = object_property("subtitle")
-    github_actions_url = object_property("github_actions_url")
+    workflow = object_property("workflow", "main.yaml")
     overview = object_property("overview")
     prerequisites = object_property("prerequisites", standard_prerequisites)
     summary = object_property("summary")

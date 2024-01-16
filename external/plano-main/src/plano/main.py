@@ -39,6 +39,7 @@ import tempfile as _tempfile
 import time as _time
 import traceback as _traceback
 import urllib as _urllib
+import urllib.parse as _urllib_parse
 import uuid as _uuid
 
 _max = max
@@ -1442,13 +1443,13 @@ def base64_decode(string):
     return _base64.b64decode(string)
 
 def url_encode(string):
-    return _urllib.parse.quote_plus(string)
+    return _urllib_parse.quote_plus(string)
 
 def url_decode(string):
-    return _urllib.parse.unquote_plus(string)
+    return _urllib_parse.unquote_plus(string)
 
 def parse_url(url):
-    return _urllib.parse.urlparse(url)
+    return _urllib_parse.urlparse(url)
 
 ## Temp operations
 
