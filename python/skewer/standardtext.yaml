@@ -1,4 +1,4 @@
-example_suite_para: |
+example_suite: |
     This example is part of a [suite of examples][examples] showing the
     different ways you can use [Skupper][website] to connect services
     across cloud providers, data centers, and edge sites.

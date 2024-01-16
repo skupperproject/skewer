@@ -114,6 +114,8 @@ def run_steps(skewer_file, kubeconfigs=[], debug=False):
 
     check_environment()
 
+    make_dir("/tmp/skewer", quiet=True)
+
     model = Model(skewer_file, kubeconfigs)
     model.check()
 
@@ -165,7 +167,6 @@ def run_step(model, step, check=True):
                     await_console_ok()
 
                 if command.run:
-                    make_dir("/tmp/skewer", quiet=True)
                     run(command.run.replace("~", "/tmp/skewer"), shell=True, check=check)
 
 def pause_for_demo(model):
@@ -287,7 +288,7 @@ def generate_readme(skewer_file, output_file):
         out.append(f"#### {model.subtitle}")
         out.append("")
 
-    out.append(standard_text["example_suite_para"].strip())
+    out.append(standard_text["example_suite"].strip())
     out.append("")
     out.append("#### Contents")
     out.append("")
@@ -647,6 +648,7 @@ class Minikube:
         check_program("minikube")
 
         make_dir("/tmp/skewer", quiet=True)
+
         run("minikube -p skewer start --auto-update-drivers false")
 
         tunnel_output_file = open("/tmp/skewer/minikube-tunnel-output", "w")
