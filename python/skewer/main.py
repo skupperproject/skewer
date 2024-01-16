@@ -22,7 +22,7 @@ import inspect
 from plano import *
 
 __all__ = [
-    "generate_readme", "run_steps_minikube", "run_steps", "Minikube",
+    "generate_readme", "run_steps", "Minikube",
 ]
 
 standard_text = read_yaml(join(get_parent_dir(__file__), "standardtext.yaml"))
@@ -108,33 +108,6 @@ def await_console_ok():
     password = base64_decode(password)
 
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
-
-def run_steps_minikube(skewer_file, debug=False):
-    notice("Running steps on Minikube")
-
-    check_environment()
-    check_program("minikube")
-
-    model = Model(skewer_file)
-    model.check()
-
-    kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
-    kubeconfigs = list()
-
-    make_dir("/tmp/skewer", quiet=True)
-
-    with Minikube():
-        for site in kube_sites:
-            kubeconfig = site.env["KUBECONFIG"].replace("~", "/tmp/skewer")
-            site.env["KUBECONFIG"] = kubeconfig
-
-            kubeconfigs.append(kubeconfig)
-
-            with site:
-                run("minikube -p skewer update-context")
-                check_file(ENV["KUBECONFIG"])
-
-        run_steps(skewer_file, kubeconfigs=kubeconfigs, debug=debug)
 
 def run_steps(skewer_file, kubeconfigs=[], debug=False):
     notice(f"Running steps (skewer_file='{skewer_file}', kubeconfigs={kubeconfigs})")
@@ -371,7 +344,7 @@ def get_github_owner_repo():
         return path.split("/", 1)
 
     if result.scheme in ("http", "https") and result.netloc == "github.com":
-        path = remove_prefix(result.path, "/", result.path)
+        path = remove_prefix(result.path, "/")
 
         return path.split("/", 1)
 
@@ -663,17 +636,42 @@ class Command:
         check_unknown_attributes(self)
 
 class Minikube:
+    def __init__(self, skewer_file):
+        self.skewer_file = skewer_file
+        self.kubeconfigs = list()
+
     def __enter__(self):
+        notice("Starting Minikube")
+
+        check_environment()
         check_program("minikube")
 
+        make_dir("/tmp/skewer", quiet=True)
         run("minikube -p skewer start --auto-update-drivers false")
 
-        make_dir("/tmp/skewer", quiet=True)
         tunnel_output_file = open("/tmp/skewer/minikube-tunnel-output", "w")
-
         self.tunnel = start("minikube -p skewer tunnel", output=tunnel_output_file)
 
+        model = Model(self.skewer_file)
+        model.check()
+
+        kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
+
+        for site in kube_sites:
+            kubeconfig = site.env["KUBECONFIG"].replace("~", "/tmp/skewer")
+            site.env["KUBECONFIG"] = kubeconfig
+
+            self.kubeconfigs.append(kubeconfig)
+
+            with site:
+                run("minikube -p skewer update-context")
+                check_file(ENV["KUBECONFIG"])
+
+        return self
+
     def __exit__(self, exc_type, exc_value, traceback):
+        notice("Stopping Minikube")
+
         stop(self.tunnel)
 
         run("minikube -p skewer delete")

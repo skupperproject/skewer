@@ -43,22 +43,24 @@ def generate_readme_():
         check_file("README.md")
 
 @test
-def run_steps():
+def run_steps_():
     with working_dir("example"):
-        run_steps_minikube("skewer.yaml", debug=True)
+        with Minikube("skewer.yaml") as mk:
+            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, debug=True)
 
 @test
 def run_steps_demo():
     with working_dir("example"):
-        with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
-            run_steps_minikube("skewer.yaml", debug=True)
+        with Minikube("skewer.yaml") as mk:
+            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, debug=True)
 
 @test
 def run_steps_debug():
     with working_dir("example"):
         with expect_error():
             with working_env(SKEWER_FAIL=1):
-                run_steps_minikube("skewer.yaml", debug=True)
+                with Minikube("skewer.yaml") as mk:
+                    run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, debug=True)
 
 if __name__ == "__main__":
     import sys

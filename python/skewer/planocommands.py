@@ -53,11 +53,11 @@ render_template = """
 """.strip()
 
 @command
-def generate():
+def generate(output="README.md"):
     """
     Generate README.md from the data in skewer.yaml
     """
-    generate_readme("skewer.yaml", "README.md")
+    generate_readme("skewer.yaml", output)
 
 @command
 def render(verbose=False, quiet=False):
@@ -88,7 +88,8 @@ def run_(*kubeconfigs, debug=False):
     Run the example steps
     """
     if not kubeconfigs:
-        run_steps_minikube("skewer.yaml", debug=debug)
+        with Minikube("skewer.yaml") as mk:
+            run_steps("skewer.yaml", mk.kubeconfigs, debug=debug)
     else:
         run_steps("skewer.yaml", kubeconfigs, debug=debug)
 
@@ -98,18 +99,15 @@ def demo(*kubeconfigs, debug=False):
     Run the example steps and pause for a demo before cleaning up
     """
     with working_env(SKEWER_DEMO=1):
-        if not kubeconfigs:
-            run_steps_minikube("skewer.yaml", debug=debug)
-        else:
-            run_steps("skewer.yaml", kubeconfigs, debug=debug)
+        run_(*kubeconfigs, debug=debug)
 
 @command
 def test_(debug=False):
     """
     Test README generation and run the steps
     """
-    generate_readme("skewer.yaml", make_temp_file())
-    run_steps_minikube("skewer.yaml", debug=debug)
+    generate(output=make_temp_file())
+    run_(debug=debug)
 
 @command
 def update_skewer():
