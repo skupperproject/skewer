@@ -25,46 +25,8 @@ __all__ = [
     "generate_readme", "run_steps_minikube", "run_steps", "Minikube",
 ]
 
-standard_steps_yaml = read(join(get_parent_dir(__file__), "standardsteps.yaml"))
-standard_steps = parse_yaml(standard_steps_yaml)
-
-example_suite_para = """
-This example is part of a [suite of examples][examples] showing the
-different ways you can use [Skupper][website] to connect services
-across cloud providers, data centers, and edge sites.
-
-[website]: https://skupper.io/
-[examples]: https://skupper.io/examples/index.html
-""".strip()
-
-standard_prerequisites = """
-* The `kubectl` command-line tool, version 1.15 or later
-  ([installation guide][install-kubectl])
-
-* Access to at least one Kubernetes cluster, from [any provider you
-  choose][kube-providers]
-
-[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/kubernetes.html
-""".strip()
-
-standard_next_steps = """
-Check out the other [examples][examples] on the Skupper website.
-""".strip()
-
-about_this_example = """
-This example was produced using [Skewer][skewer], a library for
-documenting and testing Skupper examples.
-
-[skewer]: https://github.com/skupperproject/skewer
-
-Skewer provides utility functions for generating the README and
-running the example steps.  Use the `./plano` command in the project
-root to see what is available.
-
-To quickly stand up the example using Minikube, try the `./plano demo`
-command.
-""".strip()
+standard_text = read_yaml(join(get_parent_dir(__file__), "standardtext.yaml"))
+standard_steps = read_yaml(join(get_parent_dir(__file__), "standardsteps.yaml"))
 
 def check_environment():
     check_program("base64")
@@ -352,7 +314,7 @@ def generate_readme(skewer_file, output_file):
         out.append(f"#### {model.subtitle}")
         out.append("")
 
-    out.append(example_suite_para)
+    out.append(standard_text["example_suite_para"].strip())
     out.append("")
     out.append("#### Contents")
     out.append("")
@@ -382,7 +344,7 @@ def generate_readme(skewer_file, output_file):
 
     append_section("Summary", model.summary)
     append_section("Next steps", model.next_steps)
-    append_section("About this example", about_this_example)
+    append_section("About this example", standard_text["about_this_example"].strip())
 
     write(output_file, "\n".join(out).strip() + "\n")
 
@@ -554,9 +516,9 @@ class Model:
     subtitle = object_property("subtitle")
     workflow = object_property("workflow", "main.yaml")
     overview = object_property("overview")
-    prerequisites = object_property("prerequisites", standard_prerequisites)
+    prerequisites = object_property("prerequisites", standard_text["prerequisites"].strip())
     summary = object_property("summary")
-    next_steps = object_property("next_steps", standard_next_steps)
+    next_steps = object_property("next_steps", standard_text["next_steps"].strip())
 
     def __init__(self, skewer_file, kubeconfigs=[]):
         self.skewer_file = skewer_file
