@@ -183,6 +183,7 @@ accessing_the_web_console:
           Skupper is enabled for namespace "@namespace@". It is connected to 1 other site. It has 1 exposed service.
           The site console url is: <console-url>
           The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+      - await_resource: secret/skupper-console-users
       - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
         output: <password>
       - await_console_ok:

@@ -34,10 +34,12 @@ def check_environment():
     check_program("kubectl")
     check_program("skupper")
 
-# Eventually Kubernetes will make this nicer:
-# https://github.com/kubernetes/kubernetes/pull/87399
-# https://github.com/kubernetes/kubernetes/issues/80828
-# https://github.com/kubernetes/kubernetes/issues/83094
+def resource_exists(resource):
+    return run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0
+
+def resource_jsonpath(resource, jsonpath):
+    return call(f"kubectl get {resource} -o jsonpath='{{{jsonpath}}}'", quiet=True)
+
 def await_resource(resource, timeout=240):
     assert "/" in resource, resource
 
@@ -46,7 +48,7 @@ def await_resource(resource, timeout=240):
     while True:
         notice(f"Waiting for {resource} to become available")
 
-        if run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0:
+        if resource_exists(resource):
             break
 
         if get_time() - start_time > timeout:
@@ -71,7 +73,7 @@ def await_external_ip(service, timeout=240):
     while True:
         notice(f"Waiting for external IP from {service} to become available")
 
-        if call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress}}'", quiet=True) != "":
+        if resource_jsonpath(service, ".status.loadBalancer.ingress") != "":
             break
 
         if get_time() - start_time > timeout:
@@ -79,7 +81,7 @@ def await_external_ip(service, timeout=240):
 
         sleep(5, quiet=True)
 
-    return call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
+    return resource_jsonpath(service, ".status.loadBalancer.ingress[0].ip")
 
 def await_http_ok(service, url_template, user=None, password=None, timeout=240):
     assert service.startswith("service/"), service
@@ -104,7 +106,9 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
             break
 
 def await_console_ok():
-    password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin}", quiet=True)
+    await_resource("secret/skupper-console-users")
+
+    password = resource_jsonpath("secret/skupper-console-users", ".data.admin")
     password = base64_decode(password)
 
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
@@ -173,42 +177,49 @@ def pause_for_demo(model):
     notice("Pausing for demo time")
 
     first_site = list([x for _, x in model.sites])[0]
+    console_url = None
+    password = None
     frontend_url = None
 
     if first_site.platform == "kubernetes":
         with first_site:
-            console_ip = await_external_ip("service/skupper")
-            console_url = f"https://{console_ip}:8010/"
-
-            # XXX Make this conditional on the console being present
-            await_resource("secret/skupper-console-users")
-            password_data = call("kubectl get secret/skupper-console-users -o jsonpath='{.data.admin}'", quiet=True)
-            password = base64_decode(password_data).decode("ascii")
-
-            if run("kubectl get service/frontend", check=False, output=DEVNULL, quiet=True).exit_code == 0:
+            if resource_exists("service/frontend"):
                 if call("kubectl get service/frontend -o jsonpath='{.spec.type}'", quiet=True) == "LoadBalancer":
                     frontend_ip = await_external_ip("service/frontend")
                     frontend_url = f"http://{frontend_ip}:8080/"
+
+            if resource_exists("secret/skupper-console-users"):
+                console_ip = await_external_ip("service/skupper")
+                console_url = f"https://{console_ip}:8010/"
+
+                await_resource("secret/skupper-console-users")
+                password_data = call("kubectl get secret/skupper-console-users -o jsonpath='{.data.admin}'", quiet=True)
+                password = base64_decode(password_data).decode("ascii")
 
     print()
     print("Demo time!")
     print()
     print("Sites:")
+    print()
 
     for _, site in model.sites:
         if site.platform == "kubernetes":
             kubeconfig = site.env["KUBECONFIG"]
             print(f"  {site.name}: export KUBECONFIG={kubeconfig}")
+        elif site.platform == "podman":
+            print(f"  {site.name}: export SKUPPER_PLATFORM=podman")
+
+    print()
 
     if frontend_url:
-        print()
         print(f"Frontend URL:     {frontend_url}")
+        print()
 
-    print()
-    print(f"Console URL:      {console_url}")
-    print( "Console user:     admin")
-    print(f"Console password: {password}")
-    print()
+    if console_url:
+        print(f"Console URL:      {console_url}")
+        print( "Console user:     admin")
+        print(f"Console password: {password}")
+        print()
 
     if "SKEWER_DEMO_NO_WAIT" not in ENV:
         while input("Are you done (yes)? ") != "yes": # pragma: nocover
@@ -309,8 +320,6 @@ def generate_readme(skewer_file, output_file):
     append_section("Prerequisites", model.prerequisites)
 
     for step in model.steps:
-        notice(f"Generating {step}")
-
         heading = step_heading(step)
         text = generate_readme_step(model, step)
 
@@ -352,6 +361,8 @@ def get_github_owner_repo():
     fail("Unknown origin URL format")
 
 def generate_readme_step(model, step):
+    notice(f"Generating {step}")
+
     out = list()
 
     if step.preamble:
