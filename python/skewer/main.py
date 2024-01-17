@@ -114,7 +114,7 @@ def await_console_ok():
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
 
 def run_steps(skewer_file, kubeconfigs=[], work_dir=None, debug=False):
-    notice(f"Running steps (skewer_file='{skewer_file}', kubeconfigs={kubeconfigs})")
+    notice(f"Running steps (skewer_file='{skewer_file}')")
 
     check_environment()
 
@@ -661,16 +661,19 @@ class Minikube:
         check_environment()
         check_program("minikube")
 
-        if run("minikube -p skewer status", output=DEVNULL, check=False, quiet=True).exit_code == 0:
-            fail("A Minikube profile 'skewer' already exists.  Delete it using 'minikube -p skewer delete'.")
+        profile_data = parse_json(call("minikube profile list --output json", quiet=True))
+
+        for profile in profile_data.get("valid", []):
+            if profile["Name"] == "skewer":
+                fail("A Minikube profile 'skewer' already exists.  Delete it using 'minikube delete -p skewer'.")
 
         remove(self.work_dir, quiet=True)
         make_dir(self.work_dir, quiet=True)
 
-        run("minikube -p skewer start --auto-update-drivers false")
+        run("minikube start -p skewer --auto-update-drivers false")
 
         tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
-        self.tunnel = start("minikube -p skewer tunnel", output=tunnel_output_file)
+        self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
 
         model = Model(self.skewer_file)
         model.check()
@@ -684,7 +687,7 @@ class Minikube:
             self.kubeconfigs.append(kubeconfig)
 
             with site:
-                run("minikube -p skewer update-context")
+                run("minikube update-context -p skewer")
                 check_file(ENV["KUBECONFIG"])
 
         return self
@@ -694,4 +697,4 @@ class Minikube:
 
         stop(self.tunnel)
 
-        run("minikube -p skewer delete")
+        run("minikube delete -p skewer")
