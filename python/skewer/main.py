@@ -37,7 +37,7 @@ def check_environment():
 def resource_exists(resource):
     return run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0
 
-def resource_jsonpath(resource, jsonpath):
+def get_resource_jsonpath(resource, jsonpath):
     return call(f"kubectl get {resource} -o jsonpath='{{{jsonpath}}}'", quiet=True)
 
 def await_resource(resource, timeout=240):
@@ -73,7 +73,7 @@ def await_external_ip(service, timeout=240):
     while True:
         notice(f"Waiting for external IP from {service} to become available")
 
-        if resource_jsonpath(service, ".status.loadBalancer.ingress") != "":
+        if get_resource_jsonpath(service, ".status.loadBalancer.ingress") != "":
             break
 
         if get_time() - start_time > timeout:
@@ -81,7 +81,7 @@ def await_external_ip(service, timeout=240):
 
         sleep(5, quiet=True)
 
-    return resource_jsonpath(service, ".status.loadBalancer.ingress[0].ip")
+    return get_resource_jsonpath(service, ".status.loadBalancer.ingress[0].ip")
 
 def await_http_ok(service, url_template, user=None, password=None, timeout=240):
     assert service.startswith("service/"), service
@@ -108,7 +108,7 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
 def await_console_ok():
     await_resource("secret/skupper-console-users")
 
-    password = resource_jsonpath("secret/skupper-console-users", ".data.admin")
+    password = get_resource_jsonpath("secret/skupper-console-users", ".data.admin")
     password = base64_decode(password)
 
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
@@ -196,7 +196,7 @@ def pause_for_demo(model):
                 console_url = f"https://{console_ip}:8010/"
 
                 await_resource("secret/skupper-console-users")
-                password = resource_jsonpath("secret/skupper-console-users", ".data.admin")
+                password = get_resource_jsonpath("secret/skupper-console-users", ".data.admin")
                 password = base64_decode(password).decode("ascii")
 
     print()
@@ -264,16 +264,32 @@ def generate_readme(skewer_file, output_file):
 
     out = list()
 
-    def append_toc_entry(title, condition=True):
+    def generate_workflow_url(workflow):
+        result = parse_url(workflow)
+
+        if result.scheme:
+            return workflow
+
+        owner, repo = get_github_owner_repo()
+
+        return f"https://github.com/{owner}/{repo}/actions/workflows/{workflow}"
+
+    def generate_step_heading(step):
+        if step.numbered:
+            return f"Step {step.number}: {step.title}"
+        else:
+            return step.title
+
+    def append_toc_entry(heading, condition=True):
         if not condition:
             return
 
-        fragment = replace(title, r"[ -]", "_")
+        fragment = replace(heading, r"[ -]", "_")
         fragment = replace(fragment, r"[\W]", "")
         fragment = replace(fragment, "_", "-")
         fragment = fragment.lower()
 
-        out.append(f"* [{title}](#{fragment})")
+        out.append(f"* [{heading}](#{fragment})")
 
     def append_section(heading, text):
         if not text:
@@ -284,17 +300,11 @@ def generate_readme(skewer_file, output_file):
         out.append(text.strip())
         out.append("")
 
-    def step_heading(step):
-        if step.numbered:
-            return f"Step {step.number}: {step.title}"
-        else:
-            return step.title
-
     out.append(f"# {model.title}")
     out.append("")
 
     if model.workflow:
-        url = get_workflow_url(model.workflow)
+        url = generate_workflow_url(model.workflow)
         out.append(f"[![main]({url}/badge.svg)]({url})")
         out.append("")
 
@@ -311,7 +321,7 @@ def generate_readme(skewer_file, output_file):
     append_toc_entry("Prerequisites")
 
     for step in model.steps:
-        append_toc_entry(step_heading(step))
+        append_toc_entry(generate_step_heading(step))
 
     append_toc_entry("Summary")
     append_toc_entry("Next steps")
@@ -323,7 +333,7 @@ def generate_readme(skewer_file, output_file):
     append_section("Prerequisites", model.prerequisites)
 
     for step in model.steps:
-        heading = step_heading(step)
+        heading = generate_step_heading(step)
         text = generate_readme_step(model, step)
 
         append_section(heading, text)
@@ -333,35 +343,6 @@ def generate_readme(skewer_file, output_file):
     append_section("About this example", standard_text["about_this_example"].strip())
 
     write(output_file, "\n".join(out).strip() + "\n")
-
-def get_workflow_url(workflow):
-    result = parse_url(workflow)
-
-    if result.scheme:
-        return workflow
-
-    owner, repo = get_github_owner_repo()
-
-    return f"https://github.com/{owner}/{repo}/actions/workflows/{workflow}"
-
-def get_github_owner_repo():
-    check_program("git")
-
-    url = call("git remote get-url origin", quiet=True)
-    result = parse_url(url)
-
-    if result.scheme == "" and result.path.startswith("git@github.com:"):
-        path = remove_prefix(result.path, "git@github.com:")
-        path = remove_suffix(path, ".git")
-
-        return path.split("/", 1)
-
-    if result.scheme in ("http", "https") and result.netloc == "github.com":
-        path = remove_prefix(result.path, "/")
-
-        return path.split("/", 1)
-
-    fail("Unknown origin URL format")
 
 def generate_readme_step(model, step):
     notice(f"Generating {step}")
@@ -480,6 +461,25 @@ def resolve_commands(commands, site):
         resolved_commands.append(resolved_command)
 
     return resolved_commands
+
+def get_github_owner_repo():
+    check_program("git")
+
+    url = call("git remote get-url origin", quiet=True)
+    result = parse_url(url)
+
+    if result.scheme == "" and result.path.startswith("git@github.com:"):
+        path = remove_prefix(result.path, "git@github.com:")
+        path = remove_suffix(path, ".git")
+
+        return path.split("/", 1)
+
+    if result.scheme in ("http", "https") and result.netloc == "github.com":
+        path = remove_prefix(result.path, "/")
+
+        return path.split("/", 1)
+
+    fail("Unknown origin URL format")
 
 def object_property(name, default=None):
     def get(obj):
