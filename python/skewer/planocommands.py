@@ -20,7 +20,7 @@
 from plano import *
 from skewer import *
 
-render_template = """
+_render_template = """
 <html>
   <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css"
@@ -52,6 +52,8 @@ render_template = """
 </html>
 """.strip()
 
+_debug_param = CommandParameter("debug", help="Produce extra debug output on failure")
+
 @command
 def generate(output="README.md"):
     """
@@ -62,7 +64,7 @@ def generate(output="README.md"):
 @command
 def render(verbose=False, quiet=False):
     """
-    Render README.html from the data in skewer.yaml
+    Render README.html from README.md
     """
     generate()
 
@@ -70,7 +72,7 @@ def render(verbose=False, quiet=False):
     data = {"text": markdown}
     json = emit_json(data)
     content = http_post("https://api.github.com/markdown", json, content_type="application/json")
-    html = render_template.replace("@content@", content)
+    html = _render_template.replace("@content@", content)
 
     write("README.html", html)
 
@@ -82,18 +84,21 @@ def clean():
     remove(find(".", "__pycache__"))
     remove("README.html")
 
-@command
+@command(parameters=[_debug_param])
 def run_(*kubeconfigs, debug=False):
     """
     Run the example steps
+
+    If no kubeconfigs are provided, Skewer starts a local Minikube
+    instance and runs the steps using it.
     """
     if not kubeconfigs:
         with Minikube("skewer.yaml") as mk:
-            run_steps("skewer.yaml", mk.kubeconfigs, debug=debug)
+            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, work_dir=mk.work_dir, debug=debug)
     else:
-        run_steps("skewer.yaml", kubeconfigs, debug=debug)
+        run_steps("skewer.yaml", kubeconfigs=kubeconfigs, debug=debug)
 
-@command
+@command(parameters=[_debug_param])
 def demo(*kubeconfigs, debug=False):
     """
     Run the example steps and pause for a demo before cleaning up
@@ -101,10 +106,10 @@ def demo(*kubeconfigs, debug=False):
     with working_env(SKEWER_DEMO=1):
         run_(*kubeconfigs, debug=debug)
 
-@command
+@command(parameters=[_debug_param])
 def test_(debug=False):
     """
-    Test README generation and run the steps
+    Test README generation and run the steps on Minikube
     """
     generate(output=make_temp_file())
     run_(debug=debug)
@@ -113,6 +118,8 @@ def test_(debug=False):
 def update_skewer():
     """
     Update the embedded Skewer repo and GitHub workflow
+
+    This results in local changes to review and commit.
     """
     check_program("curl")
 

@@ -113,22 +113,25 @@ def await_console_ok():
 
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
 
-def run_steps(skewer_file, kubeconfigs=[], debug=False):
+def run_steps(skewer_file, kubeconfigs=[], work_dir=None, debug=False):
     notice(f"Running steps (skewer_file='{skewer_file}', kubeconfigs={kubeconfigs})")
 
     check_environment()
 
-    make_dir("/tmp/skewer", quiet=True)
-
     model = Model(skewer_file, kubeconfigs)
     model.check()
+
+    if work_dir is None:
+        work_dir = join(get_user_temp_dir(), "skewer")
+        remove(work_dir, quiet=True)
+        make_dir(work_dir, quiet=True)
 
     try:
         for step in model.steps:
             if step.name == "cleaning_up":
                 continue
 
-            run_step(model, step)
+            run_step(model, step, work_dir)
 
         if "SKEWER_DEMO" in ENV:
             pause_for_demo(model)
@@ -140,10 +143,10 @@ def run_steps(skewer_file, kubeconfigs=[], debug=False):
     finally:
         for step in model.steps:
             if step.name == "cleaning_up":
-                run_step(model, step, check=False)
+                run_step(model, step, work_dir, check=False)
                 break
 
-def run_step(model, step, check=True):
+def run_step(model, step, work_dir, check=True):
     if not step.commands:
         return
 
@@ -171,7 +174,7 @@ def run_step(model, step, check=True):
                     await_console_ok()
 
                 if command.run:
-                    run(command.run.replace("~", "/tmp/skewer"), shell=True, check=check)
+                    run(command.run.replace("~", work_dir), shell=True, check=check)
 
 def pause_for_demo(model):
     notice("Pausing for demo time")
@@ -184,7 +187,7 @@ def pause_for_demo(model):
     if first_site.platform == "kubernetes":
         with first_site:
             if resource_exists("service/frontend"):
-                if call("kubectl get service/frontend -o jsonpath='{.spec.type}'", quiet=True) == "LoadBalancer":
+                if rsource_jsonpath("service/frontend", ".spec.type") == "LoadBalancer":
                     frontend_ip = await_external_ip("service/frontend")
                     frontend_url = f"http://{frontend_ip}:8080/"
 
@@ -193,8 +196,8 @@ def pause_for_demo(model):
                 console_url = f"https://{console_ip}:8010/"
 
                 await_resource("secret/skupper-console-users")
-                password_data = call("kubectl get secret/skupper-console-users -o jsonpath='{.data.admin}'", quiet=True)
-                password = base64_decode(password_data).decode("ascii")
+                password = resource_jsonpath("secret/skupper-console-users", ".data.admin")
+                password = base64_decode(password).decode("ascii")
 
     print()
     print("Demo time!")
@@ -651,6 +654,7 @@ class Minikube:
     def __init__(self, skewer_file):
         self.skewer_file = skewer_file
         self.kubeconfigs = list()
+        self.work_dir = join(get_user_temp_dir(), "skewer")
 
     def __enter__(self):
         notice("Starting Minikube")
@@ -658,11 +662,12 @@ class Minikube:
         check_environment()
         check_program("minikube")
 
-        make_dir("/tmp/skewer", quiet=True)
+        remove(self.work_dir, quiet=True)
+        make_dir(self.work_dir, quiet=True)
 
         run("minikube -p skewer start --auto-update-drivers false")
 
-        tunnel_output_file = open("/tmp/skewer/minikube-tunnel-output", "w")
+        tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
         self.tunnel = start("minikube -p skewer tunnel", output=tunnel_output_file)
 
         model = Model(self.skewer_file)
@@ -671,7 +676,7 @@ class Minikube:
         kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
 
         for site in kube_sites:
-            kubeconfig = site.env["KUBECONFIG"].replace("~", "/tmp/skewer")
+            kubeconfig = site.env["KUBECONFIG"].replace("~", self.work_dir)
             site.env["KUBECONFIG"] = kubeconfig
 
             self.kubeconfigs.append(kubeconfig)

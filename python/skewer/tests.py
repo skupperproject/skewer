@@ -46,13 +46,13 @@ def generate_readme_():
 def run_steps_():
     with working_dir("example"):
         with Minikube("skewer.yaml") as mk:
-            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, debug=True)
+            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, work_dir=mk.work_dir, debug=True)
 
 @test
 def run_steps_demo():
     with working_dir("example"):
         with Minikube("skewer.yaml") as mk:
-            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, debug=True)
+            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, work_dir=mk.work_dir, debug=True)
 
 @test
 def run_steps_debug():
@@ -60,7 +60,7 @@ def run_steps_debug():
         with expect_error():
             with working_env(SKEWER_FAIL=1):
                 with Minikube("skewer.yaml") as mk:
-                    run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, debug=True)
+                    run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, work_dir=mk.work_dir, debug=True)
 
 if __name__ == "__main__":
     import sys
