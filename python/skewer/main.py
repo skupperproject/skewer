@@ -405,7 +405,12 @@ def apply_standard_steps(model):
         if "standard" not in step.data:
             continue
 
-        standard_step_data = standard_steps[step.data["standard"]]
+        standard_step_name = step.data["standard"]
+
+        try:
+            standard_step_data = standard_steps[standard_step_name]
+        except KeyError:
+            fail(f"Standard step '{standard_step_name}' not found")
 
         del step.data["standard"]
 

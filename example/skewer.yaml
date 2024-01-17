@@ -30,8 +30,8 @@ steps:
       west:
         - run: |
             if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
-  - standard: hello_world/deploy_and_expose_the_frontend
-  - standard: hello_world/deploy_and_expose_the_backend
+  - standard: hello_world/deploy_the_application
+  - standard: hello_world/expose_the_backend_service
   - standard: hello_world/test_the_application
   - standard: accessing_the_web_console
   - standard: hello_world/cleaning_up
