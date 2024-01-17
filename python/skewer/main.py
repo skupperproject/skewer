@@ -661,6 +661,9 @@ class Minikube:
         check_environment()
         check_program("minikube")
 
+        if run("minikube -p skewer status", output=DEVNULL, check=False, quiet=True).exit_code == 0:
+            fail("A Minikube profile 'skewer' already exists.  Delete it using 'minikube -p skewer delete'.")
+
         remove(self.work_dir, quiet=True)
         make_dir(self.work_dir, quiet=True)
 
