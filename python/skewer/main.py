@@ -407,6 +407,8 @@ def apply_standard_steps(model):
 
         standard_step_data = standard_steps[step.data["standard"]]
 
+        del step.data["standard"]
+
         def apply_attribute(name, default=None):
             if name not in step.data:
                 step.data[name] = standard_step_data.get(name, default)
@@ -417,28 +419,25 @@ def apply_standard_steps(model):
         apply_attribute("preamble")
         apply_attribute("postamble")
 
-        if "commands" not in step.data:
-            if "commands" in standard_step_data:
-                step.data["commands"] = dict()
+        if "commands" not in step.data and "commands" in standard_step_data:
+            step.data["commands"] = dict()
 
-                for i, site_item in enumerate(model.data["sites"].items()):
-                    site_name, site = site_item
+            for i, item in enumerate(dict(model.sites).items()):
+                site_name, site = item
 
-                    if str(i) in standard_step_data["commands"]:
-                        # Is a specific index in the standard commands?
-                        commands = standard_step_data["commands"][str(i)]
-                        step.data["commands"][site_name] = resolve_commands(commands, site)
-                    elif "*" in standard_step_data["commands"]:
-                        # Is "*" in the standard commands?
-                        commands = standard_step_data["commands"]["*"]
-                        step.data["commands"][site_name] = resolve_commands(commands, site)
-                    else:
-                        # Otherwise, omit commands for this site
-                        continue
+                if str(i) in standard_step_data["commands"]:
+                    # Is a specific index in the standard commands?
+                    commands = standard_step_data["commands"][str(i)]
+                    step.data["commands"][site_name] = resolve_command_variables(commands, site)
+                elif "*" in standard_step_data["commands"]:
+                    # Is "*" in the standard commands?
+                    commands = standard_step_data["commands"]["*"]
+                    step.data["commands"][site_name] = resolve_command_variables(commands, site)
+                else:
+                    # Otherwise, omit commands for this site
+                    continue
 
-        del step.data["standard"]
-
-def resolve_commands(commands, site):
+def resolve_command_variables(commands, site):
     resolved_commands = list()
 
     for command in commands:
@@ -447,16 +446,16 @@ def resolve_commands(commands, site):
         if "run" in command:
             resolved_command["run"] = command["run"]
 
-            if site["platform"] == "kubernetes":
-                resolved_command["run"] = resolved_command["run"].replace("@kubeconfig@", site["env"]["KUBECONFIG"])
-                resolved_command["run"] = resolved_command["run"].replace("@namespace@", site["namespace"])
+            if site.platform == "kubernetes":
+                resolved_command["run"] = resolved_command["run"].replace("@kubeconfig@", site.env["KUBECONFIG"])
+                resolved_command["run"] = resolved_command["run"].replace("@namespace@", site.namespace)
 
         if "output" in command:
             resolved_command["output"] = command["output"]
 
-            if site["platform"] == "kubernetes":
-                resolved_command["output"] = resolved_command["output"].replace("@kubeconfig@", site["env"]["KUBECONFIG"])
-                resolved_command["output"] = resolved_command["output"].replace("@namespace@", site["namespace"])
+            if site.platform == "kubernetes":
+                resolved_command["output"] = resolved_command["output"].replace("@kubeconfig@", site.env["KUBECONFIG"])
+                resolved_command["output"] = resolved_command["output"].replace("@namespace@", site.namespace)
 
         resolved_commands.append(resolved_command)
 
