@@ -62,7 +62,7 @@ def generate(output="README.md"):
     generate_readme("skewer.yaml", output)
 
 @command
-def render():
+def render(quiet=False):
     """
     Render README.html from README.md
     """
