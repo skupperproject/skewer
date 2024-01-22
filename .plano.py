@@ -23,24 +23,11 @@ from plano import *
 from skewer import *
 
 @command(passthrough=True)
-def test(verbose=False, quiet=False, passthrough_args=[]):
-    args = ["-m", "skewer.tests"]
-
-    if verbose:
-        args.append("--verbose")
-
-    if quiet:
-        args.append("--quiet")
-
-    args += passthrough_args
-
-    PlanoTestCommand().main(args=args)
+def test(passthrough_args=[]):
+    PlanoTestCommand(skewer.tests).main(args=passthrough_args)
 
 @command
 def coverage(verbose=False, quiet=False):
-    """
-    Run the tests and measure code coverage
-    """
     check_program("coverage")
 
     with working_env(PYTHONPATH="python"):
