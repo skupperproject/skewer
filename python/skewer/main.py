@@ -187,7 +187,7 @@ def pause_for_demo(model):
     if first_site.platform == "kubernetes":
         with first_site:
             if resource_exists("service/frontend"):
-                if rsource_jsonpath("service/frontend", ".spec.type") == "LoadBalancer":
+                if get_resource_jsonpath("service/frontend", ".spec.type") == "LoadBalancer":
                     frontend_ip = await_external_ip("service/frontend")
                     frontend_url = f"http://{frontend_ip}:8080/"
 
@@ -523,7 +523,7 @@ class Model:
         return f"model '{self.skewer_file}'"
 
     def check(self):
-        check_required_attributes(self, "title", "subtitle", "sites", "steps")
+        check_required_attributes(self, "title", "sites", "steps")
         check_unknown_attributes(self)
 
         for _, site in self.sites:

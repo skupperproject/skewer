@@ -25,7 +25,7 @@ Change directory to the root of your example project:
 
     cd <project-dir>/
 
-Add the Skewer code as a subdirectory in your example project:
+Add the Skewer code as a subdirectory:
 
     mkdir -p external
     curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
@@ -40,10 +40,12 @@ Copy the `plano` command into the root of your project:
 
     cp external/skewer-main/plano plano
 
-Copy the standard config files and workflow file into your project:
+Copy the standard config files:
 
     cp external/skewer-main/config/.plano.py .plano.py
     cp external/skewer-main/config/.gitignore .gitignore
+
+Copy the standard workflow file:
 
     mkdir -p .github/workflows
     cp external/skewer-main/config/.github/workflows/main.yaml .github/workflows/main.yaml
@@ -90,7 +92,7 @@ The top level:
 
 ~~~ yaml
 title:              # Your example's title (required)
-subtitle:           # Your chosen subtitle (required)
+subtitle:           # Your chosen subtitle (optional)
 workflow:           # The filename of your GitHub workflow (optional, default 'main.yaml')
 overview:           # Text introducing your example (optional)
 prerequisites:      # Text describing prerequisites (optional, has default text)
