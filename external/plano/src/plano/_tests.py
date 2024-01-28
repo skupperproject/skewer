@@ -25,6 +25,8 @@ import socket as _socket
 import sys as _sys
 import threading as _threading
 
+from .github import *
+
 try:
     import http.server as _http
 except ImportError: # pragma: nocover
@@ -310,6 +312,15 @@ def file_operations():
         file = write("xes", "x" * 10)
         result = get_file_size(file)
         assert result == 10, result
+
+@test
+def github_operations():
+    result = convert_github_markdown("# Hello, Fritz")
+    assert "Hello, Fritz" in result, result
+
+    with working_dir():
+        update_external_from_github("temp", "ssorj", "plano")
+        assert is_file("temp/Makefile"), list_dir("temp")
 
 @test
 def http_operations():
@@ -1288,6 +1299,8 @@ def plano_command():
         run_command("invisible")
         result = read_json("invisible.json")
         assert result == "nothing"
+
+
 
 def main():
     PlanoTestCommand(_sys.modules[__name__]).main()
