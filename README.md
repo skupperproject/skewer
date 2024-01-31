@@ -29,26 +29,27 @@ Add the Skewer code as a subdirectory:
 
     mkdir -p external
     curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
+    mv external/skewer-main external/skewer
 
 Symlink the Skewer and Plano libraries into your `python` directory:
 
     mkdir -p python
-    ln -s ../external/skewer-main/python/skewer python/skewer
-    ln -s ../external/skewer-main/python/plano python/plano
+    ln -s ../external/skewer/python/skewer python/skewer
+    ln -s ../external/skewer/python/plano python/plano
 
 Copy the `plano` command into the root of your project:
 
-    cp external/skewer-main/plano plano
+    cp external/skewer/plano plano
 
 Copy the standard config files:
 
-    cp external/skewer-main/config/.plano.py .plano.py
-    cp external/skewer-main/config/.gitignore .gitignore
+    cp external/skewer/config/.plano.py .plano.py
+    cp external/skewer/config/.gitignore .gitignore
 
 Copy the standard workflow file:
 
     mkdir -p .github/workflows
-    cp external/skewer-main/config/.github/workflows/main.yaml .github/workflows/main.yaml
+    cp external/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
@@ -101,6 +102,8 @@ steps:              # A list of steps (see below)
 summary:            # Text to summarize what the user did (optional)
 next_steps:         # Text linking to more examples (optional, has default text)
 ~~~
+
+To disable the GitHub workflow, set it to `null`.
 
 A **site**:
 
@@ -194,23 +197,26 @@ this:
 
 ~~~ yaml
 steps:
-  - standard: configure_separate_console_sessions
-  - standard: access_your_clusters
-  - standard: set_up_your_namespaces
-  - standard: install_skupper_in_your_namespaces
-  - standard: check_the_status_of_your_namespaces
-  - standard: link_your_namespaces
+  - standard: install_the_skupper_command_line_tool
+  - standard: set_up_your_kubeconfigs
+  - standard: set_up_your_kubernetes_sites
+  - standard: check_the_status_of_your_sites
+  - standard: link_your_sites
   <your-custom-steps>
+  - standard: access_the_application
   - standard: accessing_the_web_console
   - standard: cleaning_up
 ~~~
 
-Note that the `link_your_namespaces` step is less generic than the
-other steps (it assumes only two sites), so check that the text and
-commands it produces are doing what you need.  If not, you'll need to
-provide a custom step.
+**Note:** The `link_your_sites`, `access_the_application`, and
+`cleaning_up` steps are less generic than the other steps.
+`link_your_sites` assumes just two sites.  `access_the_application`
+assumes you have a `frontend` service.  `cleaning_up` doesn't delete
+any application workoads.  Check that the text and commands these
+steps produce are doing what you need for your example.  If not, you
+need to provide a custom step.
 
-There are also some standard steps for examples based on the Skupper
+There are some standard steps for examples based on the Skupper
 Hello World application:
 
 ~~~ yaml
@@ -219,6 +225,12 @@ steps:
   - standard: hello_world/expose_the_backend_service
   - standard: hello_world/test_the_application
   - standard: hello_world/cleaning_up
+~~~
+
+There is a standard step for examples that include use of Podman:
+
+~~~ yaml
+  - standard: set_up_your_podman_site
 ~~~
 
 The step commands are separated into named groups corresponding to the

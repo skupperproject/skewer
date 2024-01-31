@@ -96,7 +96,7 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
         notice(f"Waiting for HTTP OK from {url}")
 
         try:
-            http_get(url, insecure=insecure, user=user, password=password)
+            http_get(url, insecure=insecure, user=user, password=password, quiet=True)
         except PlanoError:
             if get_time() - start_time > timeout:
                 fail(f"Timed out waiting for HTTP OK from {url}")
@@ -357,7 +357,7 @@ def generate_readme_step(model, step):
         site = dict(model.sites)[site_name]
         outputs = list()
 
-        out.append(f"_**Console for {site.title}:**_")
+        out.append(f"_**{site.title}:**_")
         out.append("")
         out.append("~~~ shell")
 
@@ -424,11 +424,16 @@ def apply_standard_steps(model):
         apply_attribute("preamble")
         apply_attribute("postamble")
 
+        platform = standard_step_data.get("platform")
+
         if "commands" not in step.data and "commands" in standard_step_data:
             step.data["commands"] = dict()
 
             for i, item in enumerate(dict(model.sites).items()):
                 site_name, site = item
+
+                if platform and site.platform != platform:
+                    continue
 
                 if str(i) in standard_step_data["commands"]:
                     # Is a specific index in the standard commands?

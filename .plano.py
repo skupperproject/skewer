@@ -65,4 +65,4 @@ def update_plano():
     """
     Update the embedded Plano repo
     """
-    update_external_from_github("external/plano-main", "ssorj", "plano")
+    update_external_from_github("external/plano", "ssorj", "plano")

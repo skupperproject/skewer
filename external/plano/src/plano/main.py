@@ -74,16 +74,16 @@ PLANO_COLOR = "PLANO_COLOR" in ENV
 ## Archive operations
 
 def make_archive(input_dir, output_file=None, quiet=False):
-    """
-    group: archive_operations
-    """
-
     check_program("tar")
 
     archive_stem = get_base_name(input_dir)
 
     if output_file is None:
-        output_file = "{}.tar.gz".format(join(get_current_dir(), archive_stem))
+        # tar on Windows needs this
+        base = join(get_current_dir(), archive_stem)
+        base = base.replace("\\", "/")
+
+        output_file = f"{base}.tar.gz"
 
     _notice(quiet, "Making archive {} from directory {}", repr(output_file), repr(input_dir))
 
@@ -102,6 +102,9 @@ def extract_archive(input_file, output_dir=None, quiet=False):
 
     input_file = get_absolute_path(input_file)
 
+    # tar on Windows needs this
+    input_file = input_file.replace("\\", "/")
+
     with working_dir(output_dir, quiet=True):
         run(f"tar -xf {input_file}", quiet=True)
 
@@ -112,6 +115,9 @@ def rename_archive(input_file, new_archive_stem, quiet=False):
 
     output_dir = get_absolute_path(get_parent_dir(input_file))
     output_file = "{}.tar.gz".format(join(output_dir, new_archive_stem))
+
+    # tar on Windows needs this
+    output_file = output_file.replace("\\", "/")
 
     input_file = get_absolute_path(input_file)
 
