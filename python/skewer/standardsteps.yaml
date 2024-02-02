@@ -160,7 +160,8 @@ podman/set_up_your_podman_network:
         apply: test
       - run: systemctl --user enable --now podman.socket
   postamble: |
-    If `systemctl` is not available, you can also use the following command:
+    If the `systemctl` command doesn't work, you can try the `podman
+    system service` command instead:
 
     ~~~
     podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
