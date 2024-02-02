@@ -40,6 +40,7 @@ jobs:
           minikube version: "v1.32.0"
           kubernetes version: "v1.29.0"
           github token: ${{secrets.GITHUB_TOKEN}}
+      - run: apt-get install -qq -y podman
       - run: curl https://skupper.io/install.sh | bash -s -- --version ${{matrix.skupper-version}}
       - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: ./plano test

@@ -191,20 +191,17 @@ to `standard`:
      - run: skupper delete
 ~~~
 
-The initial steps are usually standard ones.  There are also some
-standard steps at the end.  You may be able to use something like
-this:
+A typical mix of standard and custom steps might look like this:
 
 ~~~ yaml
 steps:
   - standard: install_the_skupper_command_line_tool
-  - standard: set_up_your_kubeconfigs
-  - standard: set_up_your_kubernetes_sites
-  - standard: check_the_status_of_your_sites
+  - standard: kubernetes/set_up_your_namespaces
+  <your-custom-deploy-step>
+  - standard: kubernetes/create_your_sites
   - standard: link_your_sites
-  <your-custom-steps>
-  - standard: access_the_application
-  - standard: accessing_the_web_console
+  <your-custom-expose-step>
+  <your-custom-access-step>
   - standard: cleaning_up
 ~~~
 
@@ -220,17 +217,16 @@ There are some standard steps for examples based on the Skupper
 Hello World application:
 
 ~~~ yaml
-steps:
-  - standard: hello_world/deploy_the_application
-  - standard: hello_world/expose_the_backend_service
-  - standard: hello_world/test_the_application
-  - standard: hello_world/cleaning_up
+- standard: hello_world/deploy_the_frontend_and_backend
+- standard: hello_world/expose_the_backend
+- standard: hello_world/access_the_frontend
+- standard: hello_world/cleaning_up
 ~~~
 
-There is a standard step for examples that include use of Podman:
-
+And finally there are some special cases:
 ~~~ yaml
-  - standard: set_up_your_podman_site
+- standard: kubernetes/set_up_your_kubernetes_namespace
+- standard: podman/set_up_your_podman_network
 ~~~
 
 The step commands are separated into named groups corresponding to the

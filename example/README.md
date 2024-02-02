@@ -16,15 +16,13 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
-* [Step 2: Set up your kubeconfigs](#step-2-set-up-your-kubeconfigs)
-* [Step 3: Set up your Kubernetes sites](#step-3-set-up-your-kubernetes-sites)
-* [Step 4: Check the status of your sites](#step-4-check-the-status-of-your-sites)
+* [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
+* [Step 3: Deploy the frontent and backend](#step-3-deploy-the-frontent-and-backend)
+* [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
 * [Step 6: Fail on demand](#step-6-fail-on-demand)
-* [Step 7: Deploy the application workloads](#step-7-deploy-the-application-workloads)
-* [Step 8: Expose the backend service](#step-8-expose-the-backend-service)
-* [Step 9: Access the application](#step-9-access-the-application)
-* [Accessing the web console](#accessing-the-web-console)
+* [Step 7: Expose the backend](#step-7-expose-the-backend)
+* [Step 8: Access the frontend](#step-8-access-the-frontend)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
@@ -40,9 +38,9 @@ Some prerequisites
 
 ## Step 1: Install the Skupper command-line tool
 
-The `skupper` command-line tool is the entrypoint for installing
-and configuring Skupper.  You need to install the `skupper`
-command only once for each development environment.
+This example uses the Skupper command-line tool to deploy Skupper.
+You need to install the `skupper` command only once for each
+development environment.
 
 On Linux or Mac, you can use the install script (inspect it
 [here][install-script]) to download and extract the command:
@@ -60,12 +58,12 @@ Skupper][install-docs].
 [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
 [install-docs]: https://skupper.io/install/
 
-## Step 2: Set up your kubeconfigs
+## Step 2: Set up your namespaces
 
-Skupper is designed for use with multiple namespaces, usually on
-different clusters.  The `skupper` and `kubectl` commands use your
-[kubeconfig][kubeconfig] and current context to select the
-namespace where they operate.
+Skupper is designed for use with multiple Kubernetes namespaces,
+usually on different clusters.  The `skupper` and `kubectl`
+commands use your [kubeconfig][kubeconfig] and current context to
+select the namespace where they operate.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -77,28 +75,13 @@ A single kubeconfig supports only one active context per user.
 Since you will be using multiple contexts at once in this
 exercise, you need to create distinct kubeconfigs.
 
-For each namespace, open a new terminal window.  In each
-terminal, set the `KUBECONFIG` environment variable to a different
-path and log in to your cluster.
+For each namespace, open a new terminal window.  In each terminal,
+set the `KUBECONFIG` environment variable to a different path and
+log in to your cluster.  Then create the namespace you wish to use
+and set the namespace on your current context.
 
-_**West:**_
-
-~~~ shell
-export KUBECONFIG=~/.kube/config-west
-# Enter your provider-specific login command
-
-~~~
-
-_**East:**_
-
-~~~ shell
-export KUBECONFIG=~/.kube/config-east
-# Enter your provider-specific login command
-
-~~~
-
-The login procedure varies by provider.  See the documentation for
-your chosen providers:
+**Note:** The login procedure varies by provider.  See the
+documentation for yours:
 
 * [Minikube](https://skupper.io/start/minikube.html#cluster-access)
 * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html#cluster-access)
@@ -107,31 +90,66 @@ your chosen providers:
 * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#cluster-access)
 * [OpenShift](https://skupper.io/start/openshift.html#cluster-access)
 
-## Step 3: Set up your Kubernetes sites
+_**West:**_
 
-For each site, create the namespace you wish to use (or use an
-existing namespace).  Set the namespace on your current context.
-Use `skupper init` to install Skupper in the current namespace.
+~~~ shell
+export KUBECONFIG=~/.kube/config-west
+# Enter your provider-specific login command
+kubectl create namespace west
+kubectl config set-context --current --namespace west
+~~~
+
+_**East:**_
+
+~~~ shell
+export KUBECONFIG=~/.kube/config-east
+# Enter your provider-specific login command
+kubectl create namespace east
+kubectl config set-context --current --namespace east
+~~~
+
+## Step 3: Deploy the frontent and backend
+
+This example runs the frontend and the backend in separate
+Kubernetes namespaces, on different clusters.
+
+Use `kubectl create deployment` to deploy the frontend in
+namespace `west` and the backend in namespace
+`east`.
+
+_**West:**_
+
+~~~ shell
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+~~~
+
+_**East:**_
+
+~~~ shell
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+~~~
+
+## Step 4: Create your sites
+
+A Skupper _site_ is a location where components of your
+application are running.  Sites are linked together to form a
+network for your application.  In Kubernetes, a site is associated
+with a namespace.
+
+For each namespace, use `skupper init` to create a site.  This
+deploys the Skupper router and controller.  Then use `skupper
+status` to see the outcome.
 
 **Note:** If you are using Minikube, you need to [start minikube
-tunnel][minikube-tunnel] before you install Skupper.
+tunnel][minikube-tunnel] before you run `skupper init`.
 
 [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
 _**West:**_
 
 ~~~ shell
-kubectl create namespace west
-kubectl config set-context --current --namespace west
-skupper init --enable-console --enable-flow-collector
-~~~
-
-_**East:**_
-
-~~~ shell
-kubectl create namespace east
-kubectl config set-context --current --namespace east
 skupper init
+skupper status
 ~~~
 
 _Sample output:_
@@ -140,23 +158,29 @@ _Sample output:_
 $ skupper init
 Waiting for LoadBalancer IP or hostname...
 Waiting for status...
-Skupper is now installed in namespace '<namespace>'.  Use 'skupper status' to get more information.
+Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
+
+$ skupper status
+Skupper is enabled for namespace "west". It is not connected to any other sites. It has no exposed services.
 ~~~
 
-## Step 4: Check the status of your sites
-
-Use `skupper status` in each terminal to check that Skupper is
-installed.
+_**East:**_
 
 ~~~ shell
+skupper init
 skupper status
 ~~~
 
 _Sample output:_
 
 ~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Waiting for status...
+Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
+
 $ skupper status
-Skupper is enabled for namespace "<namespace>" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+Skupper is enabled for namespace "east". It is not connected to any other sites. It has no exposed services.
 ~~~
 
 As you move through the steps below, you can use `skupper status` at
@@ -177,9 +201,9 @@ that generated it.
 token can link to your site.  Make sure that only those you trust
 have access to it.
 
-First, use `skupper token create` in one site to generate the
-token.  Then, use `skupper link create` in another to link the two
-sites.
+First, use `skupper token create` in site West to generate the
+token.  Then, use `skupper link create` in site East to link
+the sites.
 
 _**West:**_
 
@@ -222,32 +246,15 @@ if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
 
 ~~~
 
-## Step 7: Deploy the application workloads
+## Step 7: Expose the backend
 
-Use `kubectl create deployment` to deploy the frontend and backend
-workloads.
-
-_**West:**_
-
-~~~ shell
-kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
-~~~
-
-_**East:**_
-
-~~~ shell
-kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-~~~
-
-## Step 8: Expose the backend service
-
-We now have two sites linked to form a Skupper network, but no
+We now have our sites linked to form a Skupper network, but no
 services are exposed on it.  Skupper uses the `skupper expose`
-command to select a service from one site for exposure in all
-the linked sites.
+command to select a service from one site for exposure in all the
+linked sites.
 
-Use `skupper expose` to expose the backend service on the Skupper
-network.
+Use `skupper expose` to expose the backend service in East to
+the frontend in West.
 
 _**East:**_
 
@@ -262,7 +269,7 @@ $ skupper expose deployment/backend --port 8080
 deployment backend exposed as backend
 ~~~
 
-## Step 9: Access the application
+## Step 8: Access the frontend
 
 In order to use and test the application, we need external access
 to the frontend.
@@ -305,44 +312,10 @@ OK
 If everything is in order, you can now access the web interface by
 navigating to `http://<external-ip>:8080/` in your browser.
 
-## Accessing the web console
-
-Skupper includes a web console you can use to view the application
-network.  To access it, use `skupper status` to look up the URL of
-the web console.  Then use `kubectl get
-secret/skupper-console-users` to look up the console admin
-password.
-
-**Note:** The `<console-url>` and `<password>` fields in the
-following output are placeholders.  The actual values are specific
-to your environment.
-
-_**West:**_
-
-~~~ shell
-skupper status
-kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
-~~~
-
-_Sample output:_
-
-~~~ console
-$ skupper status
-Skupper is enabled for namespace "west". It is connected to 1 other site. It has 1 exposed service.
-The site console url is: <console-url>
-The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
-
-$ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
-<password>
-~~~
-
-Navigate to `<console-url>` in your browser.  When prompted, log
-in as user `admin` and enter the password.
-
 ## Cleaning up
 
 To remove Skupper and the other resources from this exercise, use
-the following commands.
+the following commands:
 
 _**West:**_
 

@@ -19,19 +19,17 @@ sites:
       KUBECONFIG: ~/.kube/config-east
 steps:
   - standard: install_the_skupper_command_line_tool
-  - standard: set_up_your_kubeconfigs
-  - standard: set_up_your_kubernetes_sites
-  - standard: check_the_status_of_your_sites
+  - standard: kubernetes/set_up_your_namespaces
+  - standard: hello_world/deploy_the_frontend_and_backend
+  - standard: kubernetes/create_your_sites
   - standard: link_your_sites
   - title: Fail on demand
     commands:
       west:
         - run: |
             if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
-  - standard: hello_world/deploy_the_application_workloads
-  - standard: hello_world/expose_the_backend_service
-  - standard: access_the_application
-  - standard: accessing_the_web_console
+  - standard: hello_world/expose_the_backend
+  - standard: hello_world/access_the_frontend
   - standard: hello_world/cleaning_up
 summary: |
   A summary

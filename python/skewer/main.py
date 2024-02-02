@@ -179,7 +179,7 @@ def run_step(model, step, work_dir, check=True):
 def pause_for_demo(model):
     notice("Pausing for demo time")
 
-    first_site = list([x for _, x in model.sites])[0]
+    first_site = [x for _, x in model.sites][0]
     console_url = None
     password = None
     frontend_url = None
@@ -416,7 +416,16 @@ def apply_standard_steps(model):
 
         def apply_attribute(name, default=None):
             if name not in step.data:
-                step.data[name] = standard_step_data.get(name, default)
+                value = standard_step_data.get(name, default)
+
+                if value and name in ("title", "preamble", "postamble"):
+                    for i, site in enumerate([x for _, x in model.sites]):
+                        value = value.replace(f"@site{i}@", site.title)
+
+                        if site.namespace:
+                            value = value.replace(f"@namespace{i}@", site.namespace)
+
+                step.data[name] = value
 
         apply_attribute("name")
         apply_attribute("title")
