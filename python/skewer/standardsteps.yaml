@@ -144,8 +144,8 @@ podman/set_up_your_podman_network:
   platform: podman
   preamble: |
     Open a new terminal window and set the `SKUPPER_PLATFORM`
-    environment variable to `podman`.  This sets the Skupper command
-    platform to `podman` for this terminal session.
+    environment variable to `podman`.  This sets the Skupper platform
+    to Podman for this terminal session.
 
     Use `podman network create` to create the Podman network that
     Skupper will use.
@@ -159,7 +159,6 @@ podman/set_up_your_podman_network:
       - run: if ! podman network exists skupper; then podman network create skupper; fi
         apply: test
       - run: systemctl --user enable --now podman.socket
-      # - run: podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
   postamble: |
     If `systemctl` is not available, you can also use the following command:
 
