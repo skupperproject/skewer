@@ -284,9 +284,9 @@ def generate_readme(skewer_file, output_file):
         if not condition:
             return
 
-        fragment = replace(heading, r"[ -]", "_")
-        fragment = replace(fragment, r"[\W]", "")
-        fragment = replace(fragment, "_", "-")
+        fragment = string_replace(heading, r"[ -]", "_")
+        fragment = string_replace(fragment, r"[\W]", "")
+        fragment = string_replace(fragment, "_", "-")
         fragment = fragment.lower()
 
         out.append(f"* [{heading}](#{fragment})")
