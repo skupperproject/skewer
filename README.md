@@ -199,19 +199,17 @@ steps:
   - standard: kubernetes/set_up_your_namespaces
   <your-custom-deploy-step>
   - standard: kubernetes/create_your_sites
-  - standard: link_your_sites
+  - standard: kubernetes/link_your_sites
   <your-custom-expose-step>
   <your-custom-access-step>
   - standard: cleaning_up
 ~~~
 
-**Note:** The `link_your_sites`, `access_the_application`, and
-`cleaning_up` steps are less generic than the other steps.
-`link_your_sites` assumes just two sites.  `access_the_application`
-assumes you have a `frontend` service.  `cleaning_up` doesn't delete
-any application workoads.  Check that the text and commands these
-steps produce are doing what you need for your example.  If not, you
-need to provide a custom step.
+**Note:** The `link_your_sites` and `cleaning_up` steps are less
+generic than the other steps.  For example, `cleaning_up` doesn't
+delete any application workoads.  Check that the text and commands
+these steps produce are doing what you need for your example.  If not,
+you need to provide a custom step.
 
 There are some standard steps for examples based on the Skupper
 Hello World application:

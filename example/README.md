@@ -17,7 +17,7 @@ across cloud providers, data centers, and edge sites.
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
 * [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
-* [Step 3: Deploy the frontent and backend](#step-3-deploy-the-frontent-and-backend)
+* [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
 * [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
 * [Step 6: Fail on demand](#step-6-fail-on-demand)
@@ -108,7 +108,7 @@ kubectl create namespace east
 kubectl config set-context --current --namespace east
 ~~~
 
-## Step 3: Deploy the frontent and backend
+## Step 3: Deploy the frontend and backend
 
 This example runs the frontend and the backend in separate
 Kubernetes namespaces, on different clusters.
@@ -188,6 +188,8 @@ any time to check your progress.
 
 ## Step 5: Link your sites
 
+A Skupper _link_ is a channel for communication between two sites.
+
 Creating a link requires use of two `skupper` commands in
 conjunction, `skupper token create` and `skupper link create`.
 
@@ -228,7 +230,7 @@ _Sample output:_
 
 ~~~ console
 $ skupper link create ~/secret.token
-Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
+Site configured to link to <endpoint> (name=link1)
 Check the status of the link using 'skupper link status'.
 ~~~
 

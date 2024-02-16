@@ -121,24 +121,15 @@ kubernetes/create_your_sites:
 
     [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
   commands:
-    "0":
-      - run: skupper init
-        output: |
-          Waiting for LoadBalancer IP or hostname...
-          Waiting for status...
-          Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
-      - run: skupper status
-        output: |
-          Skupper is enabled for namespace "west". It is not connected to any other sites. It has no exposed services.
     "*":
       - run: skupper init
         output: |
           Waiting for LoadBalancer IP or hostname...
           Waiting for status...
-          Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
+          Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.
       - run: skupper status
         output: |
-          Skupper is enabled for namespace "east". It is not connected to any other sites. It has no exposed services.
+          Skupper is enabled for namespace "@namespace@". It is not connected to any other sites. It has no exposed services.
   postamble: |
     As you move through the steps below, you can use `skupper status` at
     any time to check your progress.
@@ -172,6 +163,50 @@ podman/set_up_your_podman_network:
 link_your_sites:
   title: Link your sites
   preamble: |
+    A Skupper _link_ is a channel for communication between two sites.
+    Links serve as a transport for application connections and
+    requests.
+
+    Creating a link requires use of two `skupper` commands in
+    conjunction, `skupper token create` and `skupper link create`.
+
+    The `skupper token create` command generates a secret token that
+    signifies permission to create a link.  The token also carries the
+    link details.  Then, in a remote site, The `skupper link
+    create` command uses the token to create a link to the site
+    that generated it.
+
+    **Note:** The link token is truly a *secret*.  Anyone who has the
+    token can link to your site.  Make sure that only those you trust
+    have access to it.
+
+    First, use `skupper token create` in site @site0@ to generate the
+    token.  Then, use `skupper link create` in site @site1@ to link
+    the sites.
+  commands:
+    "0":
+      - run: skupper token create ~/secret.token
+        output: Token written to ~/secret.token
+    "1":
+      - run: skupper link create ~/secret.token
+        output: |
+          Site configured to link to <endpoint> (name=link1)
+          Check the status of the link using 'skupper link status'.
+      - run: skupper link status --wait 60
+        apply: test
+  postamble: |
+    If your terminal sessions are on different machines, you may need
+    to use `scp` or a similar tool to transfer the token securely.  By
+    default, tokens expire after a single use or 15 minutes after
+    creation.
+kubernetes/link_your_sites:
+  title: Link your sites
+  platform: kubernetes
+  preamble: |
+    A Skupper _link_ is a channel for communication between two sites.
+    Links serve as a transport for application connections and
+    requests.
+
     Creating a link requires use of two `skupper` commands in
     conjunction, `skupper token create` and `skupper link create`.
 
