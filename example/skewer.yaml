@@ -31,7 +31,15 @@ steps:
   - standard: hello_world/expose_the_backend
   - standard: hello_world/access_the_frontend
   - standard: hello_world/cleaning_up
+    preamble: |
+      @default@
+
+      And more!
 summary: |
-  A summary
+  @default@
+
+  More summary
 next_steps: |
-  Some next steps
+  @default@
+
+  More steps

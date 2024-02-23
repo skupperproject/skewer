@@ -32,9 +32,11 @@ across cloud providers, data centers, and edge sites.
 
 An overview
 
+
 ## Prerequisites
 
 Some prerequisites
+
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -318,8 +320,9 @@ navigating to `http://<external-ip>:8080/` in your browser.
 
 ## Cleaning up
 
-To remove Skupper and the other resources from this exercise, use
+BEGIN To remove Skupper and the other resources from this exercise, use
 the following commands:
+ END
 
 _**West:**_
 
@@ -338,11 +341,17 @@ kubectl delete deployment/backend
 
 ## Summary
 
-A summary
+
+
+More summary
+
 
 ## Next steps
 
-Some next steps
+Check out the other [examples][examples] on the Skupper website.
+
+More steps
+
 
 ## About this example
 

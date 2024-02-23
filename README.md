@@ -205,8 +205,7 @@ that the text and commands these steps produce are doing what you need
 for your example.  If not, you need to provide a custom step.
 
 You can create custom steps based on the standard steps by overriding
-the `title`, `preamble`, `commands`, or `postamble` field of a
-standard step by adding the field in addition to `standard`:
+the `title`, `preamble`, `commands`, or `postamble` fields.
 
 ~~~ yaml
 - standard: general/cleaning_up
@@ -216,6 +215,18 @@ standard step by adding the field in addition to `standard`:
      - run: kubectl delete deployment/database
     west:
      - run: skupper delete
+~~~
+
+For string fields such as `preamble` and `postamble`, you can include
+the standard text inside your custom text by using the `@default@`
+placeholder:
+
+~~~ yaml
+- standard: general/cleaning_up
+  preamble: |
+    @default@
+
+    Note: You may also want to flirp your krupke.
 ~~~
 
 A typical mix of standard and custom steps might look like this:
