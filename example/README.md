@@ -320,9 +320,11 @@ navigating to `http://<external-ip>:8080/` in your browser.
 
 ## Cleaning up
 
-BEGIN To remove Skupper and the other resources from this exercise, use
+To remove Skupper and the other resources from this exercise, use
 the following commands:
- END
+
+
+And more!
 
 _**West:**_
 
