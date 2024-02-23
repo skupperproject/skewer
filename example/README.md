@@ -189,6 +189,8 @@ any time to check your progress.
 ## Step 5: Link your sites
 
 A Skupper _link_ is a channel for communication between two sites.
+Links serve as a transport for application connections and
+requests.
 
 Creating a link requires use of two `skupper` commands in
 conjunction, `skupper token create` and `skupper link create`.
@@ -230,7 +232,7 @@ _Sample output:_
 
 ~~~ console
 $ skupper link create ~/secret.token
-Site configured to link to <endpoint> (name=link1)
+Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
 Check the status of the link using 'skupper link status'.
 ~~~
 
