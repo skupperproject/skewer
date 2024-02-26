@@ -186,7 +186,16 @@ def run_step(model, step, work_dir, check=True):
                     await_console_ok()
 
                 if command.run:
-                    run(command.run.replace("~", work_dir), shell=True, check=check)
+                    proc = run(command.run.replace("~", work_dir), shell=True, check=False)
+
+                    if command.expect_failure:
+                        if proc.exit_code == 0:
+                            fail("A command expected to fail did not fail")
+
+                        continue
+
+                    if check and proc.exit_code > 0:
+                        raise PlanoProcessError(proc)
 
 def pause_for_demo(model):
     notice("Pausing for demo time")
@@ -675,6 +684,7 @@ class Step:
 
 class Command:
     run = object_property("run")
+    expect_failure = object_property("expect_failure", False)
     apply = object_property("apply")
     output = object_property("output")
     await_resource = object_property("await_resource")
