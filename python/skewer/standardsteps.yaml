@@ -59,9 +59,9 @@ general/link_your_sites:
     token can link to your site.  Make sure that only those you trust
     have access to it.
 
-    First, use `skupper token create` in site @site0@ to generate the
-    token.  Then, use `skupper link create` in site @site1@ to link
-    the sites.
+    First, use `skupper token create` in @site0@ to generate the
+    token.  Then, use `skupper link create` in @site1@ to link the
+    sites.
   commands:
     "0":
       - run: skupper token create ~/secret.token
@@ -88,14 +88,14 @@ general/cleaning_up:
   commands:
     "*":
       - run: skupper delete
-kubernetes/set_up_your_namespaces:
-  title: Set up your namespaces
+kubernetes/set_up_your_clusters:
+  title: Set up your clusters
   platform: kubernetes
   preamble: |
-    Skupper is designed for use with multiple Kubernetes namespaces,
-    usually on different clusters.  The `skupper` and `kubectl`
-    commands use your [kubeconfig][kubeconfig] and current context to
-    select the namespace where they operate.
+    Skupper is designed for use with multiple Kubernetes clusters.
+    The `skupper` and `kubectl` commands use your
+    [kubeconfig][kubeconfig] and current context to select the cluster
+    and namespace where they operate.
 
     [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -130,8 +130,8 @@ kubernetes/set_up_your_namespaces:
       - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
         apply: test
       - run: kubectl config set-context --current --namespace @namespace@
-kubernetes/set_up_your_kubernetes_namespace:
-  title: Set up your Kubernetes namespace
+kubernetes/set_up_your_kubernetes_cluster:
+  title: Set up your Kubernetes cluster
   platform: kubernetes
   preamble: |
     Open a new terminal window and log in to your cluster.  Then
@@ -203,9 +203,9 @@ kubernetes/link_your_sites:
     token can link to your site.  Make sure that only those you trust
     have access to it.
 
-    First, use `skupper token create` in site @site0@ to generate the
-    token.  Then, use `skupper link create` in site @site1@ to link
-    the sites.
+    First, use `skupper token create` in @site0@ to generate the
+    token.  Then, use `skupper link create` in @site1@ to link the
+    sites.
   commands:
     "0":
       - run: skupper token create ~/secret.token
@@ -267,8 +267,8 @@ kubernetes/cleaning_up:
   commands:
     "*":
       - run: skupper delete
-podman/set_up_your_podman_network:
-  title: Set up your Podman network
+podman/set_up_your_podman_environment:
+  title: Set up your Podman environment
   platform: podman
   preamble: |
     Open a new terminal window and set the `SKUPPER_PLATFORM`

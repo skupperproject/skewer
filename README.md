@@ -181,13 +181,13 @@ They are the following:
 general/install_the_skupper_command_line_tool
 general/link_your_sites
 general/cleaning_up
-kubernetes/set_up_your_namespaces
-kubernetes/set_up_your_kubernetes_namespace  # One namespace only
+kubernetes/set_up_your_clusters
+kubernetes/set_up_your_kubernetes_cluster  # One cluster only
 kubernetes/create_your_sites
 kubernetes/link_your_sites
 kubernetes/access_the_frontend
 kubernetes/cleaning_up
-podman/set_up_your_podman_network
+podman/set_up_your_podman_environment
 hello_world/deploy_the_frontend_and_backend
 hello_world/expose_the_backend
 hello_world/access_the_frontend
@@ -236,7 +236,7 @@ example might look like this:
 ~~~ yaml
 steps:
   - standard: general/install_the_skupper_command_line_tool
-  - standard: kubernetes/set_up_your_namespaces
+  - standard: kubernetes/set_up_your_clusters
   <your-custom-deploy-step>
   - standard: kubernetes/create_your_sites
   - standard: kubernetes/link_your_sites

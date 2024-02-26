@@ -18,7 +18,7 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
-* [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
+* [Step 2: Set up your clusters](#step-2-set-up-your-clusters)
 * [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
 * [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
@@ -60,12 +60,12 @@ Skupper][install-docs].
 [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
 [install-docs]: https://skupper.io/install/
 
-## Step 2: Set up your namespaces
+## Step 2: Set up your clusters
 
-Skupper is designed for use with multiple Kubernetes namespaces,
-usually on different clusters.  The `skupper` and `kubectl`
-commands use your [kubeconfig][kubeconfig] and current context to
-select the namespace where they operate.
+Skupper is designed for use with multiple Kubernetes clusters.
+The `skupper` and `kubectl` commands use your
+[kubeconfig][kubeconfig] and current context to select the cluster
+and namespace where they operate.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -207,9 +207,9 @@ that generated it.
 token can link to your site.  Make sure that only those you trust
 have access to it.
 
-First, use `skupper token create` in site West to generate the
-token.  Then, use `skupper link create` in site East to link
-the sites.
+First, use `skupper token create` in West to generate the
+token.  Then, use `skupper link create` in East to link the
+sites.
 
 _**West:**_
 
