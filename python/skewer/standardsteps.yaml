@@ -228,35 +228,21 @@ kubernetes/access_the_frontend:
     In order to use and test the application, we need external access
     to the frontend.
 
-    Use `kubectl expose` with `--type LoadBalancer` to open network
-    access to the frontend service.
-
-    Once the frontend is exposed, use `kubectl get service/frontend`
-    to look up the external IP of the frontend service.  If the
-    external IP is `<pending>`, try again after a moment.
-
-    Once you have the external IP, use `curl` or a similar tool to
-    request the `/api/health` endpoint at that address.
-
-    **Note:** The `<external-ip>` field in the following commands is a
-    placeholder.  The actual value is an IP address.
+    Use `kubectl port-forward` to make the frontend available at
+    `localhost:8080`.
   commands:
     "0":
-      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-        output: service/frontend exposed
-      - await_resource: service/frontend
-      - run: kubectl get service/frontend
+      - await_resource: deployment/frontend
+      - run: kubectl port-forward deployment/frontend 8080:8080
         apply: readme
-        output: |
-          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-      - run: curl http://<external-ip>:8080/api/health
-        apply: readme
-        output: OK
-      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
+      - run: kubectl port-forward deployment/frontend 8080:8080 > /dev/null &
+        apply: test
+      - await_port: 8080
+      - run: curl http://localhost:8080/api/health
+        apply: test
   postamble: |
-    If everything is in order, you can now access the web interface by
-    navigating to `http://<external-ip>:8080/` in your browser.
+    You can now access the web interface by navigating to
+    [http://localhost:8080](http://localhost:8080) in your browser.
 kubernetes/cleaning_up:
   name: cleaning_up
   title: Cleaning up
@@ -300,9 +286,8 @@ hello_world/deploy_the_frontend_and_backend:
     This example runs the frontend and the backend in separate
     Kubernetes namespaces, on different clusters.
 
-    Use `kubectl create deployment` to deploy the frontend in
-    namespace `@namespace0@` and the backend in namespace
-    `@namespace1@`.
+    Use `kubectl create deployment` to deploy the frontend in @site0@
+    and the backend in @site1@.
   commands:
     "0":
       - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
@@ -329,35 +314,21 @@ hello_world/access_the_frontend:
     In order to use and test the application, we need external access
     to the frontend.
 
-    Use `kubectl expose` with `--type LoadBalancer` to open network
-    access to the frontend service.
-
-    Once the frontend is exposed, use `kubectl get service/frontend`
-    to look up the external IP of the frontend service.  If the
-    external IP is `<pending>`, try again after a moment.
-
-    Once you have the external IP, use `curl` or a similar tool to
-    request the `/api/health` endpoint at that address.
-
-    **Note:** The `<external-ip>` field in the following commands is a
-    placeholder.  The actual value is an IP address.
+    Use `kubectl port-forward` to make the frontend available at
+    `localhost:8080`.
   commands:
     "0":
-      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-        output: service/frontend exposed
-      - await_resource: service/frontend
-      - run: kubectl get service/frontend
+      - await_resource: deployment/frontend
+      - run: kubectl port-forward deployment/frontend 8080:8080
         apply: readme
-        output: |
-          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-      - run: curl http://<external-ip>:8080/api/health
-        apply: readme
-        output: OK
-      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
+      - run: kubectl port-forward deployment/frontend 8080:8080 > /dev/null &
+        apply: test
+      - await_port: 8080
+      - run: curl http://localhost:8080/api/health
+        apply: test
   postamble: |
-    If everything is in order, you can now access the web interface by
-    navigating to `http://<external-ip>:8080/` in your browser.
+    You can now access the web interface by navigating to
+    [http://localhost:8080](http://localhost:8080) in your browser.
 hello_world/cleaning_up:
   name: cleaning_up
   title: Cleaning up

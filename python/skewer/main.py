@@ -185,6 +185,9 @@ def run_step(model, step, work_dir, check=True):
                 if command.await_console_ok:
                     await_console_ok()
 
+                if command.await_port:
+                    await_port(command.await_port, timeout=300)
+
                 if command.run:
                     proc = run(command.run.replace("~", work_dir), shell=True, check=False)
 
@@ -691,6 +694,7 @@ class Command:
     await_ingress = object_property("await_ingress")
     await_http_ok = object_property("await_http_ok")
     await_console_ok = object_property("await_console_ok")
+    await_port = object_property("await_port")
 
     def __init__(self, model, data):
         self.model = model
@@ -728,23 +732,31 @@ class Minikube:
 
         run("minikube start -p skewer --auto-update-drivers false")
 
-        tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
-        self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
+        try:
+            tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
+            self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
 
-        model = Model(self.skewer_file)
-        model.check()
+            try:
+                model = Model(self.skewer_file)
+                model.check()
 
-        kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
+                kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
 
-        for site in kube_sites:
-            kubeconfig = site.env["KUBECONFIG"].replace("~", self.work_dir)
-            site.env["KUBECONFIG"] = kubeconfig
+                for site in kube_sites:
+                    kubeconfig = site.env["KUBECONFIG"].replace("~", self.work_dir)
+                    site.env["KUBECONFIG"] = kubeconfig
 
-            self.kubeconfigs.append(kubeconfig)
+                    self.kubeconfigs.append(kubeconfig)
 
-            with site:
-                run("minikube update-context -p skewer")
-                check_file(ENV["KUBECONFIG"])
+                    with site:
+                        run("minikube update-context -p skewer")
+                        check_file(ENV["KUBECONFIG"])
+            except:
+                stop(self.tunnel)
+                raise
+        except:
+            run("minikube delete -p skewer")
+            raise
 
         return self
 

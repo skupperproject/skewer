@@ -23,8 +23,9 @@ across cloud providers, data centers, and edge sites.
 * [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
 * [Step 6: Fail on demand](#step-6-fail-on-demand)
-* [Step 7: Expose the backend](#step-7-expose-the-backend)
-* [Step 8: Access the frontend](#step-8-access-the-frontend)
+* [Step 7: Fail expectedly](#step-7-fail-expectedly)
+* [Step 8: Expose the backend](#step-8-expose-the-backend)
+* [Step 9: Access the frontend](#step-9-access-the-frontend)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
@@ -115,9 +116,8 @@ kubectl config set-context --current --namespace east
 This example runs the frontend and the backend in separate
 Kubernetes namespaces, on different clusters.
 
-Use `kubectl create deployment` to deploy the frontend in
-namespace `west` and the backend in namespace
-`east`.
+Use `kubectl create deployment` to deploy the frontend in West
+and the backend in East.
 
 _**West:**_
 
@@ -251,7 +251,15 @@ _**West:**_
 if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
 ~~~
 
-## Step 7: Expose the backend
+## Step 7: Fail expectedly
+
+_**West:**_
+
+~~~ shell
+expr 1 / 0
+~~~
+
+## Step 8: Expose the backend
 
 We now have our sites linked to form a Skupper network, but no
 services are exposed on it.  Skupper uses the `skupper expose`
@@ -274,48 +282,22 @@ $ skupper expose deployment/backend --port 8080
 deployment backend exposed as backend
 ~~~
 
-## Step 8: Access the frontend
+## Step 9: Access the frontend
 
 In order to use and test the application, we need external access
 to the frontend.
 
-Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.
-
-Once the frontend is exposed, use `kubectl get service/frontend`
-to look up the external IP of the frontend service.  If the
-external IP is `<pending>`, try again after a moment.
-
-Once you have the external IP, use `curl` or a similar tool to
-request the `/api/health` endpoint at that address.
-
-**Note:** The `<external-ip>` field in the following commands is a
-placeholder.  The actual value is an IP address.
+Use `kubectl port-forward` to make the frontend available at
+`localhost:8080`.
 
 _**West:**_
 
 ~~~ shell
-kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-kubectl get service/frontend
-curl http://<external-ip>:8080/api/health
+kubectl port-forward deployment/frontend 8080:8080
 ~~~
 
-_Sample output:_
-
-~~~ console
-$ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-service/frontend exposed
-
-$ kubectl get service/frontend
-NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-
-$ curl http://<external-ip>:8080/api/health
-OK
-~~~
-
-If everything is in order, you can now access the web interface by
-navigating to `http://<external-ip>:8080/` in your browser.
+You can now access the web interface by navigating to
+[http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Cleaning up
 
