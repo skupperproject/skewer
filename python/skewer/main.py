@@ -345,14 +345,14 @@ def generate_readme(skewer_file, output_file):
     out.append("")
 
     append_toc_entry("Overview", model.overview)
-    append_toc_entry("Prerequisites")
+    append_toc_entry("Prerequisites", model.prerequisites)
 
     for step in model.steps:
         append_toc_entry(generate_step_heading(step))
 
-    append_toc_entry("Summary")
-    append_toc_entry("Next steps")
-    append_toc_entry("About this example")
+    append_toc_entry("Summary", model.summary)
+    append_toc_entry("Next steps", model.next_steps)
+    append_toc_entry("About this example", model.about_this_example)
 
     out.append("")
 
