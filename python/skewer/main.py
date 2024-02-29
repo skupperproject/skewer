@@ -627,7 +627,7 @@ class Site:
         check_required_attributes(self, "platform")
         check_unknown_attributes(self)
 
-        if self.platform not in ("kubernetes", "podman"):
+        if self.platform not in ("kubernetes", "podman", None):
             fail(f"{self} attribute 'platform' has an illegal value: {self.platform}")
 
         if self.platform == "kubernetes":
