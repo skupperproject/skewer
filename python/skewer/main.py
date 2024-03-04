@@ -743,7 +743,10 @@ class Minikube:
                 kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
 
                 for site in kube_sites:
-                    kubeconfig = site.env["KUBECONFIG"].replace("~", self.work_dir)
+                    kubeconfig = site.env["KUBECONFIG"]
+                    kubeconfig = kubeconfig.replace("~", self.work_dir)
+                    kubeconfig = expand(kubeconfig)
+
                     site.env["KUBECONFIG"] = kubeconfig
 
                     self.kubeconfigs.append(kubeconfig)
