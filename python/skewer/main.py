@@ -210,10 +210,8 @@ def pause_for_demo(model):
 
     if first_site.platform == "kubernetes":
         with first_site:
-            if resource_exists("service/frontend"):
-                if get_resource_json("service/frontend", ".spec.type") == "LoadBalancer":
-                    frontend_host = await_ingress("service/frontend")
-                    frontend_url = f"http://{frontend_host}:8080/"
+            if resource_exists("deployment/frontend"):
+                frontend_url = f"http://localhost:8080/"
 
             if resource_exists("secret/skupper-console-users"):
                 console_host = await_ingress("service/skupper")

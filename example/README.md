@@ -310,7 +310,6 @@ _**West:**_
 
 ~~~ shell
 skupper delete
-kubectl delete service/frontend
 kubectl delete deployment/frontend
 ~~~
 

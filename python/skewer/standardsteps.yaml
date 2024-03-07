@@ -339,7 +339,6 @@ hello_world/cleaning_up:
   commands:
     "0":
       - run: skupper delete
-      - run: kubectl delete service/frontend
       - run: kubectl delete deployment/frontend
     "1":
       - run: skupper delete
