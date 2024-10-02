@@ -27,7 +27,6 @@ across cloud providers, data centers, and edge sites.
 * [Step 8: Fail expectedly](#step-8-fail-expectedly)
 * [Step 9: Expose the backend](#step-9-expose-the-backend)
 * [Step 10: Access the frontend](#step-10-access-the-frontend)
-* [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
 * [About this example](#about-this-example)
@@ -353,27 +352,6 @@ kubectl port-forward deployment/frontend 8080:8080
 
 You can now access the web interface by navigating to
 [http://localhost:8080](http://localhost:8080) in your browser.
-
-## Cleaning up
-
-To remove Skupper and the other resources from this exercise, use
-the following commands:
-
-And more!
-
-_**West:**_
-
-~~~ shell
-skupper delete
-kubectl delete deployment/frontend
-~~~
-
-_**East:**_
-
-~~~ shell
-skupper delete
-kubectl delete deployment/backend
-~~~
 
 ## Summary
 

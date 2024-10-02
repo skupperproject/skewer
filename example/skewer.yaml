@@ -35,11 +35,11 @@ steps:
           expect_failure: true
   - standard: hello_world/expose_the_backend
   - standard: hello_world/access_the_frontend
-  - standard: hello_world/cleaning_up
-    preamble: |
-      @default@
+  # - standard: hello_world/cleaning_up
+  #   preamble: |
+  #     @default@
 
-      And more!
+  #     And more!
 summary: |
   @default@
 
