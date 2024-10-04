@@ -190,11 +190,19 @@ kubernetes/create_your_sites:
         output: |
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
+      - run: |
+          kubectl wait --for=condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
+        output: |
+          site.skupper.io/@namespace@ condition met
     "*":
       - run: skupper site create @namespace@
         output: |
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
+      - run: |
+          kubectl wait --for=condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
+        output: |
+          site.skupper.io/@namespace@ condition met
   postamble: |
     You can use `skupper site status` at any time to check the status
     of your site.
@@ -223,11 +231,6 @@ kubernetes/link_your_sites:
     Then, use `skupper token redeem` in @site1@ to link the sites.
   commands:
     "0":
-      - run: |
-          # Required with preview 1.  To be removed!
-          kubectl wait --for=condition=Ready site/@namespace@
-        output: |
-          site.skupper.io/west condition met
       - run: skupper token issue ~/token.yaml
         output: |
           Waiting for token status ...

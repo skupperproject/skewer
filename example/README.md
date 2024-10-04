@@ -174,6 +174,7 @@ _**West:**_
 
 ~~~ shell
 skupper site create west --enable-link-access
+kubectl wait --for=condition=Ready site/west  # Required with preview 1 - to be removed!
 ~~~
 
 _Sample output:_
@@ -182,12 +183,16 @@ _Sample output:_
 $ skupper site create west --enable-link-access
 Waiting for status...
 Site "west" is configured. Check the status to see when it is ready
+
+$ kubectl wait --for=condition=Ready site/west  # Required with preview 1 - to be removed!
+site.skupper.io/west condition met
 ~~~
 
 _**East:**_
 
 ~~~ shell
 skupper site create east
+kubectl wait --for=condition=Ready site/east  # Required with preview 1 - to be removed!
 ~~~
 
 _Sample output:_
@@ -196,6 +201,9 @@ _Sample output:_
 $ skupper site create east
 Waiting for status...
 Site "east" is configured. Check the status to see when it is ready
+
+$ kubectl wait --for=condition=Ready site/east  # Required with preview 1 - to be removed!
+site.skupper.io/east condition met
 ~~~
 
 You can use `skupper site status` at any time to check the status
@@ -226,18 +234,12 @@ Then, use `skupper token redeem` in East to link the sites.
 _**West:**_
 
 ~~~ shell
-# Required with preview 1.  To be removed!
-kubectl wait --for=condition=Ready site/west
 skupper token issue ~/token.yaml
 ~~~
 
 _Sample output:_
 
 ~~~ console
-$ # Required with preview 1.  To be removed!
-kubectl wait --for=condition=Ready site/west
-site.skupper.io/west condition met
-
 $ skupper token issue ~/token.yaml
 Waiting for token status ...
 
