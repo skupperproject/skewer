@@ -39,6 +39,45 @@ general/install_the_skupper_command_line_tool:
 
     [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
     [install-docs]: https://skupper.io/install/
+general/create_your_sites:
+  title: Create your sites
+  preamble: |
+    A Skupper _site_ is a location where components of your
+    application are running.  Sites are linked together to form a
+    network for your application.
+
+    For each namespace, use `skupper site create` with a site name of
+    your choice.  This creates the site resource and deploys the
+    Skupper router to the namespace.
+
+    **Note:** If you are using Minikube, you need to [start minikube
+    tunnel][minikube-tunnel] before you run `skupper site create`.
+
+    <!-- XXX Explain enabling link acesss on one of the sites -->
+
+    [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
+  commands:
+    "0":
+      - run: skupper site create @namespace@ --enable-link-access
+        output: |
+          Waiting for status...
+          Site "@namespace@" is configured. Check the status to see when it is ready
+      - run: |
+          kubectl wait --for condition=Ready --timeout=60s site/@namespace@  # Required with preview 1 - to be removed!
+        output: |
+          site.skupper.io/@namespace@ condition met
+    "*":
+      - run: skupper site create @namespace@
+        output: |
+          Waiting for status...
+          Site "@namespace@" is configured. Check the status to see when it is ready
+      - run: |
+          kubectl wait --for condition=Ready --timeout=60s site/@namespace@  # Required with preview 1 - to be removed!
+        output: |
+          site.skupper.io/@namespace@ condition met
+  postamble: |
+    You can use `skupper site status` at any time to check the status
+    of your site.
 general/link_your_sites:
   title: Link your sites
   preamble: |
@@ -164,6 +203,19 @@ kubernetes/install_skupper_on_your_clusters:
   commands:
     "*":
       - run: kubectl apply -f https://skupper.io/v2/install.yaml
+kubernetes/install_skupper_on_your_cluster:
+  title: Install Skupper on your cluster
+  platform: kubernetes
+  preamble: |
+    Using Skupper on Kubernetes requires the installation of the
+    Skupper custom resource definitions (CRDs) and the Skupper
+    controller.
+
+    Use `kubectl apply` with the Skupper installation YAML to install
+    the CRDs and controller.
+  commands:
+    "*":
+      - run: kubectl apply -f https://skupper.io/v2/install.yaml
 kubernetes/create_your_sites:
   title: Create your sites
   platform: kubernetes
@@ -190,7 +242,7 @@ kubernetes/create_your_sites:
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
       - run: |
-          kubectl wait --for condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
+          kubectl wait --for condition=Ready --timeout=60s site/@namespace@  # Required with preview 1 - to be removed!
         output: |
           site.skupper.io/@namespace@ condition met
     "*":
@@ -199,7 +251,7 @@ kubernetes/create_your_sites:
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
       - run: |
-          kubectl wait --for condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
+          kubectl wait --for condition=Ready --timeout=60s site/@namespace@  # Required with preview 1 - to be removed!
         output: |
           site.skupper.io/@namespace@ condition met
   postamble: |
@@ -293,17 +345,10 @@ podman/set_up_your_podman_environment:
     environment variable to `podman`.  This sets the Skupper platform
     to Podman for this terminal session.
 
-    Use `podman network create` to create the Podman network that
-    Skupper will use.
-
     Use `systemctl` to enable the Podman API service.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
-      - run: podman network create skupper
-        apply: readme
-      - run: if ! podman network exists skupper; then podman network create skupper; fi
-        apply: test
       - run: systemctl --user enable --now podman.socket
   postamble: |
     If the `systemctl` command doesn't work, you can try the `podman
@@ -353,8 +398,8 @@ hello_world/expose_the_backend:
           Waiting for create to complete...
           Connector "backend" is ready
   postamble: |
-    The commands shown above use the name argument, `backend`, to set
-    the default routing key and pod selector.  You can use the
+    The commands shown above use the name argument, `backend`, to also
+    set the default routing key and pod selector.  You can use the
     `--routing-key` and `--selector` options to specify other values.
 hello_world/access_the_frontend:
   title: Access the frontend
