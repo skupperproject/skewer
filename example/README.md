@@ -17,16 +17,17 @@ across cloud providers, data centers, and edge sites.
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
-* [Step 1: Set up your clusters](#step-1-set-up-your-clusters)
+* [Step 1: Set up your Kubernetes clusters](#step-1-set-up-your-kubernetes-clusters)
 * [Step 2: Deploy the frontend and backend](#step-2-deploy-the-frontend-and-backend)
-* [Step 3: Install Skupper on your clusters](#step-3-install-skupper-on-your-clusters)
-* [Step 4: Install the Skupper command-line tool](#step-4-install-the-skupper-command-line-tool)
+* [Step 3: Install the Skupper command-line tool](#step-3-install-the-skupper-command-line-tool)
+* [Step 4: Install Skupper on your Kubernetes clusters](#step-4-install-skupper-on-your-kubernetes-clusters)
 * [Step 5: Create your sites](#step-5-create-your-sites)
 * [Step 6: Link your sites](#step-6-link-your-sites)
 * [Step 7: Fail on demand](#step-7-fail-on-demand)
-* [Step 8: Fail expectedly](#step-8-fail-expectedly)
-* [Step 9: Expose the backend](#step-9-expose-the-backend)
-* [Step 10: Access the frontend](#step-10-access-the-frontend)
+* [Step 8: Fail as expected](#step-8-fail-as-expected)
+* [Step 9: Expose the backend service](#step-9-expose-the-backend-service)
+* [Step 10: Access the frontend service](#step-10-access-the-frontend-service)
+* [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
 * [About this example](#about-this-example)
@@ -39,7 +40,7 @@ An overview
 
 Some prerequisites
 
-## Step 1: Set up your clusters
+## Step 1: Set up your Kubernetes clusters
 
 Skupper is designed for use with multiple Kubernetes clusters.
 The `skupper` and `kubectl` commands use your
@@ -50,11 +51,10 @@ and namespace where they operate.
 
 Your kubeconfig is stored in a file in your home directory.  The
 `skupper` and `kubectl` commands use the `KUBECONFIG` environment
-variable to locate it.
-
-A single kubeconfig supports only one active context per user.
-Since you will be using multiple contexts at once in this
-exercise, you need to create multiple kubeconfigs.
+variable to locate it.  A single kubeconfig supports only one
+active context per user.  Since you will be using multiple
+contexts at once in this exercise, you need to create multiple
+kubeconfigs.
 
 For each namespace, open a new terminal window.  In each terminal,
 set the `KUBECONFIG` environment variable to a different path and
@@ -109,28 +109,7 @@ _**East:**_
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 ~~~
 
-## Step 3: Install Skupper on your clusters
-
-Using Skupper on Kubernetes requires the installation of the
-Skupper custom resource definitions (CRDs) and the Skupper
-controller.
-
-For each cluster, use `kubectl apply` with the Skupper
-installation YAML to install the CRDs and controller.
-
-_**West:**_
-
-~~~ shell
-kubectl apply -f https://skupper.io/v2/install.yaml
-~~~
-
-_**East:**_
-
-~~~ shell
-kubectl apply -f https://skupper.io/v2/install.yaml
-~~~
-
-## Step 4: Install the Skupper command-line tool
+## Step 3: Install the Skupper command-line tool
 
 This example uses the Skupper command-line tool to create Skupper
 resources.  You need to install the `skupper` command only once
@@ -152,19 +131,39 @@ Skupper][install-docs].
 [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
 [install-docs]: https://skupper.io/install/
 
+## Step 4: Install Skupper on your Kubernetes clusters
+
+Using Skupper on Kubernetes requires the installation of the
+Skupper custom resource definitions (CRDs) and the Skupper
+controller.
+
+For each cluster, use `kubectl apply` with the Skupper
+installation YAML to install the CRDs and controller.
+
+_**West:**_
+
+~~~ shell
+kubectl apply -f https://skupper.io/v2/install.yaml
+~~~
+
+_**East:**_
+
+~~~ shell
+kubectl apply -f https://skupper.io/v2/install.yaml
+~~~
+
 ## Step 5: Create your sites
 
 A Skupper _site_ is a location where components of your
 application are running.  Sites are linked together to form a
-network for your application.  In Kubernetes, a site is associated
-with a namespace.
+network for your application.
 
 For each namespace, use `skupper site create` with a site name of
 your choice.  This creates the site resource and deploys the
 Skupper router to the namespace.
 
 **Note:** If you are using Minikube, you need to [start minikube
-tunnel][minikube-tunnel] before you run `skupper init`.
+tunnel][minikube-tunnel] before you run `skupper site create`.
 
 <!-- XXX Explain enabling link acesss on one of the sites -->
 
@@ -282,7 +281,7 @@ _**West:**_
 if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
 ~~~
 
-## Step 8: Fail expectedly
+## Step 8: Fail as expected
 
 _**West:**_
 
@@ -290,17 +289,18 @@ _**West:**_
 expr 1 / 0
 ~~~
 
-## Step 9: Expose the backend
+## Step 9: Expose the backend service
 
 We now have our sites linked to form a Skupper network, but no
 services are exposed on it.
 
-Skupper uses _listeners_ and _connectors_ to expose services.  A
-listener is a local endpoint for client connections, configured
-with a routing key.  A connector exists in a remote site and binds
-a routing key to a particular set of servers.  Skupper routers
-forward client connections from local listeners to remote
-connectors with matching routing keys.
+Skupper uses _listeners_ and _connectors_ to expose services
+across sites inside a Skupper network.  A listener is a local
+endpoint for client connections, configured with a routing key.  A
+connector exists in a remote site and binds a routing key to a
+particular set of servers.  Skupper routers forward client
+connections from local listeners to remote connectors with
+matching routing keys.
 
 In West, use the `skupper listener create` command to create a
 listener for the backend.  In East, use the `skupper connector
@@ -336,9 +336,9 @@ Connector "backend" is ready
 
 The commands shown above use the name argument, `backend`, to also
 set the default routing key and pod selector.  You can use the
-`--routing-key` and `--selector` options to specify other values.
+`--routing-key` and `--selector` options to set specific values.
 
-## Step 10: Access the frontend
+## Step 10: Access the frontend service
 
 In order to use and test the application, we need external access
 to the frontend.
@@ -354,6 +354,27 @@ kubectl port-forward deployment/frontend 8080:8080
 
 You can now access the web interface by navigating to
 [http://localhost:8080](http://localhost:8080) in your browser.
+
+## Cleaning up
+
+To remove Skupper and the other resources from this exercise, use
+the following commands:
+
+And more!
+
+_**West:**_
+
+~~~ shell
+skupper site delete --all
+kubectl delete deployment/frontend
+~~~
+
+_**East:**_
+
+~~~ shell
+skupper site delete --all
+kubectl delete deployment/backend
+~~~
 
 ## Summary
 
