@@ -186,13 +186,13 @@ Site "west" is configured. Check the status to see when it is ready
 _**East:**_
 
 ~~~ shell
-skupper site create east
+skupper site create east --timeout 2m
 ~~~
 
 _Sample output:_
 
 ~~~ console
-$ skupper site create east
+$ skupper site create east --timeout 2m
 Waiting for status...
 Site "east" is configured. Check the status to see when it is ready
 ~~~

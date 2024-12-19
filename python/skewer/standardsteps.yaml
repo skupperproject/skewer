@@ -211,7 +211,7 @@ skupper/create_your_sites/kubernetes_cli:
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
     "*":
-      - run: skupper site create @namespace@
+      - run: skupper site create @namespace@ --timeout 2m
         output: |
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
