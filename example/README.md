@@ -143,13 +143,13 @@ installation YAML to install the CRDs and controller.
 _**West:**_
 
 ~~~ shell
-kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
+kubectl apply -f https://skupper.io/v2/install.yaml
 ~~~
 
 _**East:**_
 
 ~~~ shell
-kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
+kubectl apply -f https://skupper.io/v2/install.yaml
 ~~~
 
 ## Step 5: Create your sites

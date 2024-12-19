@@ -272,31 +272,33 @@ Steps for primary Skupper operations:
 
 ~~~
 skupper/create_your_sites/kubernetes_cli
-skupper/create_your_sites/kubernetes_yaml
 skupper/create_your_sites/podman_cli
-skupper/create_your_sites/podman_yaml
 skupper/link_your_sites/kubernetes_cli
-skupper/link_your_sites/kubernetes_yaml
 skupper/link_your_sites/podman_cli
-skupper/link_your_sites/podman_yaml
 skupper/cleaning_up/kubernetes_cli
-skupper/cleaning_up/kubernetes_yaml
 skupper/cleaning_up/podman_cli
-skupper/cleaning_up/podman_yaml
 ~~~
+
+<!-- skupper/create_your_sites/kubernetes_yaml -->
+<!-- skupper/create_your_sites/podman_yaml -->
+<!-- skupper/link_your_sites/kubernetes_yaml -->
+<!-- skupper/link_your_sites/podman_yaml -->
+<!-- skupper/cleaning_up/kubernetes_yaml -->
+<!-- skupper/cleaning_up/podman_yaml -->
 
 Steps specific to the Hello World application:
 
 ~~~
 hello_world/deploy_the_frontend_and_backend/kubernetes_cli
-hello_world/deploy_the_frontend_and_backend/kubernetes_yaml
 hello_world/expose_the_backend_service/kubernetes_cli
-hello_world/expose_the_backend_service/kubernetes_yaml
 hello_world/access_the_frontend_service/kubernetes_cli
-hello_world/access_the_frontend_service/kubernetes_yaml
 hello_world/cleaning_up/kubernetes_cli
-hello_world/cleaning_up/kubernetes_yaml
 ~~~
+
+<!-- hello_world/deploy_the_frontend_and_backend/kubernetes_yaml -->
+<!-- hello_world/expose_the_backend_service/kubernetes_yaml -->
+<!-- hello_world/access_the_frontend_service/kubernetes_yaml -->
+<!-- hello_world/cleaning_up/kubernetes_yaml -->
 
 Some of the steps have a suffix indicating their target platform and
 interface: `kubernetes_cli`, `kubernetes_yaml`, `podman_cli`, and

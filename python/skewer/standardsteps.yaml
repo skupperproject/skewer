@@ -169,8 +169,7 @@ platform/install_skupper_on_your_kubernetes_clusters:
     installation YAML to install the CRDs and controller.
   commands:
     "*":
-      # - run: kubectl apply -f https://skupper.io/v2/install.yaml
-      - run: kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
+      - run: kubectl apply -f https://skupper.io/v2/install.yaml
 platform/install_skupper_on_your_kubernetes_cluster:
   old_name: kubernetes/install_skupper_on_your_cluster
   title: Install Skupper on your Kubernetes cluster
