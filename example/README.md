@@ -119,7 +119,7 @@ On Linux or Mac, you can use the install script (inspect it
 [here][install-script]) to download and extract the command:
 
 ~~~ shell
-curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-1
+curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-2
 ~~~
 
 The script installs the command under your home directory.  It
@@ -143,20 +143,20 @@ installation YAML to install the CRDs and controller.
 _**West:**_
 
 ~~~ shell
-kubectl apply -f https://skupper.io/v2/install.yaml
+kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
 ~~~
 
 _**East:**_
 
 ~~~ shell
-kubectl apply -f https://skupper.io/v2/install.yaml
+kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
 ~~~
 
 ## Step 5: Create your sites
 
-A Skupper _site_ is a location where components of your
-application are running.  Sites are linked together to form a
-network for your application.
+A Skupper _site_ is a location where your application workloads
+are running.  Sites are linked together to form a network for your
+application.
 
 For each namespace, use `skupper site create` with a site name of
 your choice.  This creates the site resource and deploys the
@@ -172,26 +172,21 @@ tunnel][minikube-tunnel] before you run `skupper site create`.
 _**West:**_
 
 ~~~ shell
-skupper site create west --enable-link-access
-kubectl wait --for condition=Ready --timeout=60s site/west  # Required with preview 1 - to be removed!
+skupper site create west --enable-link-access --timeout 2m
 ~~~
 
 _Sample output:_
 
 ~~~ console
-$ skupper site create west --enable-link-access
+$ skupper site create west --enable-link-access --timeout 2m
 Waiting for status...
 Site "west" is configured. Check the status to see when it is ready
-
-$ kubectl wait --for condition=Ready --timeout=60s site/west  # Required with preview 1 - to be removed!
-site.skupper.io/west condition met
 ~~~
 
 _**East:**_
 
 ~~~ shell
 skupper site create east
-kubectl wait --for condition=Ready --timeout=60s site/east  # Required with preview 1 - to be removed!
 ~~~
 
 _Sample output:_
@@ -200,9 +195,6 @@ _Sample output:_
 $ skupper site create east
 Waiting for status...
 Site "east" is configured. Check the status to see when it is ready
-
-$ kubectl wait --for condition=Ready --timeout=60s site/east  # Required with preview 1 - to be removed!
-site.skupper.io/east condition met
 ~~~
 
 You can use `skupper site status` at any time to check the status
@@ -214,14 +206,12 @@ A Skupper _link_ is a channel for communication between two sites.
 Links serve as a transport for application connections and
 requests.
 
-Creating a link requires use of two Skupper commands in
-conjunction, `skupper token issue` and `skupper token redeem`.
-
+Creating a link requires the use of two Skupper commands in
+conjunction: `skupper token issue` and `skupper token redeem`.
 The `skupper token issue` command generates a secret token that
-signifies permission to create a link.  The token also carries the
-link details.  Then, in a remote site, The `skupper token redeem`
-command uses the token to create a link to the site that generated
-it.
+can be transferred to a remote site and redeemed for a link to the
+issuing site.  The `skupper token redeem` command uses the token
+to create the link.
 
 **Note:** The link token is truly a *secret*.  Anyone who has the
 token can link to your site.  Make sure that only those you trust
@@ -337,6 +327,8 @@ Connector "backend" is ready
 The commands shown above use the name argument, `backend`, to also
 set the default routing key and pod selector.  You can use the
 `--routing-key` and `--selector` options to set specific values.
+
+<!-- You can also use `--workload` -- more convenient! -->
 
 ## Step 10: Access the frontend service
 

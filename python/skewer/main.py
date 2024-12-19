@@ -273,15 +273,14 @@ def print_debug_output(model):
                 run("kubectl get events", check=False)
 
             run("skupper version", check=False)
-            run("skupper status", check=False)
+            run("skupper site status", check=False)
             run("skupper link status", check=False)
-            run("skupper service status", check=False)
-            run("skupper network status", check=False)
-            run("skupper debug events", check=False)
+            run("skupper listener status", check=False)
+            run("skupper connector status", check=False)
 
             if site.platform == "kubernetes":
                 run("kubectl logs deployment/skupper-router", check=False)
-                run("kubectl logs deployment/skupper-service-controller", check=False)
+                # run("kubectl logs deployment/skupper-service-controller", check=False)
 
     print("-- End of debug output")
 

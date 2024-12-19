@@ -122,7 +122,7 @@ platform/set_up_your_podman_environment:
       - run: export SKUPPER_PLATFORM=podman
       - run: systemctl --user enable --now podman.socket
   postamble: |
-    If the `systemctl` command doesn't work, you can try the `podman
+    If the `systemctl` command does not work, you can try the `podman
     system service` command instead:
 
     ~~~
@@ -145,7 +145,7 @@ platform/install_the_skupper_command_line_tool:
     [here][install-script]) to download and extract the command:
 
     ~~~ shell
-    curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-1
+    curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-2
     ~~~
 
     The script installs the command under your home directory.  It
@@ -169,7 +169,8 @@ platform/install_skupper_on_your_kubernetes_clusters:
     installation YAML to install the CRDs and controller.
   commands:
     "*":
-      - run: kubectl apply -f https://skupper.io/v2/install.yaml
+      # - run: kubectl apply -f https://skupper.io/v2/install.yaml
+      - run: kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
 platform/install_skupper_on_your_kubernetes_cluster:
   old_name: kubernetes/install_skupper_on_your_cluster
   title: Install Skupper on your Kubernetes cluster
@@ -183,14 +184,15 @@ platform/install_skupper_on_your_kubernetes_cluster:
     the CRDs and controller.
   commands:
     "*":
-      - run: kubectl apply -f https://skupper.io/v2/install.yaml
+      # - run: kubectl apply -f https://skupper.io/v2/install.yaml
+      - run: kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
 skupper/create_your_sites/kubernetes_cli:
   old_name: kubernetes/create_your_sites
   title: Create your sites
   preamble: |
-    A Skupper _site_ is a location where components of your
-    application are running.  Sites are linked together to form a
-    network for your application.
+    A Skupper _site_ is a location where your application workloads
+    are running.  Sites are linked together to form a network for your
+    application.
 
     For each namespace, use `skupper site create` with a site name of
     your choice.  This creates the site resource and deploys the
@@ -204,23 +206,15 @@ skupper/create_your_sites/kubernetes_cli:
     [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
   commands:
     "0":
-      - run: skupper site create @namespace@ --enable-link-access
+      - run: skupper site create @namespace@ --enable-link-access --timeout 2m
         output: |
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
-      - run: |
-          kubectl wait --for condition=Ready --timeout=60s site/@namespace@  # Required with preview 1 - to be removed!
-        output: |
-          site.skupper.io/@namespace@ condition met
     "*":
       - run: skupper site create @namespace@
         output: |
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
-      - run: |
-          kubectl wait --for condition=Ready --timeout=60s site/@namespace@  # Required with preview 1 - to be removed!
-        output: |
-          site.skupper.io/@namespace@ condition met
   postamble: |
     You can use `skupper site status` at any time to check the status
     of your site.
@@ -233,14 +227,12 @@ skupper/link_your_sites/kubernetes_cli:
     Links serve as a transport for application connections and
     requests.
 
-    Creating a link requires use of two Skupper commands in
-    conjunction, `skupper token issue` and `skupper token redeem`.
-
+    Creating a link requires the use of two Skupper commands in
+    conjunction: `skupper token issue` and `skupper token redeem`.
     The `skupper token issue` command generates a secret token that
-    signifies permission to create a link.  The token also carries the
-    link details.  Then, in a remote site, The `skupper token redeem`
-    command uses the token to create a link to the site that generated
-    it.
+    can be transferred to a remote site and redeemed for a link to the
+    issuing site.  The `skupper token redeem` command uses the token
+    to create the link.
 
     **Note:** The link token is truly a *secret*.  Anyone who has the
     token can link to your site.  Make sure that only those you trust
@@ -337,6 +329,8 @@ hello_world/expose_the_backend_service/kubernetes_cli:
     The commands shown above use the name argument, `backend`, to also
     set the default routing key and pod selector.  You can use the
     `--routing-key` and `--selector` options to set specific values.
+
+    <!-- You can also use `--workload` -- more convenient! -->
 hello_world/access_the_frontend_service/kubernetes_cli:
   old_name: hello_world/access_the_frontend
   title: Access the frontend service
