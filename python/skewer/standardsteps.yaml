@@ -162,8 +162,7 @@ platform/install_skupper_on_your_kubernetes_cluster:
     the CRDs and controller.
   commands:
     "*":
-      # - run: kubectl apply -f https://skupper.io/v2/install.yaml
-      - run: kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
+      - run: kubectl apply -f https://skupper.io/v2/install.yaml
 skupper/create_your_sites/kubernetes_cli:
   old_name: kubernetes/create_your_sites
   title: Create your sites
