@@ -196,7 +196,7 @@ You can also use a named step from the library of [standard
 steps](#standard-steps):
 
 ~~~ yaml
-- standard: kubernetes/set_up_your_clusters
+- standard: kubernetes/access_your_kubernetes_clusters
 ~~~
 
 A **command**:
@@ -257,11 +257,10 @@ They fall in three groups.
 Steps for setting up platforms:
 
 ~~~
-platform/set_up_your_kubernetes_clusters
-platform/set_up_your_kubernetes_cluster
+platform/access_your_kubernetes_clusters
+platform/access_your_kubernetes_cluster
 platform/set_up_your_podman_environments
 platform/set_up_your_podman_environment
-platform/install_the_skupper_command_line_tool
 platform/install_skupper_on_your_kubernetes_clusters
 platform/install_skupper_on_your_kubernetes_cluster
 platform/install_skupper_in_your_podman_environments
