@@ -52,16 +52,11 @@ platform/access_your_kubernetes_cluster:
   title: Access your Kubernetes cluster
   platform: kubernetes
   preamble: |
-    Open a new terminal window and log in to your cluster.  Then, use
-    `kubectl create namespace` and `kubectl config set-context` to
-    create the namespace you wish to use and set the namespace on your
-    current context.
+    Open a new terminal window and log in to your cluster.
   commands:
     "*":
       - run: "<provider-specific login command>"
         apply: readme
-      - run: kubectl create namespace @namespace@
-      - run: kubectl config set-context --current --namespace @namespace@
   postamble: |
     **Note:** The login procedure varies by provider.
 platform/set_up_your_podman_environments:
