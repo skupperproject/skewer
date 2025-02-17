@@ -37,8 +37,8 @@ Change directory to the root of your example project:
 Add the Skewer code as a subdirectory:
 
     mkdir -p external
-    curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
-    mv external/skewer-main external/skewer
+    curl -sfL https://github.com/skupperproject/skewer/archive/v2.tar.gz | tar -C external -xz
+    mv external/skewer-2 external/skewer
 
 Symlink the Skewer and Plano libraries into your `python` directory:
 
