@@ -90,15 +90,7 @@ export KUBECONFIG=~/.kube/config-east
 <provider-specific login command>
 ~~~
 
-**Note:** The login procedure varies by provider.  See the
-documentation for yours:
-
-* [Minikube](https://skupper.io/start/minikube.html#cluster-access)
-* [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html#cluster-access)
-* [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html#cluster-access)
-* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#cluster-access)
-* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#cluster-access)
-* [OpenShift](https://skupper.io/start/openshift.html#cluster-access)
+**Note:** The login procedure varies by provider.
 
 ## Step 2: Install Skupper on your Kubernetes clusters
 
