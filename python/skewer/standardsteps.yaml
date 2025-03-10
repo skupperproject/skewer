@@ -45,6 +45,11 @@ platform/access_your_kubernetes_clusters:
       - run: export KUBECONFIG=@kubeconfig@
       - run: "<provider-specific login command>"
         apply: readme
+      - run: export KUBECONFIG=@kubeconfig@
+      - run: kubectl create namespace @namespace@
+        apply: readme
+      - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
+        apply: test
   postamble: |
     **Note:** The login procedure varies by provider.
 platform/access_your_kubernetes_cluster:
