@@ -18,14 +18,15 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Access your Kubernetes clusters](#step-1-access-your-kubernetes-clusters)
-* [Step 2: Install Skupper on your Kubernetes clusters](#step-2-install-skupper-on-your-kubernetes-clusters)
+* [Step 2: Create your Kubernetes namespaces](#step-2-create-your-kubernetes-namespaces)
 * [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
-* [Step 4: Create your sites](#step-4-create-your-sites)
-* [Step 5: Link your sites](#step-5-link-your-sites)
-* [Step 6: Fail on demand](#step-6-fail-on-demand)
-* [Step 7: Fail as expected](#step-7-fail-as-expected)
-* [Step 8: Expose the backend service](#step-8-expose-the-backend-service)
-* [Step 9: Access the frontend service](#step-9-access-the-frontend-service)
+* [Step 4: Install Skupper on your Kubernetes clusters](#step-4-install-skupper-on-your-kubernetes-clusters)
+* [Step 5: Create your sites](#step-5-create-your-sites)
+* [Step 6: Link your sites](#step-6-link-your-sites)
+* [Step 7: Fail on demand](#step-7-fail-on-demand)
+* [Step 8: Fail as expected](#step-8-fail-as-expected)
+* [Step 9: Expose the backend service](#step-9-expose-the-backend-service)
+* [Step 10: Access the frontend service](#step-10-access-the-frontend-service)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
@@ -92,7 +93,51 @@ export KUBECONFIG=~/.kube/config-east
 
 **Note:** The login procedure varies by provider.
 
-## Step 2: Install Skupper on your Kubernetes clusters
+## Step 2: Create your Kubernetes namespaces
+
+The example application has differents components deployed to
+different Kubernetes namespaces.  To set up our example, we need
+to create the namespaces.
+
+For each cluster, use `kubectl create namespace` and `kubectl
+config set-context` to create the namespace you wish to use and
+set the namespace on your current context.
+
+_**West:**_
+
+~~~ shell
+kubectl create namespace west
+kubectl config set-context --current --namespace west
+~~~
+
+_**East:**_
+
+~~~ shell
+kubectl create namespace east
+kubectl config set-context --current --namespace east
+~~~
+
+## Step 3: Deploy the frontend and backend
+
+Deploy the Hello World components, placing the frontend on one
+cluster and the backend on the other.
+
+Use `kubectl create deployment` to deploy the frontend in West
+and the backend in East.
+
+_**West:**_
+
+~~~ shell
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+~~~
+
+_**East:**_
+
+~~~ shell
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+~~~
+
+## Step 4: Install Skupper on your Kubernetes clusters
 
 Using Skupper on Kubernetes requires the installation of the
 Skupper custom resource definitions (CRDs) and the Skupper
@@ -113,35 +158,7 @@ _**East:**_
 kubectl apply -f https://skupper.io/v2/install.yaml
 ~~~
 
-## Step 3: Deploy the frontend and backend
-
-This example runs the frontend and the backend in separate
-Kubernetes namespaces, on different clusters.
-
-For each cluster, use `kubectl create namespace` and `kubectl
-config set-context` to create the namespace you wish to use and
-set the namespace on your current context.
-
-Then, use `kubectl create deployment` to deploy the frontend in
-West and the backend in East.
-
-_**West:**_
-
-~~~ shell
-kubectl create namespace west
-kubectl config set-context --current --namespace west
-kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
-~~~
-
-_**East:**_
-
-~~~ shell
-kubectl create namespace east
-kubectl config set-context --current --namespace east
-kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-~~~
-
-## Step 4: Create your sites
+## Step 5: Create your sites
 
 A Skupper _site_ is a location where your application workloads
 are running.  Sites are linked together to form a network for your
@@ -189,7 +206,7 @@ Site "east" is configured. Check the status to see when it is ready
 You can use `skupper site status` at any time to check the status
 of your site.
 
-## Step 5: Link your sites
+## Step 6: Link your sites
 
 A Skupper _link_ is a channel for communication between two sites.
 Links serve as a transport for application connections and
@@ -252,7 +269,7 @@ to use `scp` or a similar tool to transfer the token securely.  By
 default, tokens expire after a single use or 15 minutes after
 being issued.
 
-## Step 6: Fail on demand
+## Step 7: Fail on demand
 
 _**West:**_
 
@@ -260,7 +277,7 @@ _**West:**_
 if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
 ~~~
 
-## Step 7: Fail as expected
+## Step 8: Fail as expected
 
 _**West:**_
 
@@ -268,7 +285,7 @@ _**West:**_
 expr 1 / 0
 ~~~
 
-## Step 8: Expose the backend service
+## Step 9: Expose the backend service
 
 We now have our sites linked to form a Skupper network, but no
 services are exposed on it.
@@ -319,7 +336,7 @@ set the default routing key and pod selector.  You can use the
 
 <!-- You can also use `--workload` -- more convenient! -->
 
-## Step 9: Access the frontend service
+## Step 10: Access the frontend service
 
 In order to use and test the application, we need external access
 to the frontend.

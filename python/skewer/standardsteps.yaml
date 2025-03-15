@@ -59,6 +59,40 @@ platform/access_your_kubernetes_cluster:
         apply: readme
   postamble: |
     **Note:** The login procedure varies by provider.
+platform/create_your_kubernetes_namespaces:
+  title: Create your Kubernetes namespaces
+  platform: kubernetes
+  preamble: |
+    The example application has differents components deployed to
+    different Kubernetes namespaces.  To set up our example, we need
+    to create the namespaces.
+
+    For each cluster, use `kubectl create namespace` and `kubectl
+    config set-context` to create the namespace you wish to use and
+    set the namespace on your current context.
+  commands:
+    "*":
+      - run: kubectl create namespace @namespace@
+        apply: readme
+      - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
+        apply: test
+      - run: kubectl config set-context --current --namespace @namespace@
+platform/create_your_kubernetes_namespace:
+  title: Create your Kubernetes namespace
+  platform: kubernetes
+  preamble: |
+    Our example requires a Kubernetes namespace.
+
+    Use `kubectl create namespace` and `kubectl config set-context` to
+    create the namespace you wish to use and set the namespace on your
+    current context.
+  commands:
+    "*":
+      - run: kubectl create namespace @namespace@
+        apply: readme
+      - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
+        apply: test
+      - run: kubectl config set-context --current --namespace @namespace@
 platform/set_up_your_podman_environments:
   title: Set up your Podman environments
   platform: podman
@@ -263,29 +297,15 @@ hello_world/deploy_the_frontend_and_backend/kubernetes_cli:
   old_name: hello_world/deploy_the_frontend_and_backend
   title: Deploy the frontend and backend
   preamble: |
-    This example runs the frontend and the backend in separate
-    Kubernetes namespaces, on different clusters.
+    Deploy the Hello World components, placing the frontend on one
+    cluster and the backend on the other.
 
-    For each cluster, use `kubectl create namespace` and `kubectl
-    config set-context` to create the namespace you wish to use and
-    set the namespace on your current context.
-
-    Then, use `kubectl create deployment` to deploy the frontend in
-    @site0@ and the backend in @site1@.
+    Use `kubectl create deployment` to deploy the frontend in @site0@
+    and the backend in @site1@.
   commands:
     "0":
-      - run: kubectl create namespace @namespace@
-        apply: readme
-      - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
-        apply: test
-      - run: kubectl config set-context --current --namespace @namespace@
       - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
     "1":
-      - run: kubectl create namespace @namespace@
-        apply: readme
-      - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
-        apply: test
-      - run: kubectl config set-context --current --namespace @namespace@
       - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 hello_world/expose_the_backend_service/kubernetes_cli:
   old_name: hello_world/expose_the_backend

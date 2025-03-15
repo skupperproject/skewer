@@ -259,6 +259,8 @@ Steps for setting up platforms:
 ~~~
 platform/access_your_kubernetes_clusters
 platform/access_your_kubernetes_cluster
+platform/create_your_kubernetes_namespaces
+platform/create_your_kubernetes_namespace
 platform/set_up_your_podman_environments
 platform/set_up_your_podman_environment
 platform/install_skupper_on_your_kubernetes_clusters
@@ -339,7 +341,8 @@ example might look like this:
 
 ~~~ yaml
 steps:
-  - standard: platform/set_up_your_kubernetes_clusters
+  - standard: platform/access_your_kubernetes_clusters
+  - standard: platform/create_your_kubernetes_namespaces
   - <your-custom-deploy-step>
   - standard: platform/install_the_skupper_command_line_tool
   - standard: platform/install_skupper_on_your_kubernetes_clusters
