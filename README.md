@@ -344,8 +344,8 @@ steps:
   - standard: platform/access_your_kubernetes_clusters
   - standard: platform/create_your_kubernetes_namespaces
   - <your-custom-deploy-step>
-  - standard: platform/install_the_skupper_command_line_tool
   - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: platform/install_the_skupper_command_line_tool
   - standard: skupper/create_your_sites/kubernetes_cli
   - standard: skupper/link_your_sites/kubernetes_cli
   - <your-custom-expose-step>
