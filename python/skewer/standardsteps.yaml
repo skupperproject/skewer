@@ -107,6 +107,7 @@ platform/set_up_your_podman_environments:
     "*":
       - run: export SKUPPER_PLATFORM=podman
       - run: systemctl --user enable --now podman.socket
+      - run: "skupper system teardown || :"
   postamble: |
     If the `systemctl` command doesn't work, you can try the `podman
     system service` command instead:
@@ -128,6 +129,7 @@ platform/set_up_your_podman_environment:
     "*":
       - run: export SKUPPER_PLATFORM=podman
       - run: systemctl --user enable --now podman.socket
+      - run: "skupper system teardown || :"
   postamble: |
     If the `systemctl` command does not work, you can try the `podman
     system service` command instead:
