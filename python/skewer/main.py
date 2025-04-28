@@ -771,7 +771,7 @@ class Minikube:
             #     run("minikube -p skewer ssh -- docker image ls")
 
             tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
-            self.tunnel = start("minikube tunnel -p skewer --bind-address localhost", output=tunnel_output_file)
+            self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
 
             try:
                 model = Model(self.skewer_file)
