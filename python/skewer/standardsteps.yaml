@@ -355,7 +355,7 @@ hello_world/deploy_the_frontend_and_backend/kubernetes_cli:
     "1":
       - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
         apply: readme
-      - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --dry-run=client -o json | jq '.spec.template.spec.containers |= map(.imagePullPolicy = "IfNotPresent")' | kubectl apply -f -
+      - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3 --dry-run=client -o json | jq '.spec.template.spec.containers |= map(.imagePullPolicy = "IfNotPresent")' | kubectl apply -f -
         apply: test
 hello_world/expose_the_backend_service/kubernetes_cli:
   old_name: hello_world/expose_the_backend
