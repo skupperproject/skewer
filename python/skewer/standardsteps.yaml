@@ -104,14 +104,10 @@ platform/set_up_your_podman_environments:
 
     Use `skupper system install` to enable the Podman API service (using systemctl)
     and it also creates the Skupper controller container, for the respective user.
-
-    Next we run `skupper system stop` to ensure that any previous Skupper
-    installation is removed, so that we start with a clean environment.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
       - run: skupper system install
-      - run: "skupper system stop || :"
   postamble: |
     If the `systemctl` fails, as part of the `skupper system install`, you can try the `podman
     system service` command instead:
@@ -131,15 +127,10 @@ platform/set_up_your_podman_environment:
     The `skupper system install` command will enable the Podman API
     service (using systemctl), if it is not already running and it also creates the
     Skupper controller container, for the respective user.
-
-    Next we run `skupper system stop` to ensure that any previous
-    Skupper installation is removed, so that we start with a clean
-    environment.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
       - run: skupper system install
-      - run: "skupper system stop || :"
   postamble: |
     If `systemctl` fails, as part of the `skupper system install`, you can try the `podman
     system service` command instead:
