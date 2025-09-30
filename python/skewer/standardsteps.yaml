@@ -109,7 +109,7 @@ platform/set_up_your_podman_environments:
       - run: export SKUPPER_PLATFORM=podman
       - run: skupper system install
   postamble: |
-    If the `systemctl` fails, as part of the `skupper system install`, you can try the `podman
+    If `skupper system install` fails, it is typically due to a systemctl issue. You can try the `podman
     system service` command instead:
 
     ~~~
@@ -132,7 +132,7 @@ platform/set_up_your_podman_environment:
       - run: export SKUPPER_PLATFORM=podman
       - run: skupper system install
   postamble: |
-    If `systemctl` fails, as part of the `skupper system install`, you can try the `podman
+    If `skupper system install` fails, it is typically due to a systemctl issue. You can try the `podman
     system service` command instead:
 
     ~~~
