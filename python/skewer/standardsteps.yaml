@@ -102,8 +102,10 @@ platform/set_up_your_podman_environments:
     `podman`.  This sets the Skupper platform to Podman for this
     terminal session.
 
-    Use `skupper system install` to enable the Podman API service (using systemctl)
-    and it also creates the Skupper controller container, for the respective user.
+    The `skupper system install` enables the Podman API
+    service (using systemctl) if that service is not already running.
+    The `skupper system install` command also creates the
+    Skupper controller container for the current user.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
@@ -124,9 +126,10 @@ platform/set_up_your_podman_environment:
     environment variable to `podman`.  This sets the Skupper platform
     to Podman for this terminal session.
 
-    The `skupper system install` command will enable the Podman API
-    service (using systemctl), if it is not already running and it also creates the
-    Skupper controller container, for the respective user.
+    The `skupper system install` enables the Podman API
+    service (using systemctl) if that service is not already running.
+    The `skupper system install` command also creates the
+    Skupper controller container for the current user.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
