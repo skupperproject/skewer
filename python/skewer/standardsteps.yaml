@@ -168,7 +168,7 @@ platform/install_the_skupper_command_line_tool:
     Skupper][install-docs].
 
     [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
-    [install-docs]: https://skupper.io/install/
+    [install-docs]: https://skupper.io/#installation
 platform/install_skupper_on_your_kubernetes_clusters:
   old_name: kubernetes/install_skupper_on_your_clusters
   title: Install Skupper on your Kubernetes clusters
