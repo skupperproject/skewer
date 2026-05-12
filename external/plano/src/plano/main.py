@@ -23,10 +23,10 @@ import code as _code
 import datetime as _datetime
 import fnmatch as _fnmatch
 import getpass as _getpass
+import importlib.util as _importlib_util
 import json as _json
 import os as _os
 import pprint as _pprint
-import pkgutil as _pkgutil
 import random as _random
 import re as _re
 import shlex as _shlex
@@ -278,9 +278,9 @@ def find(dirs=None, include="*", exclude=[]):
                     for name in _fnmatch.filter(names, exclude_pattern):
                         names.remove(name)
 
-                if root.startswith("./"):
-                    root = remove_prefix(root, "./")
-                elif root == ".":
+                root = root.removeprefix("./")
+
+                if root == ".":
                     root = ""
 
                 found.update([join(root, x) for x in names])
@@ -429,7 +429,7 @@ def check_env(var, message=None):
         raise PlanoError(message)
 
 def check_module(module, message=None):
-    if _pkgutil.find_loader(module) is None:
+    if _importlib_util.find_spec(module) is None:
         if message is None:
             message = "Python module {} is not found".format(repr(module))
 
@@ -538,6 +538,8 @@ def copy(from_path, to_path, symlinks=True, inside=True, quiet=False):
     if is_link(from_path) and symlinks:
         make_link(to_path, read_link(from_path), quiet=True)
     elif is_dir(from_path):
+        make_dir(to_path, quiet=True)
+
         for name in list_dir(from_path):
             copy(join(from_path, name), join(to_path, name), symlinks=symlinks, inside=False, quiet=True)
 
@@ -695,9 +697,9 @@ def tail_lines(file, count):
 
     return lines[-count:]
 
-def string_replace_file(file, expr, replacement, count=0):
+def string_replace_in_file(file, old, new, count=0):
     file = expand(file)
-    return write(file, string_replace(read(file), expr, replacement, count=count))
+    return write(file, read(file).replace(old, new, count))
 
 def concatenate(file, input_files):
     file = expand(file)
@@ -762,8 +764,9 @@ def print_json(data, **kwargs):
 
 ## HTTP operations
 
-def _run_curl(method, url, content=None, content_file=None, content_type=None, output_file=None, insecure=False,
-              user=None, password=None, quiet=False):
+def _run_curl(method, url, content=None, content_file=None, content_type=None, output_file=None,
+              insecure=False, user=None, password=None, client_cert=None, client_key=None, server_cert=None,
+              quiet=False):
     check_program("curl")
 
     _notice(quiet, f"Sending {method} request to '{url}'")
@@ -794,6 +797,15 @@ def _run_curl(method, url, content=None, content_file=None, content_type=None, o
         assert password is not None
         args.extend(["--user", f"{user}:{password}"])
 
+    if client_cert is not None:
+        args.extend(["--cert", client_cert])
+
+    if client_key is not None:
+        args.extend(["--key", client_key])
+
+    if server_cert is not None:
+        args.extend(["--cacert", server_cert])
+
     args.append(url)
 
     if output_file is not None:
@@ -808,37 +820,64 @@ def _run_curl(method, url, content=None, content_file=None, content_type=None, o
     if output_file is None:
         return proc.stdout_result
 
-def http_get(url, output_file=None, insecure=False, user=None, password=None, quiet=False):
-    return _run_curl("GET", url, output_file=output_file, insecure=insecure, user=user, password=password, quiet=quiet)
+def http_get(url, output_file=None, insecure=False, user=None, password=None,
+             client_cert=None, client_key=None, server_cert=None,
+             quiet=False):
+    return _run_curl("GET", url, output_file=output_file, insecure=insecure, user=user, password=password,
+                     client_cert=client_cert, client_key=client_key, server_cert=server_cert,
+                     quiet=quiet)
 
-def http_get_json(url, insecure=False, user=None, password=None, quiet=False):
-    return parse_json(http_get(url, insecure=insecure, user=user, password=password, quiet=quiet))
+def http_get_json(url,
+                  insecure=False, user=None, password=None,
+                  client_cert=None, client_key=None, server_cert=None, quiet=False):
+    return parse_json(http_get(url, insecure=insecure, user=user, password=password,
+                               client_cert=client_cert, client_key=client_key, server_cert=server_cert,
+                               quiet=quiet))
 
-def http_put(url, content, content_type=None, insecure=False, user=None, password=None, quiet=False):
+def http_put(url, content, content_type=None, insecure=False, user=None, password=None,
+             client_cert=None, client_key=None, server_cert=None,
+             quiet=False):
     _run_curl("PUT", url, content=content, content_type=content_type, insecure=insecure, user=user, password=password,
+              client_cert=client_cert, client_key=client_key, server_cert=server_cert,
               quiet=quiet)
 
-def http_put_file(url, content_file, content_type=None, insecure=False, user=None, password=None, quiet=False):
+def http_put_file(url, content_file, content_type=None, insecure=False, user=None, password=None,
+                  client_cert=None, client_key=None, server_cert=None,
+                  quiet=False):
     _run_curl("PUT", url, content_file=content_file, content_type=content_type, insecure=insecure, user=user,
-              password=password, quiet=quiet)
+              password=password, client_cert=client_cert, client_key=client_key, server_cert=server_cert,
+              quiet=quiet)
 
-def http_put_json(url, data, insecure=False, user=None, password=None, quiet=False):
+def http_put_json(url, data, insecure=False, user=None, password=None,
+                  client_cert=None, client_key=None, server_cert=None,
+                  quiet=False):
     http_put(url, emit_json(data), content_type="application/json", insecure=insecure, user=user, password=password,
+             client_cert=client_cert, client_key=client_key, server_cert=server_cert,
              quiet=quiet)
 
 def http_post(url, content, content_type=None, output_file=None, insecure=False, user=None, password=None,
+              client_cert=None, client_key=None, server_cert=None,
               quiet=False):
     return _run_curl("POST", url, content=content, content_type=content_type, output_file=output_file,
-                     insecure=insecure, user=user, password=password, quiet=quiet)
+                     insecure=insecure, user=user, password=password,
+                     client_cert=client_cert, client_key=client_key, server_cert=server_cert,
+                     quiet=quiet)
 
 def http_post_file(url, content_file, content_type=None, output_file=None, insecure=False, user=None, password=None,
+                   client_cert=None, client_key=None, server_cert=None,
                    quiet=False):
     return _run_curl("POST", url, content_file=content_file, content_type=content_type, output_file=output_file,
-                     insecure=insecure, user=user, password=password, quiet=quiet)
+                     insecure=insecure, user=user, password=password,
+                     client_cert=client_cert, client_key=client_key, server_cert=server_cert,
+                     quiet=quiet)
 
-def http_post_json(url, data, insecure=False, user=None, password=None, quiet=False):
-    return parse_json(http_post(url, emit_json(data), content_type="application/json", insecure=insecure, user=user,
-                                password=password, quiet=quiet))
+def http_post_json(url, data, insecure=False, user=None, password=None,
+                   client_cert=None, client_key=None, server_cert=None,
+                   quiet=False):
+    return parse_json(http_post(url, emit_json(data), content_type="application/json",
+                                insecure=insecure, user=user, password=password,
+                                client_cert=client_cert, client_key=client_key, server_cert=server_cert,
+                                quiet=quiet))
 
 ## Link operations
 
@@ -1433,26 +1472,14 @@ _signal.signal(_signal.SIGTERM, _default_sigterm_handler)
 
 ## String operations
 
-def string_replace(string, expr, replacement, count=0):
-    return _re.sub(expr, replacement, string, count)
+def string_replace_re(string, pattern, replacement, count=0):
+    return _re.sub(pattern, replacement, string, count)
 
-def remove_prefix(string, prefix):
-    if string is None:
-        return ""
+def string_matches_re(string, pattern):
+    return _re.search(pattern, string) is not None
 
-    if prefix and string.startswith(prefix):
-        string = string[len(prefix):]
-
-    return string
-
-def remove_suffix(string, suffix):
-    if string is None:
-        return ""
-
-    if suffix and string.endswith(suffix):
-        string = string[:-len(suffix)]
-
-    return string
+def string_matches_glob(string, pattern):
+    return _fnmatch.fnmatchcase(string, pattern)
 
 def shorten(string, max, ellipsis=None):
     assert max is None or isinstance(max, int)
@@ -1505,6 +1532,36 @@ def url_decode(string):
 
 def parse_url(url):
     return _urllib_parse.urlparse(url)
+
+# A class for building up long strings
+#
+# append = StringBuilder()
+# append("abc")
+# append()
+# append("123")
+# str(append) -> "abc\n\n123"
+class StringBuilder:
+    def __init__(self):
+        self._items = list()
+
+    def __call__(self, item=""):
+        self.append(item=item)
+
+    def __str__(self):
+        return self.join()
+
+    def append(self, item=""):
+        assert item is not None
+        self._items.append(str(item))
+
+    def join(self, separator="\n"):
+        return separator.join(self._items)
+
+    def write(self, file, separator="\n"):
+        return write(file, self.join(separator=separator))
+
+    def clear(self):
+        self._items.clear()
 
 ## Temp operations
 
@@ -1623,7 +1680,7 @@ def format_duration(seconds, align=False):
     elif value > 10:
         return "{:.0f}{}".format(value, unit)
     else:
-        return remove_suffix("{:.1f}".format(value), ".0") + unit
+        return "{:.1f}".format(value).removesuffix(".0") + unit
 
 def sleep(seconds, quiet=False):
     _notice(quiet, "Sleeping for {} {}", seconds, plural("second", seconds))
